@@ -183,7 +183,7 @@ svg#board{display:block;width:100%;height:auto;}
         </button>
       </div>
     </div>
-    <p class="hsub" id="hsub">પાસપાસેના 6 સેલ ટેપ કરી આકૃતિ બનાવો — દરેકમાં 1 થી 6 અંક એક-એક વાર આવવા જોઈએ</p>
+    <p class="hsub" id="hsub">પાસપાસેના 6 સેલ પસંદ કરીને એક આકૃતિ બનાવો.<br/>દરેક આકૃતિમાં 1 થી 6 અંક એક-એક જ વાર હોવા જોઈએ.</p>
   </header>
 
   <!-- play area: figure counter + hex board + reset -->
@@ -224,26 +224,26 @@ svg#board{display:block;width:100%;height:auto;}
 <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="How to play">
   <div class="grab"></div>
   <h3>કેવી રીતે રમવું</h3>
-  <p class="lead">દરેક આકૃતિમાં 1 થી 6 અંક બરાબર એક-એક વાર આવવા જોઈએ. ઉતાવળ નહીં — શાંતિથી.</p>
+  <p class="lead">પાસપાસેના 6 સેલ જોડીને એક આકૃતિ બનાવો. દરેક આકૃતિમાં 1 થી 6 અંક એક-એક જ વાર હોવા જોઈએ.</p>
 
   <div class="step">
     <div class="ic"><svg viewBox="0 0 24 24"><path d="M5 12h9"/><path d="M12 7l5 5-5 5"/><circle cx="18" cy="12" r="0.6" fill="currentColor" stroke="none"/></svg></div>
-    <div class="tx"><b>સેલ પર ટેપ કરો</b><p>પાસપાસેના સેલ ટેપ કરીને 6 સેલની એક આકૃતિ બનાવો.</p></div>
+    <div class="tx"><b>6 સેલ પસંદ કરો</b><p>એકબીજાને અડેલા 6 સેલ પસંદ કરીને એક આકૃતિ બનાવો.</p></div>
   </div>
 
   <div class="step">
     <div class="ic"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg></div>
-    <div class="tx"><b>અંક રિપીટ ન થાય</b><p>દરેક આકૃતિમાં 1 થી 6 અલગ અંક આવવા જોઈએ, કોઈ રિપીટ ન થાય.</p></div>
+    <div class="tx"><b>1 થી 6 બધા અંક હોવા જોઈએ</b><p>દરેક આકૃતિમાં 1, 2, 3, 4, 5 અને 6 અંક એક-એક જ વાર આવવા જોઈએ.</p></div>
   </div>
 
   <div class="step">
     <div class="ic"><svg viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h11a6 6 0 0 1 0 12h-4"/></svg></div>
-    <div class="tx"><b>ભૂલ સુધારો</b><p>બનેલી આકૃતિ પર ટેપ કરી કાઢી શકાય. "Reset" આખો કોયડો ફરી શરૂ કરે છે.</p></div>
+    <div class="tx"><b>ફરી ગોઠવો</b><p>બનેલી આકૃતિ પર ટેપ કરીને તેને દૂર કરો. "Reset" દબાવવાથી આખો કોયડો ફરી શરૂ થશે.</p></div>
   </div>
 
   <div class="step">
     <div class="ic"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></div>
-    <div class="tx"><b>પૂરું કરો</b><p>બધી 6 આકૃતિ સાચી બને એટલે કોયડો પૂર્ણ થાય છે.</p></div>
+    <div class="tx"><b>પૂરું કરો</b><p>બધી 6 આકૃતિ સાચી બન્યા પછી કોયડો પૂર્ણ થશે.</p></div>
   </div>
 
   <button class="got" onclick="closeHelp()">Close</button>
@@ -406,16 +406,16 @@ function tap(q,r){
   if(lm[kk]!==undefined){                   // tap a finished figure -> erase it
     state.locked.splice(lm[kk],1);
     save(state); render();
-    status('hint','આકૃતિ કાઢી નાખી — ફરી બનાવો.');
+    status('hint','આકૃતિ દૂર થઈ. હવે ફરી બનાવો.');
     return;
   }
   if(inCur(q,r)){
     const rest=state.cur.filter(([a,b])=>!(a===q&&b===r));
     if(rest.length===0||connected(rest)){state.cur=rest;save(state);render();}
-    else status('hint','આ સેલ કાઢવાથી જૂથ તૂટે છે — પહેલા છેલ્લો સેલ કાઢો.');
+    else status('hint','આ સેલ કાઢી શકાતો નથી. પહેલા છેલ્લે પસંદ કરેલો સેલ દૂર કરો.');
     return;
   }
-  if(state.cur.length>0 && !adjToCur(q,r)){status('hint','જૂથની પાસેના સેલ પર જ ટેપ કરો.');return;}
+  if(state.cur.length>0 && !adjToCur(q,r)){status('hint','હવે પસંદ કરેલા સેલની બાજુનો સેલ જ પસંદ કરો.');return;}
   const dup=state.cur.some(([a,b])=>numAt(a,b)===numAt(q,r));
   state.cur.push([q,r]); save(state); render();
   if(dup){ status('hint','અંક '+numAt(q,r)+' આ જૂથમાં પહેલેથી છે — તપાસી લો.'); }
