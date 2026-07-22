@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#FBF9FC">
+<title>Dreamchild · Connect Pipe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Vadodara:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FBF9FC;
+  --surface:#FFFFFF;
+  --ink:#2E2A32;
+  --muted:#8C8794;
+  --line:#ECE7F0;
+  --brand:#752886;
+  --brand-deep:#561F69;
+  --brand-soft:#F3E9F8;
+  --accent:#F2A03D;
+  --accent-soft:#FCEFDC;
+  --mint:#2F9B63;
+  --mint-soft:#E5F4EC;
+  --rose:#C75C72;
+  --rose-soft:#FAEAEE;
+  --shadow:0 10px 30px -12px rgba(78,33,95,.18);
+  --shadow-sm:0 4px 14px -8px rgba(78,33,95,.20);
+  --r-lg:22px; --r-md:16px; --r-sm:12px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg);color:var(--ink);
+  font-family:'Hind Vadodara',sans-serif;
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+  background-image:radial-gradient(120% 60% at 50% -10%, var(--brand-soft) 0%, rgba(243,233,248,0) 60%);
+}
+.wrap{max-width:460px;margin:0 auto;padding:16px 16px 28px;position:relative;z-index:1;}
+
+/* ---- header (own card / band) ---- */
+.phead{background:var(--surface);border:1px solid var(--line);border-radius:18px;
+  box-shadow:0 6px 20px -12px rgba(78,33,95,.16);padding:15px 16px;margin-bottom:14px;}
+.hrow1{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.ptitle{font-family:'Hind Vadodara',sans-serif;font-weight:700;font-size:23px;line-height:1.05;color:var(--brand);margin:0;letter-spacing:-.01em;}
+.hctrls{display:flex;align-items:center;gap:8px;flex:none;}
+.rpill{display:flex;align-items:center;justify-content:center;min-width:50px;height:38px;padding:0 12px;
+  border:1px solid var(--line);border-radius:11px;background:var(--surface);
+  font-family:'Hind Vadodara',sans-serif;font-weight:600;font-size:16px;color:var(--ink);letter-spacing:.01em;}
+.hbtn{width:40px;height:38px;border:1px solid var(--line);border-radius:11px;background:var(--surface);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-appearance:none;padding:0;
+  transition:background .15s ease;}
+.hbtn:active{background:var(--brand-soft);}
+.hbtn svg{width:20px;height:20px;fill:none;stroke:var(--muted);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.hbtn.info{width:38px;background:var(--brand-soft);border-color:transparent;}
+.hbtn.info svg{stroke:var(--brand);}
+.hsub{font-family:'Hind Vadodara',sans-serif;text-align:center;font-weight:600;font-size:15px;
+  line-height:1.5;color:var(--ink);margin:13px 0 1px;}
+
+/* ---- stage card ---- */
+.stage{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
+  box-shadow:0 8px 28px -10px rgba(78,33,95,.16), 0 2px 8px -3px rgba(78,33,95,.08);padding:14px;margin-bottom:14px;}
+
+/* pipe board */
+svg.board{width:100%;height:auto;display:block;touch-action:none;user-select:none;-webkit-user-select:none;}
+
+/* hint path preview (blinks, then removed — never fills the board) */
+@keyframes hintblink{0%,100%{opacity:.2}50%{opacity:1}}
+.hintline{animation:hintblink 1s ease infinite;}
+.hintcell{animation:hintblink 1s ease infinite;}
+
+/* ---- status line ---- */
+.status{min-height:24px;text-align:center;font-size:14px;line-height:1.4;font-weight:500;
+  color:var(--muted);padding:2px 8px;margin-bottom:6px;transition:color .2s ease;opacity:0;
+  transition:opacity .25s ease;}
+.status.show{opacity:1;}
+.status.ok{color:var(--mint);}
+.status.bad{color:var(--rose);}
+.status.hint{color:#B5781E;}
+.status.done{color:var(--brand);font-weight:600;}
+
+/* ---- action bar ---- */
+.actionbar{margin-top:14px;}
+.actionbar .inner{display:flex;flex-direction:row;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:6px;row-gap:8px;}
+.cmid{display:flex;align-items:center;gap:6px;}
+.cbtn{font-family:'Hind Vadodara',sans-serif;cursor:pointer;-webkit-appearance:none;
+  display:flex;align-items:center;justify-content:center;gap:5px;
+  transition:transform .12s ease,opacity .2s ease,background .2s ease,box-shadow .2s ease;}
+.cbtn:active{transform:scale(.97);}
+.cbtn svg{width:16px;height:16px;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;}
+.cbtn.hint{min-height:36px;border-radius:12px;padding:0 22px;background:var(--surface);border:1px solid var(--line);
+  color:var(--ink);font-weight:600;font-size:13px;box-shadow:var(--shadow-sm);}
+.cbtn.hint svg{stroke:var(--brand);}
+.cbtn.prev,.cbtn.next{min-height:36px;border-radius:12px;padding:0 20px;background:var(--brand);border:none;color:#fff;
+  font-weight:700;font-size:13.5px;box-shadow:0 8px 20px -8px rgba(110,42,133,.5);}
+.cbtn.prev svg,.cbtn.next svg{stroke:#fff;}
+.cbtn:disabled{cursor:default;}
+.cbtn.prev:disabled,.cbtn.next:disabled{background:var(--surface);border:1px solid var(--line);color:var(--muted);box-shadow:none;font-weight:600;}
+.cbtn.prev:disabled svg,.cbtn.next:disabled svg{stroke:var(--muted);}
+
+/* generic button (help/celebration) */
+.btn{border:none;cursor:pointer;-webkit-appearance:none;font-family:'Hind Vadodara',sans-serif;
+  border-radius:14px;min-height:55px;font-weight:700;font-size:18px;display:flex;align-items:center;
+  justify-content:center;gap:7px;transition:transform .12s ease,box-shadow .2s ease,opacity .2s ease;}
+.btn:active{transform:scale(.98);}
+
+/* ---- footer ---- */
+.foot{text-align:center;font-family:'Hind Vadodara',sans-serif;font-size:11px;color:var(--muted);
+  letter-spacing:.03em;margin-top:18px;}
+.foot b{font-weight:600;color:#a79bb0;}
+
+/* ---- help sheet ---- */
+.scrim{position:fixed;inset:0;background:rgba(46,42,50,.42);backdrop-filter:blur(2px);z-index:40;
+  opacity:0;pointer-events:none;transition:opacity .28s ease;}
+.scrim.open{opacity:1;pointer-events:auto;}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:41;background:var(--surface);
+  border-radius:26px 26px 0 0;box-shadow:0 -16px 40px -16px rgba(46,42,50,.3);
+  max-width:460px;margin:0 auto;padding:10px 22px calc(26px + env(safe-area-inset-bottom));
+  transform:translateY(110%);transition:transform .34s cubic-bezier(.22,1,.36,1);}
+.sheet.open{transform:translateY(0);}
+.grab{width:42px;height:5px;border-radius:999px;background:var(--line);margin:6px auto 16px;}
+.sheet h3{font-family:'Hind Vadodara',sans-serif;font-weight:700;font-size:20px;margin:0 0 4px;}
+.sheet .lead{font-size:14px;color:var(--muted);margin:0 0 18px;line-height:1.5;}
+.step{display:flex;gap:14px;align-items:flex-start;margin-bottom:16px;}
+.step .ic{flex:none;width:46px;height:46px;border-radius:14px;background:var(--brand-soft);
+  display:flex;align-items:center;justify-content:center;}
+.step .ic svg{width:26px;height:26px;stroke:var(--brand);fill:none;stroke-width:1.7;
+  stroke-linecap:round;stroke-linejoin:round;}
+.step .tx b{display:block;font-family:'Hind Vadodara',sans-serif;font-weight:600;font-size:15px;color:var(--ink);margin-bottom:2px;}
+.step .tx p{margin:0;font-size:13.5px;color:var(--muted);line-height:1.5;}
+.sheet .got{width:100%;margin-top:6px;background:var(--brand);color:#fff;}
+
+/* ---- celebration ---- */
+.celebrate{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;
+  background:rgba(251,249,252,.86);backdrop-filter:blur(3px);text-align:center;padding:30px;}
+.celebrate.show{display:flex;flex-direction:column;}
+.celebrate .em{font-size:54px;margin-bottom:6px;animation:rise .6s cubic-bezier(.22,1,.36,1);}
+.celebrate h2{font-family:'Hind Vadodara',sans-serif;font-weight:700;font-size:24px;color:var(--brand);margin:0 0 8px;}
+.celebrate p{font-size:15px;color:var(--ink);font-weight:500;margin:0 0 22px;max-width:280px;line-height:1.5;}
+.celebrate .btn{min-width:200px;background:var(--brand);color:#fff;}
+@keyframes rise{from{transform:translateY(16px) scale(.8);opacity:0}to{transform:none;opacity:1}}
+.petal{position:fixed;top:-24px;z-index:49;font-size:18px;animation:drift linear forwards;pointer-events:none;}
+@keyframes drift{to{transform:translateY(106vh) rotate(360deg);opacity:0}}
+
+/* ---- ambient puzzle-piece background ---- */
+.bg{position:fixed;top:0;left:0;right:0;height:100vh;height:100lvh;overflow:hidden;pointer-events:none;z-index:0;}
+.piece{position:absolute;transform:rotate(var(--rot,0deg));opacity:.3;}
+.piece svg{display:block;width:100%;height:auto;fill:currentColor;}
+.piece.f1{top:-30px;left:-46px;width:150px;color:#fa7068;--rot:-14deg;}
+.piece.f2{top:78px;right:-52px;width:150px;color:#fbca5f;--rot:18deg;}
+.piece.f3{top:46%;right:-58px;width:110px;color:#a0c95d;--rot:26deg;}
+.piece.f4{bottom:-40px;right:-30px;width:170px;color:#9ddbe6;--rot:-18deg;}
+.piece.f5{bottom:46px;left:-56px;width:150px;color:#f3adc9;--rot:8deg;}
+.piece.f6{top:36%;left:-70px;width:100px;color:#d4ab99;--rot:30deg;}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001ms !important;transition-duration:.05ms !important;}
+}
+:focus-visible{outline:2.5px solid var(--brand);outline-offset:2px;border-radius:6px;}
+</style>
+</head>
+<body>
+<div class="bg" aria-hidden="true">
+  <div class="piece f1"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece f2"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece f3"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece f4"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece f5"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece f6"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+</div>
+<div class="wrap">
+
+  <!-- header -->
+  <header class="phead">
+    <div class="hrow1">
+      <h1 class="ptitle">પાઇપ જોડો</h1>
+      <div class="hctrls">
+        <span class="rpill" id="round"></span>
+        <button class="hbtn" id="soundBtn" onclick="toggleSound()" aria-label="Sound"></button>
+        <button class="hbtn info" onclick="openHelp()" aria-label="How to play">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><circle cx="12" cy="8" r="0.6" fill="currentColor" stroke="none"/></svg>
+        </button>
+      </div>
+    </div>
+    <p class="hsub" id="hsub"></p>
+  </header>
+
+  <!-- STAGE (pipe board) -->
+  <div class="stage">
+    <svg class="board" id="board" viewBox="0 0 7 7"></svg>
+  </div>
+
+  <!-- status -->
+  <div class="status" id="status"></div>
+
+  <!-- actions -->
+  <div class="actionbar">
+    <div class="inner">
+      <button class="cbtn prev" id="btnPrev" onclick="prevPuzzle()"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>Back</button>
+      <div class="cmid">
+        <button class="cbtn hint" onclick="useHint()"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 1 4 10.5c-.7.6-1 1.2-1 2v.5H9v-.5c0-.8-.3-1.4-1-2A6 6 0 0 1 12 3z"/></svg>Hint</button>
+      </div>
+      <button class="cbtn next" id="btnNext" onclick="nextPuzzle()">Next<svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+    </div>
+  </div>
+
+  <div class="foot">© <b>Dreamchild Garbhsanskar</b></div>
+</div>
+
+<!-- help sheet -->
+<div class="scrim" id="scrim" onclick="closeHelp()"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="How to play">
+  <div class="grab"></div>
+  <h3>કેવી રીતે રમવું</h3>
+  <p class="lead">સરખા રંગનાં બે ⚡ ટપકાં લીટીથી જોડો — બધાં ખાનાં ભરાય એ રીતે.</p>
+
+  <div class="step">
+    <div class="ic"><svg viewBox="0 0 24 24"><path d="M5 12h9"/><path d="M12 7l5 5-5 5"/><circle cx="18" cy="12" r="0.6" fill="currentColor" stroke="none"/></svg></div>
+    <div class="tx"><b>આંગળી ખેંચો</b><p>એક રંગના ⚡ ટપકાં પર આંગળી દબાવી, સરખા રંગના બીજા ટપકાં સુધી લીટી ખેંચો.</p></div>
+  </div>
+
+  <div class="step">
+    <div class="ic"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg></div>
+    <div class="tx"><b>સીધી લીટી</b><p>લીટી એક ખાનાથી બાજુના ખાનામાં જ જાય — ત્રાંસી નહીં. કોઈ લીટી બીજી લીટીને ઓળંગે નહીં.</p></div>
+  </div>
+
+  <div class="step">
+    <div class="ic"><svg viewBox="0 0 24 24"><path d="M4 7h10M4 12h10M4 17h6"/><path d="M16.5 16.5l2 2 3.5-3.5"/></svg></div>
+    <div class="tx"><b>બધું ભરો</b><p>બધી લીટી જોડાય અને ગ્રીડનું દરેક ખાનું ભરાય ત્યારે કોયડો પૂર્ણ.</p></div>
+  </div>
+
+  <button class="btn got" onclick="closeHelp()">Close</button>
+</div>
+
+<!-- celebration -->
+<div class="celebrate" id="celebrate">
+  <div class="em">🌸</div>
+  <h2>બધા કોયડા પૂર્ણ</h2>
+  <p>ખૂબ સરસ! તમારી એકાગ્રતા કમાલની છે.</p>
+  <button class="btn" onclick="closeCelebrate()">Congratulations</button>
+</div>
+
+<script>
+/* ---------- PUZZLE DATA (solutions hand-verified: full fill, no crossing) ---------- */
+const PUZZLES = [
+  // P1 — 7x7, 7 colours
+  { size:[7,7], colors:[
+    {hex:'#E5555F', sol:[[0,0],[0,1],[0,2],[1,2],[1,1],[1,0],[2,0]]},
+    {hex:'#2E7DD1', sol:[[0,3],[0,4],[0,5],[0,6],[1,6],[1,5],[1,4],[1,3],[2,3]]},
+    {hex:'#3FA45B', sol:[[2,1],[2,2],[3,2],[3,1],[3,0],[4,0],[4,1]]},
+    {hex:'#F2A03D', sol:[[2,4],[2,5],[2,6],[3,6],[3,5],[3,4],[3,3],[4,3]]},
+    {hex:'#9B51B0', sol:[[4,2],[5,2],[5,1],[5,0],[6,0],[6,1]]},
+    {hex:'#17A2A2', sol:[[4,4],[4,5],[4,6],[5,6],[5,5],[5,4],[5,3],[6,3],[6,2]]},
+    {hex:'#A47458', sol:[[6,4],[6,5],[6,6]]}
+  ]},
+  // P2 — 8x8, 8 colours
+  { size:[8,8], colors:[
+    {hex:'#E5555F', sol:[[0,0],[0,1],[0,2],[0,3],[1,3],[1,2],[1,1],[1,0],[2,0],[2,1]]},
+    {hex:'#2E7DD1', sol:[[0,4],[0,5],[0,6],[0,7],[1,7],[1,6],[1,5],[1,4],[2,4],[2,5]]},
+    {hex:'#3FA45B', sol:[[2,2],[2,3],[3,3],[3,2],[3,1],[3,0],[4,0],[4,1]]},
+    {hex:'#F2A03D', sol:[[2,6],[2,7],[3,7],[3,6],[3,5],[3,4],[4,4],[4,5]]},
+    {hex:'#9B51B0', sol:[[4,2],[4,3],[5,3],[5,2],[5,1],[5,0],[6,0],[6,1]]},
+    {hex:'#17A2A2', sol:[[4,6],[4,7],[5,7],[5,6],[5,5],[5,4],[6,4],[6,5]]},
+    {hex:'#A47458', sol:[[6,2],[6,3],[7,3],[7,2],[7,1],[7,0]]},
+    {hex:'#E36FA0', sol:[[6,6],[6,7],[7,7],[7,6],[7,5],[7,4]]}
+  ]},
+  // P3 — 9x9, 8 colours
+  { size:[9,9], colors:[
+    {hex:'#E5555F', sol:[[0,0],[0,1],[0,2],[0,3],[0,4],[1,4],[1,3],[1,2],[1,1],[1,0],[2,0]]},
+    {hex:'#2E7DD1', sol:[[0,5],[0,6],[0,7],[0,8],[1,8],[1,7],[1,6],[1,5],[2,5],[2,6]]},
+    {hex:'#3FA45B', sol:[[2,1],[2,2],[2,3],[2,4],[3,4],[3,3],[3,2],[3,1],[3,0],[4,0]]},
+    {hex:'#F2A03D', sol:[[2,7],[2,8],[3,8],[3,7],[3,6],[3,5],[4,5],[4,6],[4,7],[4,8]]},
+    {hex:'#9B51B0', sol:[[4,1],[4,2],[4,3],[4,4],[5,4],[5,3],[5,2],[5,1],[5,0],[6,0]]},
+    {hex:'#17A2A2', sol:[[5,5],[5,6],[5,7],[5,8],[6,8],[6,7],[6,6],[6,5],[7,5],[7,6]]},
+    {hex:'#A47458', sol:[[6,1],[6,2],[6,3],[6,4],[7,4],[7,3],[7,2],[7,1],[7,0],[8,0]]},
+    {hex:'#E36FA0', sol:[[7,7],[7,8],[8,8],[8,7],[8,6],[8,5],[8,4],[8,3],[8,2],[8,1]]}
+  ]}
+];
+PUZZLES.forEach(p=>p.colors.forEach(c=>{ c.ends=[c.sol[0], c.sol[c.sol.length-1]]; }));
+
+const KEY='dcgs_connectpipe_v3';
+
+function save(d){try{localStorage.setItem(KEY,JSON.stringify(d))}catch(e){}}
+function load(){try{return JSON.parse(localStorage.getItem(KEY))}catch(e){return null}}
+
+/* ---- app bridge (RN WebView) ---- */
+function postToApp(m){try{window.ReactNativeWebView&&window.ReactNativeWebView.postMessage(JSON.stringify(m));}catch(e){}}
+function activityDone(){postToApp({type:'ACTIVITY_DONE'});}   /* -> onWebActivityComplete in the app */
+
+/* active time only (pauses while the app is backgrounded) */
+let _active=0,_since=Date.now(),_completed=false;
+document.addEventListener('visibilitychange',function(){
+  if(document.hidden){_active+=Date.now()-_since;}else{_since=Date.now();}
+  pushProgress();
+});
+function timeSpentSec(){return Math.round((_active+(document.hidden?0:Date.now()-_since))/1000);}
+
+/* heartbeat: keep native updated so it can fire puzzle_exited on unmount (back press) */
+function pushProgress(){postToApp({type:'PROGRESS',time_spent_sec:timeSpentSec(),completed:_completed});}
+setInterval(pushProgress,3000);
+pushProgress();
+
+function markDone(){ _completed=true; activityDone(); pushProgress(); }   /* call when the whole set is solved */
+window.addEventListener('pagehide',pushProgress);
+
+/* ---------- STATE ---------- */
+function freshState(){
+  return {
+    tab:0, sound:false, celebrated:false,
+    solved: PUZZLES.map(()=>false),
+    lines: PUZZLES.map(p=>p.colors.map(()=>[]))
+  };
+}
+let state = freshState();
+(function restore(){
+  const s=load();
+  if(s && Array.isArray(s.lines) && s.lines.length===PUZZLES.length){
+    try{
+      state.sound = !!s.sound;
+      state.celebrated = !!s.celebrated;
+      if(Array.isArray(s.solved) && s.solved.length===PUZZLES.length) state.solved=s.solved.map(Boolean);
+      for(let pi=0; pi<PUZZLES.length; pi++){
+        if(Array.isArray(s.lines[pi]) && s.lines[pi].length===PUZZLES[pi].colors.length){
+          state.lines[pi]=s.lines[pi].map(line=>Array.isArray(line)?line.map(c=>[c[0],c[1]]):[]);
+        }
+      }
+      if(typeof s.tab==='number' && s.tab>=0 && s.tab<PUZZLES.length) state.tab=s.tab;
+    }catch(e){ state=freshState(); }
+  }
+})();
+let soundOn=!!state.sound, cur=state.tab||0;
+
+/* ---------- SOUND (mp3 files) ---------- */
+const SND={
+  correct:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Right.mp3',
+  wrong:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Wrong.mp3',
+  level:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Level.mp3',
+  win:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Complete.mp3',
+  hint:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Hint.mp3'
+};
+const _audio={};
+function preloadSounds(){for(const k in SND){try{const a=new Audio(SND[k]);a.preload='auto';_audio[k]=a;}catch(e){}}}
+preloadSounds();
+function playSound(k){if(!soundOn)return;const a=_audio[k];if(!a)return;try{a.pause();a.currentTime=0;a.play().catch(function(){});}catch(e){}}
+function playCorrect(){playSound('correct');}
+function playWrong(){playSound('wrong');}
+function playLevel(){playSound('level');}
+function playWin(){playSound('win');}
+function playHint(){playSound('hint');}
+function setSoundIcon(){const b=document.getElementById('soundBtn');b.innerHTML=soundOn
+  ?'<svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M16 9a3.5 3.5 0 0 1 0 6"/><path d="M19 7a7 7 0 0 1 0 10"/></svg>'
+  :'<svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M22 9l-5 6M17 9l5 6"/></svg>';}
+function toggleSound(){soundOn=!soundOn;state.sound=soundOn;setSoundIcon();save(state);}
+
+/* ---------- HELPERS ---------- */
+const eq=(a,b)=>a[0]===b[0]&&a[1]===b[1];
+const adj=(a,b)=>Math.abs(a[0]-b[0])+Math.abs(a[1]-b[1])===1;
+function idxInLine(line,r,c){ for(let i=0;i<line.length;i++) if(line[i][0]===r&&line[i][1]===c) return i; return -1; }
+function endpointColor(p,r,c){ for(let ci=0;ci<p.colors.length;ci++){ const e=p.colors[ci].ends; if((e[0][0]===r&&e[0][1]===c)||(e[1][0]===r&&e[1][1]===c)) return ci; } return -1; }
+function lineColor(lines,r,c){ for(let ci=0;ci<lines.length;ci++){ if(idxInLine(lines[ci],r,c)>=0) return ci; } return -1; }
+function occupant(p,lines,r,c){ const l=lineColor(lines,r,c); if(l>=0) return l; return endpointColor(p,r,c); }
+function otherEnd(p,ci,anchor){ const e=p.colors[ci].ends; return eq(e[0],anchor)?e[1]:e[0]; }
+function isConnected(p,line,ci){ if(line.length<2) return false; const e=p.colors[ci].ends; const s=line[0], t=line[line.length-1]; const isE=(x)=>eq(x,e[0])||eq(x,e[1]); return isE(s)&&isE(t)&&!eq(s,t); }
+function sameCells(a,b){ if(a.length!==b.length) return false; for(let i=0;i<a.length;i++){ if(a[i][0]!==b[i][0]||a[i][1]!==b[i][1]) return false; } return true; }
+function matchesSolution(line,sol){ if(line.length!==sol.length) return false; return sameCells(line,sol)||sameCells(line,sol.slice().reverse()); }
+
+/* ---------- RENDER ---------- */
+const board=document.getElementById('board');
+function boltD(){ return "M 0.05 -0.18 L -0.12 0.05 L -0.01 0.05 L -0.06 0.18 L 0.13 -0.05 L 0.02 -0.05 Z"; }
+
+function renderProgress(){document.getElementById('round').textContent=(cur+1)+'/'+PUZZLES.length;}
+function renderHead(){document.getElementById('hsub').innerHTML='સરખા રંગનાં ⚡ ટપકાં જોડો.<br>બધાં ખાનાં ભરાય — લીટી ઓળંગાય નહીં.';}
+
+function render(){
+  const p=PUZZLES[cur];
+  const [rows,cols]=p.size;
+  board.setAttribute('viewBox',`0 0 ${cols} ${rows}`);
+  const lines=state.lines[cur];
+  let s='';
+  for(let i=1;i<cols;i++) s+=`<line x1="${i}" y1="0" x2="${i}" y2="${rows}" stroke="#ECE7F0" stroke-width="0.03"/>`;
+  for(let i=1;i<rows;i++) s+=`<line x1="0" y1="${i}" x2="${cols}" y2="${i}" stroke="#ECE7F0" stroke-width="0.03"/>`;
+  s+=`<rect x="0.02" y="0.02" width="${cols-0.04}" height="${rows-0.04}" fill="none" stroke="#E2D6EA" stroke-width="0.04" rx="0.12"/>`;
+  for(let ci=0;ci<p.colors.length;ci++){
+    const line=lines[ci]; if(line.length<2) continue;
+    const pts=line.map(c=>`${c[1]+0.5},${c[0]+0.5}`).join(' ');
+    s+=`<polyline points="${pts}" fill="none" stroke="${p.colors[ci].hex}" stroke-width="0.46" stroke-linecap="round" stroke-linejoin="round"/>`;
+  }
+  for(let ci=0;ci<p.colors.length;ci++){
+    p.colors[ci].ends.forEach(e=>{
+      const cx=e[1]+0.5, cy=e[0]+0.5;
+      s+=`<g transform="translate(${cx},${cy})"><circle r="0.34" fill="${p.colors[ci].hex}"/><path d="${boltD()}" fill="#fff"/></g>`;
+    });
+  }
+  board.innerHTML=s;
+  updateStats();
+}
+
+function updateStats(){
+  const p=PUZZLES[cur]; const [rows,cols]=p.size; const lines=state.lines[cur];
+  let conn=0; for(let ci=0;ci<p.colors.length;ci++) if(isConnected(p,lines[ci],ci)) conn++;
+  let filled=0;
+  for(let r=0;r<rows;r++) for(let c=0;c<cols;c++) if(occupant(p,lines,r,c)>=0) filled++;
+  return {conn, filled, total:rows*cols, n:p.colors.length};
+}
+
+function renderActions(){
+  const isLast=cur===PUZZLES.length-1;
+  document.getElementById('btnPrev').disabled=(cur===0);
+  document.getElementById('btnNext').disabled=!(state.solved[cur]&&!isLast);
+}
+function renderAll(){renderProgress();renderHead();render();renderActions();setSoundIcon();clearStatus();
+  if(state.solved.every(Boolean)) status('done','બધા કોયડા પૂર્ણ. ખૂબ સરસ! 🌸',true);
+  else if(state.solved[cur]) status('done','આ કોયડો પૂર્ણ. તૈયાર હો ત્યારે આગળ વધો.',true);
+}
+
+/* ---------- STATUS ---------- */
+let stTimer;
+function status(type,msg,sticky){const s=document.getElementById('status');s.className='status show '+type;s.textContent=msg;clearTimeout(stTimer);if(!sticky)stTimer=setTimeout(clearStatus,2300);}
+function clearStatus(){document.getElementById('status').className='status';}
+
+/* ---------- WIN ---------- */
+function checkWin(){
+  const st=updateStats();
+  const win = st.conn===st.n && st.filled===st.total;
+  if(win && !state.solved[cur]){
+    state.solved[cur]=true; save(state);
+    renderActions();
+    const all=state.solved.every(Boolean);
+    if(all){
+      status('done','બધા કોયડા પૂર્ણ. ખૂબ સરસ! 🌸',true);
+      if(soundOn) playWin();
+      if(!state.celebrated){ state.celebrated=true; save(state); showCelebrate(); }
+      markDone();
+    }else{
+      status('done','આ કોયડો પૂર્ણ. તૈયાર હો ત્યારે આગળ વધો.',true);
+      if(soundOn) playLevel();
+    }
+  }
+}
+
+/* ---------- POINTER DRAW ---------- */
+let drawColor=-1, lastCell=null, pdWasConnected=false;
+function cellFromEvent(e){
+  const p=PUZZLES[cur]; const [rows,cols]=p.size;
+  const rect=board.getBoundingClientRect();
+  const x=(e.clientX-rect.left)/rect.width*cols;
+  const y=(e.clientY-rect.top)/rect.height*rows;
+  if(x<0||y<0||x>=cols||y>=rows) return null;
+  return [Math.floor(y), Math.floor(x)];
+}
+board.addEventListener('pointerdown',e=>{
+  e.preventDefault();
+  clearTimeout(hintTimer);
+  const cell=cellFromEvent(e); if(!cell) return;
+  try{ board.setPointerCapture(e.pointerId); }catch(_){}
+  const p=PUZZLES[cur]; const lines=state.lines[cur];
+  const [r,c]=cell;
+  const ep=endpointColor(p,r,c);
+  if(ep>=0){ pdWasConnected=isConnected(p,lines[ep],ep); lines[ep]=[[r,c]]; drawColor=ep; lastCell=cell; render(); return; }
+  const lc=lineColor(lines,r,c);
+  if(lc>=0){ pdWasConnected=isConnected(p,lines[lc],lc); const i=idxInLine(lines[lc],r,c); lines[lc].length=i+1; drawColor=lc; lastCell=cell; render(); return; }
+  drawColor=-1;
+});
+board.addEventListener('pointermove',e=>{
+  if(drawColor<0) return; e.preventDefault();
+  const cell=cellFromEvent(e); if(!cell) return;
+  if(lastCell && lastCell[0]===cell[0] && lastCell[1]===cell[1]) return;
+  lastCell=cell;
+  const p=PUZZLES[cur]; const lines=state.lines[cur];
+  const line=lines[drawColor]; if(!line.length) return;
+  const [r,c]=cell;
+  const inIdx=idxInLine(line,r,c);
+  if(inIdx>=0){ line.length=inIdx+1; render(); return; } // backtrack
+  const lastP=line[line.length-1];
+  if(!adj(lastP,cell)) return;
+  const occ=occupant(p,lines,r,c);
+  const oe=otherEnd(p,drawColor,line[0]);
+  if(occ<0 || (r===oe[0]&&c===oe[1])){
+    line.push([r,c]); render();
+  }
+});
+function endDraw(e){
+  if(drawColor<0) return; if(e) e.preventDefault();
+  const dc=drawColor; drawColor=-1; lastCell=null;
+  save(state);
+  const p=PUZZLES[cur]; const lines=state.lines[cur];
+  if(dc>=0 && isConnected(p,lines[dc],dc) && !pdWasConnected && soundOn && !state.solved[cur]) playCorrect();
+  checkWin();
+}
+board.addEventListener('pointerup',endDraw);
+board.addEventListener('pointercancel',endDraw);
+
+/* ---------- HINT / NAV ---------- */
+let hintTimer;
+function useHint(){
+  if(state.solved[cur]){ status('hint','આ કોયડો પહેલેથી પૂર્ણ છે.'); return; }
+  const p=PUZZLES[cur]; const lines=state.lines[cur];
+  // target the first colour whose route doesn't match the full-fill solution
+  // (covers "not connected" AND "connected but leaves empty cells")
+  let target=-1;
+  for(let ci=0;ci<p.colors.length;ci++){
+    if(!matchesSolution(lines[ci], p.colors[ci].sol)){ target=ci; break; }
+  }
+  if(target<0){ status('hint','બધું બરાબર ગોઠવાયું છે.'); return; }
+  const sol=p.colors[target].sol;
+  const hex=p.colors[target].hex;
+  render(); // clean baseline, no state change
+  // overlay a blinking preview of the correct path — highlights only, never fills
+  const pts=sol.map(c=>`${c[1]+0.5},${c[0]+0.5}`).join(' ');
+  let ov='';
+  sol.forEach(c=>{ ov+=`<rect class="hintcell" x="${c[1]+0.12}" y="${c[0]+0.12}" width="0.76" height="0.76" rx="0.14" fill="${hex}" opacity="0.18"/>`; });
+  ov+=`<polyline class="hintline" points="${pts}" fill="none" stroke="${hex}" stroke-width="0.16" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="0.26 0.2"/>`;
+  board.insertAdjacentHTML('beforeend', ov);
+  if(soundOn) playHint();
+  status('hint','💡 આ રંગનો સાચો રસ્તો ઝબકશે.');
+  clearTimeout(hintTimer);
+  hintTimer=setTimeout(()=>render(), 1600);
+}
+function resetPuzzle(){
+  const p=PUZZLES[cur];
+  state.lines[cur]=p.colors.map(()=>[]);
+  state.solved[cur]=false;
+  save(state); renderAll();
+  status('hint','આ કોયડો ફરી શરૂ.');
+}
+function nextPuzzle(){if(cur<PUZZLES.length-1&&state.solved[cur]){cur++;state.tab=cur;save(state);renderAll();window.scrollTo({top:0,behavior:'smooth'});}}
+function prevPuzzle(){if(cur>0){cur--;state.tab=cur;save(state);renderAll();window.scrollTo({top:0,behavior:'smooth'});}}
+
+/* ---------- HELP SHEET ---------- */
+function openHelp(){document.getElementById('scrim').classList.add('open');document.getElementById('sheet').classList.add('open');}
+function closeHelp(){document.getElementById('scrim').classList.remove('open');document.getElementById('sheet').classList.remove('open');}
+
+/* ---------- CELEBRATION ---------- */
+function showCelebrate(){const c=document.getElementById('celebrate');c.classList.add('show');const ems=['🌸','🌼','✨','🍃','💜'];for(let i=0;i<16;i++){const p=document.createElement('div');p.className='petal';p.textContent=ems[i%ems.length];p.style.left=(Math.random()*100)+'%';p.style.animationDuration=(2.4+Math.random()*1.6)+'s';p.style.animationDelay=(Math.random()*.6)+'s';document.body.appendChild(p);setTimeout(()=>p.remove(),4600);}}
+function closeCelebrate(){document.getElementById('celebrate').classList.remove('show');postToApp({type:'GO_BACK'});}
+
+/* ---------- INIT ---------- */
+renderAll();
+if(state.solved.every(Boolean)){ _completed=true; pushProgress(); }
+</script>
+</body>
+</html>

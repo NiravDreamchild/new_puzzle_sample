@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#FBF9FC">
+<title>Dreamchild · Puzzle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Vadodara:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FBF9FC;
+  --surface:#FFFFFF;
+  --ink:#2E2A32;
+  --muted:#8C8794;
+  --line:#ECE7F0;
+  --brand:#752886;
+  --brand-deep:#561F69;
+  --brand-soft:#F3E9F8;
+  --accent:#F2A03D;
+  --accent-soft:#FCEFDC;
+  --mint:#2F9B63;
+  --mint-soft:#E5F4EC;
+  --rose:#C75C72;
+  --rose-soft:#FAEAEE;
+  --shadow:0 10px 30px -12px rgba(78,33,95,.18);
+  --shadow-sm:0 4px 14px -8px rgba(78,33,95,.20);
+  --r-lg:22px; --r-md:16px; --r-sm:12px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg);color:var(--ink);
+  font-family:'Hind Vadodara',sans-serif;
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+  background-image:radial-gradient(120% 60% at 50% -10%, var(--brand-soft) 0%, rgba(243,233,248,0) 60%);
+}
+.wrap{max-width:460px;margin:0 auto;padding:16px 16px 28px;position:relative;z-index:1;}
+
+/* ---- header ---- */
+.phead{background:var(--surface);border:1px solid var(--line);border-radius:18px;
+  box-shadow:0 6px 20px -12px rgba(78,33,95,.16);padding:15px 16px;margin-bottom:14px;}
+.hrow1{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.ptitle{font-family:'Hind Vadodara',sans-serif;font-weight:700;font-size:23px;line-height:1.05;color:var(--brand);margin:0;letter-spacing:-.01em;}
+.hctrls{display:flex;align-items:center;gap:8px;flex:none;}
+.rpill{display:flex;align-items:center;justify-content:center;min-width:50px;height:38px;padding:0 12px;
+  border:1px solid var(--line);border-radius:11px;background:var(--surface);
+  font-family:'Hind Vadodara',sans-serif;font-weight:600;font-size:16px;color:var(--ink);letter-spacing:.01em;}
+.hbtn{width:40px;height:38px;border:1px solid var(--line);border-radius:11px;background:var(--surface);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-appearance:none;padding:0;
+  transition:background .15s ease;}
+.hbtn:active{background:var(--brand-soft);}
+.hbtn svg{width:20px;height:20px;fill:none;stroke:var(--muted);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.hbtn.info{width:38px;background:var(--brand-soft);border-color:transparent;}
+.hbtn.info svg{stroke:var(--brand);}
+.hsub{font-family:'Hind Vadodara',sans-serif;text-align:center;font-weight:600;font-size:15px;
+  line-height:1.5;color:var(--ink);margin:13px 0 1px;}
+
+/* ---- stage card ---- */
+.stage{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
+  box-shadow:0 8px 28px -10px rgba(78,33,95,.16), 0 2px 8px -3px rgba(78,33,95,.08);padding:14px;margin-bottom:14px;}
+
+/* ---- escape-block board (custom stage) ---- */
+.board-wrap{position:relative;width:100%;max-width:318px;margin:2px auto 0;}
+.board-wrap::before{content:'';display:block;padding-bottom:100%;}
+.eboard{position:absolute;inset:0;background:#FAF7FB;border:2px solid var(--brand-soft);
+  border-radius:12px;overflow:visible;touch-action:none;user-select:none;-webkit-user-select:none;}
+.egrid{position:absolute;inset:0;display:grid;grid-template-columns:repeat(6,1fr);grid-template-rows:repeat(6,1fr);}
+.egrid div{border:1px solid #F2ECF6;}
+/* exit gate on the right at row 2 */
+.exit-gap{position:absolute;right:-2px;top:33.333%;height:16.666%;width:4px;background:var(--bg);z-index:6;}
+.exit-arrow{position:absolute;right:5px;top:41.666%;transform:translateY(-50%);color:#C9A8D6;
+  font-size:15px;font-weight:700;line-height:1;z-index:1;letter-spacing:-3px;pointer-events:none;}
+.exit-lbl{position:absolute;right:4px;top:60%;font-size:7px;letter-spacing:1px;text-transform:uppercase;
+  color:var(--muted);z-index:1;pointer-events:none;}
+
+.piece{position:absolute;z-index:5;touch-action:none;}
+.block{position:absolute;inset:3px;border-radius:9px;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 2px 6px -2px rgba(78,33,95,.4);transition:box-shadow .15s ease;}
+.blk-norm{background:linear-gradient(135deg,#9E76B8,#7C4E97);border:1.5px solid #6C4287;cursor:grab;}
+.blk-target{background:linear-gradient(135deg,var(--accent),#E08A22);border:1.5px solid #CE7C15;cursor:grab;}
+.piece.dragging{z-index:9;}
+.piece.dragging .block{box-shadow:0 9px 18px -6px rgba(78,33,95,.5);}
+.block .arrow{color:#fff;font-size:20px;font-weight:700;line-height:1;}
+@keyframes hintpulse{0%,100%{box-shadow:0 0 0 0 rgba(242,160,61,0)}50%{box-shadow:0 0 0 6px rgba(242,160,61,.5)}}
+.piece.hint{z-index:8;}
+.piece.hint .block{animation:hintpulse .9s ease infinite;border:2px solid var(--accent)!important;}
+
+.movesbar{display:flex;align-items:center;justify-content:center;margin-top:13px;}
+.movespill{font-family:'Hind Vadodara',sans-serif;font-size:12.5px;font-weight:600;color:var(--muted);
+  background:#FAF7FB;border:1px solid var(--line);border-radius:11px;padding:5px 15px;}
+.movespill b{color:var(--brand);font-weight:700;}
+
+/* floating tile while dragging follows the finger */
+.dragghost{position:fixed;left:0;top:0;z-index:60;pointer-events:none;}
+
+/* ---- status ---- */
+.status{min-height:24px;text-align:center;font-size:14px;line-height:1.4;font-weight:500;
+  color:var(--muted);padding:2px 8px;margin-bottom:6px;opacity:0;transition:opacity .25s ease;}
+.status.show{opacity:1;}
+.status.ok{color:var(--mint);}
+.status.bad{color:var(--rose);}
+.status.hint{color:#B5781E;}
+.status.done{color:var(--brand);font-weight:600;}
+
+/* ---- action bar ---- */
+.actionbar{margin-top:14px;}
+.actionbar .inner{display:flex;flex-direction:row;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:6px;row-gap:8px;}
+.cmid{display:flex;align-items:center;gap:6px;}
+.cbtn{font-family:'Hind Vadodara',sans-serif;cursor:pointer;-webkit-appearance:none;
+  display:flex;align-items:center;justify-content:center;gap:5px;
+  transition:transform .12s ease,opacity .2s ease,background .2s ease,box-shadow .2s ease;}
+.cbtn:active{transform:scale(.97);}
+.cbtn svg{width:16px;height:16px;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;}
+.cbtn.hint{min-height:36px;border-radius:12px;padding:0 20px;background:var(--surface);border:1px solid var(--line);
+  color:var(--ink);font-weight:600;font-size:13px;box-shadow:var(--shadow-sm);}
+.cbtn.hint svg{stroke:var(--brand);}
+.cbtn.prev,.cbtn.next{min-height:36px;border-radius:12px;padding:0 20px;background:var(--brand);border:none;color:#fff;
+  font-weight:700;font-size:13.5px;box-shadow:0 8px 20px -8px rgba(110,42,133,.5);}
+.cbtn.prev svg,.cbtn.next svg{stroke:#fff;}
+.cbtn:disabled{cursor:default;}
+.cbtn.prev:disabled,.cbtn.next:disabled{background:var(--surface);border:1px solid var(--line);color:var(--muted);box-shadow:none;font-weight:600;}
+.cbtn.prev:disabled svg,.cbtn.next:disabled svg{stroke:var(--muted);}
+
+/* ---- footer ---- */
+.foot{text-align:center;font-family:'Hind Vadodara',sans-serif;font-size:11px;color:var(--muted);
+  letter-spacing:.03em;margin-top:18px;}
+.foot b{font-weight:600;color:#a79bb0;}
+
+/* ---- help sheet ---- */
+.scrim{position:fixed;inset:0;background:rgba(46,42,50,.42);backdrop-filter:blur(2px);z-index:40;
+  opacity:0;pointer-events:none;transition:opacity .28s ease;}
+.scrim.open{opacity:1;pointer-events:auto;}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:41;background:var(--surface);
+  border-radius:26px 26px 0 0;box-shadow:0 -16px 40px -16px rgba(46,42,50,.3);
+  max-width:460px;margin:0 auto;padding:10px 22px calc(26px + env(safe-area-inset-bottom));
+  transform:translateY(110%);transition:transform .34s cubic-bezier(.22,1,.36,1);}
+.sheet.open{transform:translateY(0);}
+.grab{width:42px;height:5px;border-radius:999px;background:var(--line);margin:6px auto 16px;}
+.sheet h3{font-family:'Hind Vadodara',sans-serif;font-weight:700;font-size:20px;margin:0 0 4px;}
+.sheet .lead{font-size:14px;color:var(--muted);margin:0 0 18px;line-height:1.5;}
+.step{display:flex;gap:14px;align-items:flex-start;margin-bottom:16px;}
+.step .ic{flex:none;width:46px;height:46px;border-radius:14px;background:var(--brand-soft);
+  display:flex;align-items:center;justify-content:center;}
+.step .ic svg{width:26px;height:26px;stroke:var(--brand);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
+.step .tx b{display:block;font-family:'Hind Vadodara',sans-serif;font-weight:600;font-size:15px;color:var(--ink);margin-bottom:2px;}
+.step .tx p{margin:0;font-size:13.5px;color:var(--muted);line-height:1.5;}
+.sheet .got{width:100%;margin-top:6px;background:var(--brand);color:#fff;border:none;cursor:pointer;
+  font-family:'Hind Vadodara',sans-serif;border-radius:14px;min-height:48px;font-weight:700;font-size:15px;}
+
+/* ---- celebration ---- */
+.celebrate{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;
+  background:rgba(251,249,252,.86);backdrop-filter:blur(3px);text-align:center;padding:30px;}
+.celebrate.show{display:flex;flex-direction:column;}
+.celebrate .em{font-size:54px;margin-bottom:6px;animation:rise .6s cubic-bezier(.22,1,.36,1);}
+.celebrate h2{font-family:'Hind Vadodara',sans-serif;font-weight:700;font-size:24px;color:var(--brand);margin:0 0 8px;}
+.celebrate p{font-size:15px;color:var(--ink);font-weight:500;margin:0 0 22px;max-width:280px;line-height:1.5;}
+.celebrate .btn{min-width:200px;background:var(--brand);color:#fff;border:none;cursor:pointer;
+  font-family:'Hind Vadodara',sans-serif;border-radius:14px;min-height:55px;font-weight:700;font-size:18px;}
+@keyframes rise{from{transform:translateY(16px) scale(.8);opacity:0}to{transform:none;opacity:1}}
+.petal{position:fixed;top:-24px;z-index:49;font-size:18px;animation:drift linear forwards;pointer-events:none;}
+@keyframes drift{to{transform:translateY(106vh) rotate(360deg);opacity:0}}
+
+/* ---- ambient puzzle-piece background ---- */
+.bg{position:fixed;top:0;left:0;right:0;height:100vh;height:100lvh;overflow:hidden;pointer-events:none;z-index:0;}
+.piece-bg{position:absolute;transform:rotate(var(--rot,0deg));opacity:.3;}
+.piece-bg svg{display:block;width:100%;height:auto;fill:currentColor;}
+.piece-bg.f1{top:-30px;left:-46px;width:150px;color:#fa7068;--rot:-14deg;}
+.piece-bg.f2{top:78px;right:-52px;width:150px;color:#fbca5f;--rot:18deg;}
+.piece-bg.f3{top:46%;right:-58px;width:110px;color:#a0c95d;--rot:26deg;}
+.piece-bg.f4{bottom:-40px;right:-30px;width:170px;color:#9ddbe6;--rot:-18deg;}
+.piece-bg.f5{bottom:46px;left:-56px;width:150px;color:#f3adc9;--rot:8deg;}
+.piece-bg.f6{top:36%;left:-70px;width:100px;color:#d4ab99;--rot:30deg;}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001ms !important;transition-duration:.05ms !important;}
+}
+:focus-visible{outline:2.5px solid var(--brand);outline-offset:2px;border-radius:6px;}
+</style>
+</head>
+<body>
+<div class="bg" aria-hidden="true">
+  <div class="piece-bg f1"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece-bg f2"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece-bg f3"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece-bg f4"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece-bg f5"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece-bg f6"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+</div>
+
+<div class="wrap">
+
+  <!-- header -->
+  <header class="phead">
+    <div class="hrow1">
+      <h1 class="ptitle">બહાર કાઢો</h1>
+      <div class="hctrls">
+        <span class="rpill" id="round"></span>
+        <button class="hbtn" id="soundBtn" onclick="toggleSound()" aria-label="Sound"></button>
+        <button class="hbtn info" onclick="openHelp()" aria-label="How to play">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><circle cx="12" cy="8" r="0.6" fill="currentColor" stroke="none"/></svg>
+        </button>
+      </div>
+    </div>
+    <p class="hsub" id="hsub"></p>
+  </header>
+
+  <!-- STAGE (escape-block board) -->
+  <div class="stage">
+    <div class="board-wrap">
+      <div class="eboard" id="board">
+        <div class="egrid" id="egrid"></div>
+        <div class="exit-gap"></div>
+        <div class="exit-arrow">›</div>
+        <div class="exit-lbl">exit</div>
+      </div>
+    </div>
+    <div class="movesbar"><span class="movespill">ચાલ · <b id="moves">0</b></span></div>
+  </div>
+
+  <!-- status -->
+  <div class="status" id="status"></div>
+
+  <!-- actions -->
+  <div class="actionbar">
+    <div class="inner">
+      <button class="cbtn prev" id="btnPrev" onclick="prevPuzzle()"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>Back</button>
+      <div class="cmid">
+        <button class="cbtn hint" onclick="useHint()"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 1 4 10.5c-.7.6-1 1.2-1 2v.5H9v-.5c0-.8-.3-1.4-1-2A6 6 0 0 1 12 3z"/></svg>Hint</button>
+      </div>
+      <button class="cbtn next" id="btnNext" onclick="nextPuzzle()">Next<svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+    </div>
+  </div>
+
+  <div class="foot">© <b>Dreamchild Garbhsanskar</b></div>
+</div>
+
+<!-- help sheet -->
+<div class="scrim" id="scrim" onclick="closeHelp()"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="How to play">
+  <div class="grab"></div>
+  <h3>કેવી રીતે રમવું</h3>
+  <p class="lead">નારંગી બ્લોકને આડે આવતા બ્લોક ખસેડીને દરવાજા સુધીનો રસ્તો સાફ કરો.</p>
+
+  <div class="step">
+    <div class="ic"><svg viewBox="0 0 24 24"><path d="M5 9L2 12l3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3"/><path d="M2 12h20M12 2v20"/></svg></div>
+    <div class="tx"><b>ખેંચીને સરકાવો</b><p>બ્લોકને આંગળીથી પકડીને (drag કરીને) ખસેડો.</p></div>
+  </div>
+
+  <div class="step">
+    <div class="ic"><svg viewBox="0 0 24 24"><path d="M5 12h14M12 5v14"/></svg></div>
+    <div class="tx"><b>દિશાનો નિયમ</b><p>આડા બ્લોક ફક્ત ડાબે-જમણે, ઊભા બ્લોક ફક્ત ઉપર-નીચે ખસે છે.</p></div>
+  </div>
+
+  <div class="step">
+    <div class="ic"><svg viewBox="0 0 24 24"><path d="M5 12h9"/><path d="M12 7l5 5-5 5"/></svg></div>
+    <div class="tx"><b>બહાર કાઢો</b><p>નારંગી બ્લોકને જમણી બાજુના દરવાજા સુધી પહોંચાડો — કોયડો પૂર્ણ!</p></div>
+  </div>
+
+  <button class="got" onclick="closeHelp()">Close</button>
+</div>
+
+<!-- celebration -->
+<div class="celebrate" id="celebrate">
+  <div class="em">🌸</div>
+  <h2>બધા કોયડા પૂર્ણ</h2>
+  <p>ખૂબ સરસ! તમારી એકાગ્રતા કમાલની છે.</p>
+  <button class="btn" onclick="closeCelebrate()">Congratulations</button>
+</div>
+
+<script>
+/* ================= LEVEL DATA (BFS-verified solvable: 3 / 7 / 18 moves) ============
+   orient o:'h'|'v', len, row, col, t(target). Grid 6x6, exit row=2 on right edge. */
+const LEVELS = [
+  /* P1 — 3 moves */
+  [ {o:'h',len:2,row:2,col:0,t:true},
+    {o:'v',len:3,row:0,col:3},
+    {o:'h',len:2,row:0,col:0},
+    {o:'v',len:2,row:4,col:1},
+    {o:'h',len:2,row:5,col:3},
+    {o:'v',len:2,row:0,col:5} ],
+  /* P2 — 7 moves */
+  [ {o:'h',len:2,row:2,col:0,t:true},
+    {o:'v',len:2,row:0,col:2},
+    {o:'v',len:3,row:2,col:2},
+    {o:'v',len:2,row:1,col:4},
+    {o:'h',len:2,row:0,col:4},
+    {o:'v',len:2,row:3,col:5},
+    {o:'h',len:3,row:5,col:1},
+    {o:'h',len:2,row:4,col:3} ],
+  /* P3 — 18 moves */
+  [ {o:'h',len:2,row:2,col:0,t:true},
+    {o:'h',len:2,row:1,col:0},
+    {o:'h',len:2,row:4,col:2},
+    {o:'v',len:3,row:2,col:4},
+    {o:'v',len:2,row:1,col:2},
+    {o:'h',len:3,row:0,col:0},
+    {o:'v',len:2,row:3,col:1},
+    {o:'v',len:2,row:3,col:0},
+    {o:'v',len:2,row:4,col:5},
+    {o:'v',len:2,row:1,col:3},
+    {o:'h',len:3,row:5,col:0} ]
+];
+const N=6, EXIT_ROW=2, LAST=LEVELS.length-1;
+const KEY='dcgs_escape_v1';
+
+const SUBS = [
+  "નારંગી બ્લોકને દરવાજા સુધી સરકાવો — સહેલો.",
+  "આડે આવતા બ્લોક ખસેડો, પછી બહાર કાઢો.",
+  "થોડું ધ્યાનથી — રસ્તો સાફ કરીને બહાર કાઢો."
+];
+
+function save(d){try{localStorage.setItem(KEY,JSON.stringify(d))}catch(e){}}
+function load(){try{return JSON.parse(localStorage.getItem(KEY))}catch(e){return null}}
+
+/* ---- app bridge (RN WebView) ---- */
+function postToApp(m){try{window.ReactNativeWebView&&window.ReactNativeWebView.postMessage(JSON.stringify(m));}catch(e){}}
+function activityDone(){postToApp({type:'ACTIVITY_DONE'});}   /* -> onWebActivityComplete in the app */
+
+/* active time only (pauses while the app is backgrounded) */
+let _active=0,_since=Date.now(),_completed=false;
+document.addEventListener('visibilitychange',function(){
+  if(document.hidden){_active+=Date.now()-_since;}else{_since=Date.now();}
+  pushProgress();
+});
+function timeSpentSec(){return Math.round((_active+(document.hidden?0:Date.now()-_since))/1000);}
+function pushProgress(){postToApp({type:'PROGRESS',time_spent_sec:timeSpentSec(),completed:_completed});}
+setInterval(pushProgress,3000);
+pushProgress();
+function markDone(){ _completed=true; activityDone(); pushProgress(); }   /* whole set solved */
+window.addEventListener('pagehide',pushProgress);
+
+/* ---- state ---- */
+function freshPuzzle(i){
+  return { pieces: LEVELS[i].map(p=>({o:p.o,len:p.len,row:p.row,col:p.col,t:!!p.t})),
+           solved:false, moves:0 };
+}
+let state = load() || {tab:0,sound:false,celebrated:false,puzzles:LEVELS.map((_,i)=>freshPuzzle(i))};
+/* sanitise restore */
+(function(){
+  if(!Array.isArray(state.puzzles)) state.puzzles=LEVELS.map((_,i)=>freshPuzzle(i));
+  const rebuilt=LEVELS.map((_,i)=>{
+    const fresh=freshPuzzle(i), sp=state.puzzles[i];
+    if(sp && Array.isArray(sp.pieces) && sp.pieces.length===fresh.pieces.length){
+      sp.pieces.forEach((pp,j)=>{
+        if(typeof pp.row==='number') fresh.pieces[j].row=pp.row;
+        if(typeof pp.col==='number') fresh.pieces[j].col=pp.col;
+      });
+      fresh.solved=!!sp.solved;
+      fresh.moves=(typeof sp.moves==='number')?sp.moves:0;
+    }
+    return fresh;
+  });
+  state.puzzles=rebuilt;
+  if(typeof state.tab!=='number' || state.tab<0 || state.tab>LAST) state.tab=0;
+})();
+let soundOn=!!state.sound, curIdx=state.tab||0;
+
+/* ---- sound (mp3 files) ---- */
+const SND={
+  correct:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Right.mp3',
+  wrong:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Wrong.mp3',
+  level:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Level.mp3',
+  win:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Complete.mp3',
+  hint:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Hint.mp3'
+};
+const _audio={};
+function preloadSounds(){for(const k in SND){try{const a=new Audio(SND[k]);a.preload='auto';_audio[k]=a;}catch(e){}}}
+function playSound(k){if(!soundOn)return;const a=_audio[k];if(!a)return;try{a.pause();a.currentTime=0;a.play().catch(function(){});}catch(e){}}
+function playCorrect(){playSound('correct');}
+function playWrong(){playSound('wrong');}
+function playLevel(){playSound('level');}
+function playWin(){playSound('win');}
+function playHint(){playSound('hint');}
+function setSoundIcon(){const b=document.getElementById('soundBtn');b.innerHTML=soundOn
+  ?'<svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M16 9a3.5 3.5 0 0 1 0 6"/><path d="M19 7a7 7 0 0 1 0 10"/></svg>'
+  :'<svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M22 9l-5 6M17 9l5 6"/></svg>';}
+function toggleSound(){soundOn=!soundOn;state.sound=soundOn;setSoundIcon();save(state);}
+
+/* ---- helpers ---- */
+function curP(){ return state.puzzles[curIdx]; }
+function solved(i){ return state.puzzles[i].solved; }
+function pct(v){ return (v/N*100)+'%'; }
+
+const boardEl=document.getElementById('board');
+const egridEl=document.getElementById('egrid');
+for(let i=0;i<36;i++) egridEl.appendChild(document.createElement('div'));
+
+/* ---- render ---- */
+function renderProgress(){document.getElementById('round').textContent=(curIdx+1)+'/'+LEVELS.length;}
+function renderHead(){document.getElementById('hsub').innerHTML=SUBS[curIdx]+'<br>આડા બ્લોક ↔ · ઊભા બ્લોક ↕ ખસે છે.';}
+function renderMoves(){document.getElementById('moves').textContent=curP().moves;}
+function renderActions(){const isLast=curIdx===LAST;document.getElementById('btnPrev').disabled=(curIdx===0);document.getElementById('btnNext').disabled=!(solved(curIdx)&&!isLast);}
+function renderBoard(){
+  [...boardEl.querySelectorAll('.piece')].forEach(el=>el.remove());
+  const p=curP();
+  p.pieces.forEach((pc,idx)=>{
+    const el=document.createElement('div');
+    el.className='piece'; el.dataset.idx=idx;
+    el.style.left=pct(pc.col); el.style.top=pct(pc.row);
+    el.style.width=pct(pc.o==='h'?pc.len:1);
+    el.style.height=pct(pc.o==='v'?pc.len:1);
+    const blk=document.createElement('div');
+    blk.className='block '+(pc.t?'blk-target':'blk-norm');
+    if(pc.t) blk.innerHTML='<span class="arrow">›</span>';
+    el.appendChild(blk);
+    if(!p.solved) attachDrag(el,idx);
+    boardEl.appendChild(el);
+  });
+}
+function renderAll(){
+  renderProgress(); renderHead(); renderBoard(); renderMoves(); renderActions(); setSoundIcon(); clearStatus();
+  const p=curP();
+  if(p.solved){
+    if(state.puzzles.every(x=>x.solved)) status('done','બધા કોયડા પૂર્ણ. ખૂબ સરસ! 🌸',true);
+    else status('done','આ કોયડો પૂર્ણ. તૈયાર હો ત્યારે આગળ વધો.',true);
+  }
+}
+
+/* ---- status ---- */
+let stTimer;
+function status(type,msg,sticky){const s=document.getElementById('status');s.className='status show '+type;s.textContent=msg;clearTimeout(stTimer);if(!sticky)stTimer=setTimeout(clearStatus,2300);}
+function clearStatus(){document.getElementById('status').className='status';}
+
+/* ---- occupancy / bounds ---- */
+function buildGrid(exclude){
+  const g=Array.from({length:N},()=>new Array(N).fill(-1));
+  curP().pieces.forEach((pc,idx)=>{
+    if(idx===exclude) return;
+    for(let k=0;k<pc.len;k++){
+      const r=pc.o==='v'?pc.row+k:pc.row;
+      const c=pc.o==='h'?pc.col+k:pc.col;
+      g[r][c]=idx;
+    }
+  });
+  return g;
+}
+function bounds(idx){
+  const pc=curP().pieces[idx], g=buildGrid(idx);
+  if(pc.o==='h'){
+    let mn=pc.col; while(mn-1>=0 && g[pc.row][mn-1]<0) mn--;
+    let mx=pc.col; while(mx+pc.len<N && g[pc.row][mx+pc.len]<0) mx++;
+    return {min:mn,max:mx};
+  } else {
+    let mn=pc.row; while(mn-1>=0 && g[mn-1][pc.col]<0) mn--;
+    let mx=pc.row; while(mx+pc.len<N && g[mx+pc.len][pc.col]<0) mx++;
+    return {min:mn,max:mx};
+  }
+}
+
+/* ---- drag (touch + mouse, document-level) ---- */
+let active=null;
+function boardCell(){ const w=boardEl.clientWidth||boardEl.getBoundingClientRect().width; return w/N; }
+function startDrag(el,idx,x,y){
+  if(curP().solved) return;
+  clearHints();
+  const pc=curP().pieces[idx], cell=boardCell();
+  if(!cell||cell<=0) return;
+  active={idx,el,axis:pc.o,cell,startX:x,startY:y,lastX:x,lastY:y,
+          orig:pc.o==='h'?pc.col:pc.row, bd:bounds(idx)};
+  el.classList.add('dragging');
+}
+function moveDrag(x,y){
+  if(!active) return;
+  active.lastX=x; active.lastY=y;
+  const d=active.axis==='h'?x-active.startX:y-active.startY;
+  let raw=active.orig+d/active.cell;
+  raw=Math.max(active.bd.min,Math.min(active.bd.max,raw));
+  const off=(raw-active.orig)*active.cell;
+  active.el.style.transform=active.axis==='h'?'translateX('+off+'px)':'translateY('+off+'px)';
+}
+function endDrag(x,y){
+  if(!active) return;
+  const a=active; active=null;
+  const d=a.axis==='h'?x-a.startX:y-a.startY;
+  const snap=Math.round(Math.max(a.bd.min,Math.min(a.bd.max,a.orig+d/a.cell)));
+  a.el.style.transform=''; a.el.classList.remove('dragging');
+  const pc=curP().pieces[a.idx];
+  const changed=snap!==a.orig;
+  if(pc.o==='h') pc.col=snap; else pc.row=snap;
+  a.el.style.left=pct(pc.col); a.el.style.top=pct(pc.row);
+  if(changed){ curP().moves++; renderMoves(); save(state); checkWin(); }
+}
+function onTouchMove(e){if(!active)return;e.preventDefault();const t=e.touches[0];if(t)moveDrag(t.clientX,t.clientY);}
+function onTouchEnd(e){if(!active){detachTouch();return;}const t=e.changedTouches&&e.changedTouches[0];const x=t?t.clientX:active.lastX,y=t?t.clientY:active.lastY;detachTouch();endDrag(x,y);}
+function detachTouch(){document.removeEventListener('touchmove',onTouchMove,{passive:false});document.removeEventListener('touchend',onTouchEnd);document.removeEventListener('touchcancel',onTouchEnd);}
+function onMouseMove(e){if(!active)return;e.preventDefault();moveDrag(e.clientX,e.clientY);}
+function onMouseUp(e){if(!active){detachMouse();return;}detachMouse();endDrag(e.clientX,e.clientY);}
+function detachMouse(){document.removeEventListener('mousemove',onMouseMove);document.removeEventListener('mouseup',onMouseUp);}
+function attachDrag(el,idx){
+  el.addEventListener('touchstart',function(e){
+    if(curP().solved)return; e.preventDefault();
+    const t=e.touches[0]; if(!t)return;
+    startDrag(el,idx,t.clientX,t.clientY);
+    document.addEventListener('touchmove',onTouchMove,{passive:false});
+    document.addEventListener('touchend',onTouchEnd);
+    document.addEventListener('touchcancel',onTouchEnd);
+  },{passive:false});
+  el.addEventListener('mousedown',function(e){
+    if(curP().solved)return; e.preventDefault();
+    startDrag(el,idx,e.clientX,e.clientY);
+    document.addEventListener('mousemove',onMouseMove);
+    document.addEventListener('mouseup',onMouseUp);
+  });
+}
+
+/* ---- win ---- */
+function targetPiece(){ return curP().pieces.find(p=>p.t); }
+function checkWin(){ const t=targetPiece(); if(t.col+t.len-1===N-1) solveLevel(); }
+function solveLevel(){
+  const p=curP();
+  if(p.solved) return;
+  p.solved=true; save(state);
+  const ti=p.pieces.findIndex(x=>x.t);
+  const el=boardEl.querySelector('.piece[data-idx="'+ti+'"]');
+  if(el){ el.style.transition='transform .5s ease, opacity .5s ease'; el.style.transform='translateX(150%)'; el.style.opacity='0.15'; }
+  setTimeout(onSolved,420);
+}
+function onSolved(){
+  renderActions();
+  const all=state.puzzles.every(p=>p.solved);
+  if(all){
+    status('done','બધા કોયડા પૂર્ણ. ખૂબ સરસ! 🌸',true);
+    if(soundOn) playWin();
+    if(!state.celebrated){ state.celebrated=true; save(state); showCelebrate(); }
+    markDone();
+  } else {
+    status('done','આ કોયડો પૂર્ણ. તૈયાર હો ત્યારે આગળ વધો.',true);
+    if(soundOn) playLevel();
+  }
+}
+
+/* ---- hint: BFS plays the best next move ---- */
+function clearHints(){ [...boardEl.querySelectorAll('.piece.hint')].forEach(e=>e.classList.remove('hint')); }
+function bfsNextMove(){
+  const defs=curP().pieces, n=defs.length;
+  const start=defs.map(p=>[p.row,p.col]);
+  const keyOf=st=>st.map(c=>c[0]+','+c[1]).join(';');
+  function grid(st){
+    const g=Array.from({length:N},()=>new Array(N).fill(-1));
+    for(let i=0;i<n;i++){const o=defs[i].o,ln=defs[i].len,r=st[i][0],c=st[i][1];
+      for(let k=0;k<ln;k++) g[o==='v'?r+k:r][o==='h'?c+k:c]=i;}
+    return g;
+  }
+  function isWin(st){ for(let i=0;i<n;i++) if(defs[i].t) return st[i][0]===EXIT_ROW && st[i][1]+defs[i].len-1===N-1; return false; }
+  function neighbors(st){
+    const g=grid(st),res=[];
+    for(let i=0;i<n;i++){const o=defs[i].o,ln=defs[i].len,r=st[i][0],c=st[i][1];
+      if(o==='h'){
+        let nc=c-1; while(nc>=0&&g[r][nc]<0){const s=st.map(a=>a.slice());s[i]=[r,nc];res.push([s,i]);nc--;}
+        nc=c+1; while(nc+ln-1<N&&g[r][nc+ln-1]<0){const s=st.map(a=>a.slice());s[i]=[r,nc];res.push([s,i]);nc++;}
+      } else {
+        let nr=r-1; while(nr>=0&&g[nr][c]<0){const s=st.map(a=>a.slice());s[i]=[nr,c];res.push([s,i]);nr--;}
+        nr=r+1; while(nr+ln-1<N&&g[nr+ln-1][c]<0){const s=st.map(a=>a.slice());s[i]=[nr,c];res.push([s,i]);nr++;}
+      }
+    }
+    return res;
+  }
+  if(isWin(start)) return null;
+  const seen=new Set([keyOf(start)]); const q=[];
+  for(const [s,idx] of neighbors(start)){const k=keyOf(s); if(!seen.has(k)){seen.add(k);q.push({st:s,first:[idx,s[idx][0],s[idx][1]]});}}
+  let head=0;
+  while(head<q.length){
+    const c=q[head++];
+    if(isWin(c.st)) return c.first;
+    for(const [s,idx] of neighbors(c.st)){const k=keyOf(s); if(!seen.has(k)){seen.add(k);q.push({st:s,first:c.first});}}
+  }
+  return null;
+}
+function useHint(){
+  if(active) return;
+  if(solved(curIdx)){ status('hint','આ કોયડો પહેલેથી પૂર્ણ છે.'); return; }
+  clearHints();
+  const mv=bfsNextMove();
+  if(!mv){ status('hint','💡 એક જ ચાલ બાકી — બહાર કાઢો!'); return; }
+  const [idx,nr,nc]=mv;
+  const pc=curP().pieces[idx];
+  const el=boardEl.querySelector('.piece[data-idx="'+idx+'"]');
+  pc.row=nr; pc.col=nc;
+  if(el){ el.classList.add('hint'); el.style.transition='left .28s ease, top .28s ease'; el.style.left=pct(nc); el.style.top=pct(nr);
+    setTimeout(()=>{ el.style.transition=''; el.classList.remove('hint'); },800); }
+  curP().moves++; renderMoves(); save(state);
+  if(soundOn) playHint();
+  checkWin();
+  if(!solved(curIdx)) status('hint','💡 એક બ્લોક ખસેડ્યો. હવે આગળ વધો!');
+}
+
+/* ---- nav ---- */
+function nextPuzzle(){ if(curIdx<LAST && solved(curIdx)){ active=null; curIdx++; state.tab=curIdx; save(state); renderAll(); window.scrollTo({top:0,behavior:'smooth'}); } }
+function prevPuzzle(){ if(curIdx>0){ active=null; curIdx--; state.tab=curIdx; save(state); renderAll(); window.scrollTo({top:0,behavior:'smooth'}); } }
+
+/* ---- help sheet ---- */
+function openHelp(){document.getElementById('scrim').classList.add('open');document.getElementById('sheet').classList.add('open');}
+function closeHelp(){document.getElementById('scrim').classList.remove('open');document.getElementById('sheet').classList.remove('open');}
+
+/* ---- celebration ---- */
+function showCelebrate(){const c=document.getElementById('celebrate');c.classList.add('show');const ems=['🌸','🌼','✨','🍃','💜'];for(let i=0;i<16;i++){const p=document.createElement('div');p.className='petal';p.textContent=ems[i%ems.length];p.style.left=(Math.random()*100)+'%';p.style.animationDuration=(2.4+Math.random()*1.6)+'s';p.style.animationDelay=(Math.random()*.6)+'s';document.body.appendChild(p);setTimeout(()=>p.remove(),4600);}}
+function closeCelebrate(){document.getElementById('celebrate').classList.remove('show');postToApp({type:'GO_BACK'});}
+
+/* ---- init ---- */
+preloadSounds();
+renderAll();
+if(state.puzzles.every(p=>p.solved)){
+  status('done','બધા કોયડા પૂર્ણ. ખૂબ સરસ! 🌸',true);
+  _completed=true; pushProgress();
+} else if(solved(curIdx)){
+  status('done','આ કોયડો પૂર્ણ. તૈયાર હો ત્યારે આગળ વધો.',true);
+}
+</script>
+</body>
+</html>
