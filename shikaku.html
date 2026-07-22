@@ -186,7 +186,7 @@ body{
 <div class="wrap">
   <header class="phead">
     <div class="hrow1">
-      <h1 class="ptitle">શિકાકુ</h1>
+      <h1 class="ptitle">Shikaku</h1>
       <div class="hctrls">
         <span class="rpill" id="round"></span>
         <button class="hbtn" id="soundBtn" onclick="toggleSound()" aria-label="Sound"></button>
@@ -235,17 +235,17 @@ body{
 
   <div class="step">
     <div class="ic"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><circle cx="12" cy="12" r="3.4"/></svg></div>
-    <div class="tx"><b>એક ભાગ, એક સંખ્યા</b><p>દરેક લંબચોરસમાં બરાબર એક જ સંખ્યા હોવી જોઈએ, અને એ સંખ્યા = એ લંબચોરસનાં ખાનાંની સંખ્યા.</p></div>
+    <div class="tx"><b>એક ભાગ, એક સંખ્યા</b><p>દરેક લંબચોરસમાં માત્ર એક સંખ્યા હોવી જોઈએ. સંખ્યા જેટલાં જ ખાનાં તે ભાગમાં હોવા જોઈએ.</p></div>
   </div>
 
   <div class="step">
     <div class="ic"><svg viewBox="0 0 24 24"><path d="M4 15l5.5 5.5a2 2 0 0 0 2.8 0L21 12a2 2 0 0 0 0-2.8L15.8 4a2 2 0 0 0-2.8 0L4 13a2 2 0 0 0 0 2.8z"/><path d="M9 9l6 6"/></svg></div>
-    <div class="tx"><b>ભૂંસવા માટે ટૅપ</b><p>કોઈ લંબચોરસ કાઢી નાખવો હોય તો તેના પર એક વાર ટૅપ કરો.</p></div>
+    <div class="tx"><b>ભાગ કાઢવા માટે ટૅપ કરો</b><p>બનાવેલો લંબચોરસ દૂર કરવો હોય તો તેના પર એક વાર ટૅપ કરો.</p></div>
   </div>
 
   <div class="step">
     <div class="ic"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></div>
-    <div class="tx"><b>પૂરું કરો</b><p>આખું કોષ્ટક બરાબર લંબચોરસોથી ભરાઈ જાય ત્યારે કોયડો પૂર્ણ. ખોટા ભાગ લાલ રંગમાં દેખાશે.</p></div>
+    <div class="tx"><b>કોયડો પૂર્ણ કરો</b><p>બધાં ખાનાં સાચા લંબચોરસોથી ભરી દો. ખોટા ભાગ લાલ રંગમાં દેખાશે.</p></div>
   </div>
 
   <button class="got" onclick="closeHelp()">Close</button>
@@ -338,7 +338,7 @@ function isSolvedCur(){ return solved(cur); }
 
 /* ---- render ---- */
 function renderProgress(){document.getElementById('round').textContent=(cur+1)+'/'+PUZZLES.length;}
-function renderHead(){document.getElementById('hsub').innerHTML='કોષ્ટકને લંબચોરસ ભાગોમાં વહેંચો — દરેક ભાગમાં એક જ સંખ્યા, અને એટલાં જ ખાનાં.';}
+function renderHead(){document.getElementById('hsub').innerHTML='દરેક ભાગમાં એક સંખ્યા રાખો અને સંખ્યા જેટલાં જ ખાનાં ભરો.';}
 
 function buildGrid(){
   const N=Ncur(), g=document.getElementById('grid'), cm=clueMap();
@@ -462,7 +462,7 @@ window.addEventListener('pointercancel',()=>{if(drag){drag=null;hidePreview();}}
 /* ---- hint: reveal one solution rectangle not yet correctly placed ---- */
 function sameRect(a,b){return a.r0===b.r0&&a.c0===b.c0&&a.r1===b.r1&&a.c1===b.c1;}
 function useHint(){
-  if(isSolvedCur()){ status('hint','આ કોયડો પહેલેથી પૂર્ણ છે.'); return; }
+  if(isSolvedCur()){ status('hint','આ કોયડો પહેલેથી જ પૂર્ણ છે.'); return; }
   const sol=P().sol, rs=rectsCur();
   const target=sol.find(S=>!rs.some(R=>sameRect(R,S)));
   if(!target) return;
@@ -473,7 +473,7 @@ function useHint(){
   const arr=rectsCur(); const el=arr[arr.length-1]._el;
   if(el){ el.classList.remove('blink'); void el.offsetWidth; el.classList.add('blink'); }
   if(soundOn) playHint();
-  status('hint','💡 આ લંબચોરસ આ રીતે આવશે.');
+  status('hint','💡 આ ભાગ આ રીતે બનાવો.');
   checkDone();
 }
 
