@@ -197,7 +197,7 @@ body{
   <!-- header -->
   <header class="phead">
     <div class="hrow1">
-      <h1 class="ptitle">બહાર કાઢો</h1>
+      <h1 class="ptitle">Escape Block</h1>
       <div class="hctrls">
         <span class="rpill" id="round"></span>
         <button class="hbtn" id="soundBtn" onclick="toggleSound()" aria-label="Sound"></button>
@@ -244,21 +244,21 @@ body{
 <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="How to play">
   <div class="grab"></div>
   <h3>કેવી રીતે રમવું</h3>
-  <p class="lead">નારંગી બ્લોકને આડે આવતા બ્લોક ખસેડીને દરવાજા સુધીનો રસ્તો સાફ કરો.</p>
+  <p class="lead">રસ્તામાં આવતા બ્લોક ખસેડીને નારંગી બ્લોક માટે બહાર નીકળવાનો માર્ગ બનાવો.</p>
 
   <div class="step">
     <div class="ic"><svg viewBox="0 0 24 24"><path d="M5 9L2 12l3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3"/><path d="M2 12h20M12 2v20"/></svg></div>
-    <div class="tx"><b>ખેંચીને સરકાવો</b><p>બ્લોકને આંગળીથી પકડીને (drag કરીને) ખસેડો.</p></div>
+    <div class="tx"><b>ખેંચીને સરકાવો</b><p>બ્લોકને આંગળીથી પકડીને તેની દિશામાં સરકાવો.</p></div>
   </div>
 
   <div class="step">
     <div class="ic"><svg viewBox="0 0 24 24"><path d="M5 12h14M12 5v14"/></svg></div>
-    <div class="tx"><b>દિશાનો નિયમ</b><p>આડા બ્લોક ફક્ત ડાબે-જમણે, ઊભા બ્લોક ફક્ત ઉપર-નીચે ખસે છે.</p></div>
+    <div class="tx"><b>દિશાનો નિયમ</b><p>આડા બ્લોક માત્ર ડાબે કે જમણે સરકે છે, જ્યારે ઊભા બ્લોક માત્ર ઉપર કે નીચે સરકે છે.</p></div>
   </div>
 
   <div class="step">
     <div class="ic"><svg viewBox="0 0 24 24"><path d="M5 12h9"/><path d="M12 7l5 5-5 5"/></svg></div>
-    <div class="tx"><b>બહાર કાઢો</b><p>નારંગી બ્લોકને જમણી બાજુના દરવાજા સુધી પહોંચાડો — કોયડો પૂર્ણ!</p></div>
+    <div class="tx"><b>બહાર કાઢો</b><p>નારંગી બ્લોકને જમણી બાજુના બહાર નીકળવાના માર્ગ સુધી સરકાવો — કોયડો પૂર્ણ થશે!</p></div>
   </div>
 
   <button class="got" onclick="closeHelp()">Close</button>
@@ -310,8 +310,8 @@ const KEY='dcgs_escape_v1';
 
 const SUBS = [
   "નારંગી બ્લોકને દરવાજા સુધી સરકાવો — સહેલો.",
-  "આડે આવતા બ્લોક ખસેડો, પછી બહાર કાઢો.",
-  "થોડું ધ્યાનથી — રસ્તો સાફ કરીને બહાર કાઢો."
+  "રસ્તામાં આવતા બ્લોક ખસેડો અને નારંગી બ્લોકને બહાર કાઢો.",
+  "ધ્યાનથી ચાલો: રસ્તો સાફ કરો અને નારંગી બ્લોકને બહાર કાઢો."
 ];
 
 function save(d){try{localStorage.setItem(KEY,JSON.stringify(d))}catch(e){}}
@@ -417,7 +417,7 @@ function renderAll(){
   const p=curP();
   if(p.solved){
     if(state.puzzles.every(x=>x.solved)) status('done','બધા કોયડા પૂર્ણ. ખૂબ સરસ! 🌸',true);
-    else status('done','આ કોયડો પૂર્ણ. તૈયાર હો ત્યારે આગળ વધો.',true);
+    else status('done','આ કોયડો પૂર્ણ થયો! તૈયાર હો ત્યારે આગળના કોયડા પર જાઓ.',true);
   }
 }
 
@@ -529,7 +529,7 @@ function onSolved(){
     if(!state.celebrated){ state.celebrated=true; save(state); showCelebrate(); }
     markDone();
   } else {
-    status('done','આ કોયડો પૂર્ણ. તૈયાર હો ત્યારે આગળ વધો.',true);
+    status('done','આ કોયડો પૂર્ણ થયો! તૈયાર હો ત્યારે આગળના કોયડા પર જાઓ.',true);
     if(soundOn) playLevel();
   }
 }
@@ -586,7 +586,7 @@ function useHint(){
   curP().moves++; renderMoves(); save(state);
   if(soundOn) playHint();
   checkWin();
-  if(!solved(curIdx)) status('hint','💡 એક બ્લોક ખસેડ્યો. હવે આગળ વધો!');
+  if(!solved(curIdx)) status('hint','💡 એક બ્લોક ખસેડવામાં આવ્યો. હવે આગળનો યોગ્ય બ્લોક ખસેડો!');
 }
 
 /* ---- nav ---- */
@@ -608,7 +608,7 @@ if(state.puzzles.every(p=>p.solved)){
   status('done','બધા કોયડા પૂર્ણ. ખૂબ સરસ! 🌸',true);
   _completed=true; pushProgress();
 } else if(solved(curIdx)){
-  status('done','આ કોયડો પૂર્ણ. તૈયાર હો ત્યારે આગળ વધો.',true);
+  status('done','આ કોયડો પૂર્ણ થયો! તૈયાર હો ત્યારે આગળના કોયડા પર જાઓ.',true);
 }
 </script>
 </body>

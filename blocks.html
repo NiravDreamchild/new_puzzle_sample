@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#FBF9FC">
+<title>Dreamchild · Blocks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Vadodara:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FBF9FC;
+  --surface:#FFFFFF;
+  --ink:#2E2A32;
+  --muted:#8C8794;
+  --line:#ECE7F0;
+  --brand:#752886;
+  --brand-deep:#561F69;
+  --brand-soft:#F3E9F8;
+  --accent:#F2A03D;
+  --accent-soft:#FCEFDC;
+  --mint:#2F9B63;
+  --mint-soft:#E5F4EC;
+  --rose:#C75C72;
+  --rose-soft:#FAEAEE;
+  --shadow:0 10px 30px -12px rgba(78,33,95,.18);
+  --shadow-sm:0 4px 14px -8px rgba(78,33,95,.20);
+  --r-lg:22px; --r-md:16px; --r-sm:12px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg);color:var(--ink);
+  font-family:'Hind Vadodara',sans-serif;
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+  background-image:radial-gradient(120% 60% at 50% -10%, var(--brand-soft) 0%, rgba(243,233,248,0) 60%);
+}
+.wrap{max-width:460px;margin:0 auto;padding:16px 16px 28px;position:relative;z-index:1;}
+
+/* ---- header (own card / band) ---- */
+.phead{background:var(--surface);border:1px solid var(--line);border-radius:18px;
+  box-shadow:0 6px 20px -12px rgba(78,33,95,.16);padding:15px 16px;margin-bottom:14px;}
+.hrow1{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.ptitle{font-family:'Hind Vadodara',sans-serif;font-weight:700;font-size:23px;line-height:1.05;color:var(--brand);margin:0;letter-spacing:-.01em;}
+.hctrls{display:flex;align-items:center;gap:8px;flex:none;}
+.rpill{display:flex;align-items:center;justify-content:center;min-width:50px;height:38px;padding:0 12px;
+  border:1px solid var(--line);border-radius:11px;background:var(--surface);
+  font-family:'Hind Vadodara',sans-serif;font-weight:600;font-size:16px;color:var(--ink);letter-spacing:.01em;}
+.hbtn{width:40px;height:38px;border:1px solid var(--line);border-radius:11px;background:var(--surface);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-appearance:none;padding:0;
+  transition:background .15s ease;}
+.hbtn:active{background:var(--brand-soft);}
+.hbtn svg{width:20px;height:20px;fill:none;stroke:var(--muted);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.hbtn.info{width:38px;background:var(--brand-soft);border-color:transparent;}
+.hbtn.info svg{stroke:var(--brand);}
+.hsub{font-family:'Hind Vadodara',sans-serif;text-align:center;font-weight:600;font-size:15px;
+  line-height:1.5;color:var(--ink);margin:13px 0 1px;}
+
+/* ---- stage card ---- */
+.stage{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
+  box-shadow:0 8px 28px -10px rgba(78,33,95,.16), 0 2px 8px -3px rgba(78,33,95,.08);padding:14px;margin-bottom:14px;}
+
+/* ---- blocks board ---- */
+.boardwrap{display:flex;justify-content:center;padding:6px 2px 2px;}
+.board{display:grid;gap:5px;background:transparent;touch-action:none;user-select:none;-webkit-user-select:none;}
+.gcell{aspect-ratio:1/1;border-radius:9px;transition:background .15s ease,box-shadow .15s ease;}
+.gcell.empty{visibility:hidden;}
+.gcell.slot{background:#EEF3FA;}
+.gcell.slot.drop{box-shadow:inset 0 0 0 2.5px var(--accent);background:var(--accent-soft);}
+.gcell.slot.baddrop{box-shadow:inset 0 0 0 2.5px var(--rose);background:var(--rose-soft);}
+.gcell.filled{box-shadow:0 2px 6px -3px rgba(78,33,95,.35);}
+.gcell.hint{animation:pulse 1s ease infinite;}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+
+/* ---- piece tray ---- */
+.tray{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px;}
+.slotcard{background:#FAF7FB;border:1px solid var(--line);border-radius:14px;min-height:96px;
+  display:flex;align-items:center;justify-content:center;padding:8px;transition:background .18s ease,opacity .25s ease;}
+.slotcard.used{opacity:.32;}
+.piece{display:grid;gap:3px;cursor:grab;touch-action:none;-webkit-user-select:none;user-select:none;
+  transition:transform .1s ease,opacity .2s ease;}
+.piece:active{cursor:grabbing;}
+.piece.grabbing{opacity:.4;transform:scale(.9);}
+.pcell{width:var(--pc,20px);height:var(--pc,20px);border-radius:6px;
+  box-shadow:0 2px 5px -3px rgba(78,33,95,.4);}
+.slotcard.used .piece{visibility:hidden;}
+
+/* floating drag ghost */
+.dragghost{position:fixed;left:0;top:0;z-index:60;pointer-events:none;
+  display:grid;gap:5px;filter:drop-shadow(0 14px 22px rgba(78,33,95,.4));}
+.dragghost .pcell{width:var(--gc,26px);height:var(--gc,26px);border-radius:9px;}
+.dragghost > div{width:var(--gc,26px);height:var(--gc,26px);}
+
+/* ---- status line ---- */
+.status{min-height:24px;text-align:center;font-size:14px;line-height:1.4;font-weight:500;
+  color:var(--muted);padding:2px 8px;margin-bottom:6px;transition:color .2s ease;opacity:0;
+  transition:opacity .25s ease;}
+.status.show{opacity:1;}
+.status.ok{color:var(--mint);}
+.status.bad{color:var(--rose);}
+.status.hint{color:#B5781E;}
+.status.done{color:var(--brand);font-weight:600;}
+
+/* ---- action bar ---- */
+.actionbar{margin-top:14px;}
+.actionbar .inner{display:flex;flex-direction:row;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:6px;row-gap:8px;}
+.cmid{display:flex;align-items:center;gap:6px;}
+.cbtn{font-family:'Hind Vadodara',sans-serif;cursor:pointer;-webkit-appearance:none;
+  display:flex;align-items:center;justify-content:center;gap:5px;
+  transition:transform .12s ease,opacity .2s ease,background .2s ease,box-shadow .2s ease;}
+.cbtn:active{transform:scale(.97);}
+.cbtn svg{width:16px;height:16px;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;}
+.cbtn.hint{min-height:36px;border-radius:12px;padding:0 20px;background:var(--surface);border:1px solid var(--line);
+  color:var(--ink);font-weight:600;font-size:13px;box-shadow:var(--shadow-sm);}
+.cbtn.hint svg{stroke:var(--brand);}
+.cbtn.prev,.cbtn.next{min-height:36px;border-radius:12px;padding:0 20px;background:var(--brand);border:none;color:#fff;
+  font-weight:700;font-size:13.5px;box-shadow:0 8px 20px -8px rgba(110,42,133,.5);}
+.cbtn.prev svg,.cbtn.next svg{stroke:#fff;}
+.cbtn:disabled{cursor:default;}
+.cbtn.prev:disabled,.cbtn.next:disabled{background:var(--surface);border:1px solid var(--line);color:var(--muted);box-shadow:none;font-weight:600;}
+.cbtn.prev:disabled svg,.cbtn.next:disabled svg{stroke:var(--muted);}
+
+/* ---- footer ---- */
+.foot{text-align:center;font-family:'Hind Vadodara',sans-serif;font-size:11px;color:var(--muted);
+  letter-spacing:.03em;margin-top:18px;}
+.foot b{font-weight:600;color:#a79bb0;}
+
+/* ---- help sheet ---- */
+.scrim{position:fixed;inset:0;background:rgba(46,42,50,.42);backdrop-filter:blur(2px);z-index:40;
+  opacity:0;pointer-events:none;transition:opacity .28s ease;}
+.scrim.open{opacity:1;pointer-events:auto;}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:41;background:var(--surface);
+  border-radius:26px 26px 0 0;box-shadow:0 -16px 40px -16px rgba(46,42,50,.3);
+  max-width:460px;margin:0 auto;padding:10px 22px calc(26px + env(safe-area-inset-bottom));
+  transform:translateY(110%);transition:transform .34s cubic-bezier(.22,1,.36,1);}
+.sheet.open{transform:translateY(0);}
+.grab{width:42px;height:5px;border-radius:999px;background:var(--line);margin:6px auto 16px;}
+.sheet h3{font-family:'Hind Vadodara',sans-serif;font-weight:700;font-size:20px;margin:0 0 4px;}
+.sheet .lead{font-size:14px;color:var(--muted);margin:0 0 18px;line-height:1.5;}
+.step{display:flex;gap:14px;align-items:flex-start;margin-bottom:16px;}
+.step .ic{flex:none;width:46px;height:46px;border-radius:14px;background:var(--brand-soft);
+  display:flex;align-items:center;justify-content:center;}
+.step .ic svg{width:26px;height:26px;stroke:var(--brand);fill:none;stroke-width:1.7;
+  stroke-linecap:round;stroke-linejoin:round;}
+.step .tx b{display:block;font-family:'Hind Vadodara',sans-serif;font-weight:600;font-size:15px;color:var(--ink);margin-bottom:2px;}
+.step .tx p{margin:0;font-size:13.5px;color:var(--muted);line-height:1.5;}
+.sheet .got{width:100%;margin-top:6px;background:var(--brand);color:#fff;border:none;cursor:pointer;
+  font-family:'Hind Vadodara',sans-serif;border-radius:14px;min-height:48px;font-weight:700;font-size:15px;}
+
+/* ---- celebration ---- */
+.celebrate{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;
+  background:rgba(251,249,252,.86);backdrop-filter:blur(3px);text-align:center;padding:30px;}
+.celebrate.show{display:flex;flex-direction:column;}
+.celebrate .em{font-size:54px;margin-bottom:6px;animation:rise .6s cubic-bezier(.22,1,.36,1);}
+.celebrate h2{font-family:'Hind Vadodara',sans-serif;font-weight:700;font-size:24px;color:var(--brand);margin:0 0 8px;}
+.celebrate p{font-size:15px;color:var(--ink);font-weight:500;margin:0 0 22px;max-width:280px;line-height:1.5;}
+.celebrate .btn{min-width:200px;background:var(--brand);color:#fff;border:none;cursor:pointer;
+  font-family:'Hind Vadodara',sans-serif;border-radius:14px;min-height:55px;font-weight:700;font-size:18px;}
+@keyframes rise{from{transform:translateY(16px) scale(.8);opacity:0}to{transform:none;opacity:1}}
+.petal{position:fixed;top:-24px;z-index:49;font-size:18px;animation:drift linear forwards;pointer-events:none;}
+@keyframes drift{to{transform:translateY(106vh) rotate(360deg);opacity:0}}
+
+/* ---- ambient puzzle-piece background ---- */
+.bg{position:fixed;top:0;left:0;right:0;height:100vh;height:100lvh;overflow:hidden;pointer-events:none;z-index:0;}
+.piece-bg{position:absolute;transform:rotate(var(--rot,0deg));opacity:.3;}
+.piece-bg svg{display:block;width:100%;height:auto;fill:currentColor;}
+.piece-bg.f1{top:-30px;left:-46px;width:150px;color:#fa7068;--rot:-14deg;}
+.piece-bg.f2{top:78px;right:-52px;width:150px;color:#fbca5f;--rot:18deg;}
+.piece-bg.f3{top:46%;right:-58px;width:110px;color:#a0c95d;--rot:26deg;}
+.piece-bg.f4{bottom:-40px;right:-30px;width:170px;color:#9ddbe6;--rot:-18deg;}
+.piece-bg.f5{bottom:46px;left:-56px;width:150px;color:#f3adc9;--rot:8deg;}
+.piece-bg.f6{top:36%;left:-70px;width:100px;color:#d4ab99;--rot:30deg;}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001ms !important;transition-duration:.05ms !important;}
+}
+:focus-visible{outline:2.5px solid var(--brand);outline-offset:2px;border-radius:6px;}
+</style>
+</head>
+<body>
+<div class="bg" aria-hidden="true">
+  <div class="piece-bg f1"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece-bg f2"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece-bg f3"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece-bg f4"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece-bg f5"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece-bg f6"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+</div>
+
+<div class="wrap">
+
+  <!-- header -->
+  <header class="phead">
+    <div class="hrow1">
+      <h1 class="ptitle">બ્લોક્સ</h1>
+      <div class="hctrls">
+        <span class="rpill" id="round"></span>
+        <button class="hbtn" id="soundBtn" onclick="toggleSound()" aria-label="Sound"></button>
+        <button class="hbtn info" onclick="openHelp()" aria-label="How to play">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><circle cx="12" cy="8" r="0.6" fill="currentColor" stroke="none"/></svg>
+        </button>
+      </div>
+    </div>
+    <p class="hsub" id="hsub"></p>
+  </header>
+
+  <!-- STAGE -->
+  <div class="stage">
+    <div class="boardwrap"><div class="board" id="board"></div></div>
+    <div class="tray" id="tray"></div>
+  </div>
+
+  <!-- status -->
+  <div class="status" id="status"></div>
+
+  <!-- actions -->
+  <div class="actionbar">
+    <div class="inner">
+      <button class="cbtn prev" id="btnPrev" onclick="prevPuzzle()"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>Back</button>
+      <div class="cmid">
+        <button class="cbtn hint" onclick="useHint()"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 1 4 10.5c-.7.6-1 1.2-1 2v.5H9v-.5c0-.8-.3-1.4-1-2A6 6 0 0 1 12 3z"/></svg>Hint</button>
+      </div>
+      <button class="cbtn next" id="btnNext" onclick="nextPuzzle()">Next<svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+    </div>
+  </div>
+
+  <div class="foot">© <b>Dreamchild Garbhsanskar</b></div>
+</div>
+
+<!-- help sheet -->
+<div class="scrim" id="scrim" onclick="closeHelp()"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="How to play">
+  <div class="grab"></div>
+  <h3>કેવી રીતે રમવું</h3>
+  <p class="lead">નીચેના ટુકડાઓને કોષ્ટકમાં ગોઠવીને આખો આકાર પૂરો કરવાનો છે. ઉતાવળ નહીં — શાંતિથી.</p>
+
+  <div class="step">
+    <div class="ic"><svg viewBox="0 0 24 24"><path d="M5 9L2 12l3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3"/><path d="M2 12h20M12 2v20"/></svg></div>
+    <div class="tx"><b>ખેંચીને મૂકો</b><p>નીચેના ટુકડાને આંગળીથી ખેંચીને કોષ્ટકના ખાલી ખાનાં પર મૂકો.</p></div>
+  </div>
+
+  <div class="step">
+    <div class="ic"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg></div>
+    <div class="tx"><b>બરાબર બંધ બેસે</b><p>ટુકડો ખાલી ખાનાં પર જ બંધ બેસવો જોઈએ — બહાર કે ભરેલા ખાના પર નહીં.</p></div>
+  </div>
+
+  <div class="step">
+    <div class="ic"><svg viewBox="0 0 24 24"><path d="M4 7h10M4 12h10M4 17h6"/><path d="M16.5 16.5l2 2 3.5-3.5"/></svg></div>
+    <div class="tx"><b>આખો આકાર પૂરો</b><p>બધા ટુકડા ગોઠવાઈ જાય ને આખો આકાર ભરાય ત્યારે કોયડો પૂર્ણ.</p></div>
+  </div>
+
+  <div class="step">
+    <div class="ic"><svg viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h11a6 6 0 0 1 0 12h-4"/></svg></div>
+    <div class="tx"><b>ફરી ગોઠવો</b><p>ભરેલા ટુકડા પર ટૅપ કરવાથી તે પાછો ટ્રે માં આવી જશે.</p></div>
+  </div>
+
+  <button class="got" onclick="closeHelp()">Close</button>
+</div>
+
+<!-- celebration -->
+<div class="celebrate" id="celebrate">
+  <div class="em">🌸</div>
+  <h2>બધા કોયડા પૂર્ણ</h2>
+  <p>ખૂબ સરસ! તમારી એકાગ્રતા કમાલની છે.</p>
+  <button class="btn" onclick="closeCelebrate()">Congratulations</button>
+</div>
+
+<script>
+const PUZZLES=[{"id":"star","title_gu":"તારો","rows":5,"cols":6,"target":[[0,1],[0,2],[0,3],[0,4],[0,5],[1,0],[1,1],[1,2],[1,3],[1,4],[1,5],[2,0],[2,1],[2,2],[2,3],[2,4],[2,5],[3,1],[3,2],[3,3],[4,2]],"pieces":[{"shape":[[0,0],[0,1],[1,0],[1,1]],"color":"#F6B94C"},{"shape":[[0,0],[0,1],[0,2],[1,2]],"color":"#7FC9C4"},{"shape":[[0,0],[0,1],[1,0],[1,1],[1,2]],"color":"#7EA6E0"},{"shape":[[0,0],[1,0],[1,1],[1,2]],"color":"#F0736A"},{"shape":[[0,0],[0,1],[0,2],[1,1]],"color":"#8BC34A"}]},{"id":"arrow","title_gu":"તીર","rows":5,"cols":5,"target":[[0,0],[0,1],[0,2],[0,3],[1,1],[1,2],[1,3],[1,4],[2,0],[2,1],[2,2],[2,3],[2,4],[3,0],[3,1],[3,2],[3,3],[3,4],[4,3],[4,4]],"pieces":[{"shape":[[0,0],[0,1],[0,2],[1,1]],"color":"#F6B94C"},{"shape":[[0,1],[1,0],[1,1],[1,2]],"color":"#7FC9C4"},{"shape":[[0,0],[0,1],[1,0],[1,1]],"color":"#7EA6E0"},{"shape":[[0,0],[0,1],[0,2],[1,2]],"color":"#F0736A"},{"shape":[[0,0],[0,1],[1,1],[1,2]],"color":"#8BC34A"}]},{"id":"leaf","title_gu":"પાન","rows":4,"cols":5,"target":[[0,0],[0,1],[0,2],[0,3],[1,0],[1,1],[1,2],[1,3],[1,4],[2,0],[2,1],[2,2],[2,3],[2,4],[3,0],[3,1],[3,2],[3,3],[3,4]],"pieces":[{"shape":[[0,0],[1,0],[1,1],[2,1]],"color":"#F6B94C"},{"shape":[[0,0],[0,1],[0,2]],"color":"#7FC9C4"},{"shape":[[0,0],[0,1],[1,0],[1,1]],"color":"#7EA6E0"},{"shape":[[0,0],[1,0],[1,1],[1,2]],"color":"#F0736A"},{"shape":[[0,1],[1,1],[2,0],[2,1]],"color":"#8BC34A"}]}];
+const KEY='dcgs_blocks_v1';
+
+function save(d){try{localStorage.setItem(KEY,JSON.stringify(d))}catch(e){}}
+function load(){try{return JSON.parse(localStorage.getItem(KEY))}catch(e){return null}}
+
+/* ---- app bridge (RN WebView) ---- */
+function postToApp(m){try{window.ReactNativeWebView&&window.ReactNativeWebView.postMessage(JSON.stringify(m));}catch(e){}}
+function activityDone(){postToApp({type:'ACTIVITY_DONE'});}   /* -> onWebActivityComplete in the app */
+
+/* active time only (pauses while the app is backgrounded) */
+let _active=0,_since=Date.now(),_completed=false;
+document.addEventListener('visibilitychange',function(){
+  if(document.hidden){_active+=Date.now()-_since;}else{_since=Date.now();}
+  pushProgress();
+});
+function timeSpentSec(){return Math.round((_active+(document.hidden?0:Date.now()-_since))/1000);}
+
+/* heartbeat: keep native updated so it can fire puzzle_exited on unmount (back press) */
+function pushProgress(){postToApp({type:'PROGRESS',time_spent_sec:timeSpentSec(),completed:_completed});}
+setInterval(pushProgress,3000);
+pushProgress();
+
+function markDone(){ _completed=true; activityDone(); pushProgress(); }   /* call when the whole set is solved */
+window.addEventListener('pagehide',pushProgress);   /* best-effort, where it fires */
+
+let state=load()||{tab:0,sound:false,celebrated:false,placed:[{},{},{}]};
+if(!state.placed)state.placed=[{},{},{}];
+for(let i=0;i<PUZZLES.length;i++){if(!state.placed[i])state.placed[i]={};}
+let soundOn=!!state.sound, cur=state.tab||0;
+
+/* ---- sound (mp3 files) ---- */
+const SND={
+  correct:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Right.mp3',
+  wrong:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Wrong.mp3',
+  level:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Level.mp3',
+  win:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Complete.mp3',
+  hint:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Hint.mp3'
+};
+const _audio={};
+function preloadSounds(){for(const k in SND){try{const a=new Audio(SND[k]);a.preload='auto';_audio[k]=a;}catch(e){}}}
+function playSound(k){if(!soundOn)return;const a=_audio[k];if(!a)return;try{a.pause();a.currentTime=0;a.play().catch(function(){});}catch(e){}}
+function playCorrect(){playSound('correct');}
+function playWrong(){playSound('wrong');}
+function playLevel(){playSound('level');}
+function playWin(){playSound('win');}
+function playHint(){playSound('hint');}
+function setSoundIcon(){const b=document.getElementById('soundBtn');b.innerHTML=soundOn
+  ?'<svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M16 9a3.5 3.5 0 0 1 0 6"/><path d="M19 7a7 7 0 0 1 0 10"/></svg>'
+  :'<svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M22 9l-5 6M17 9l5 6"/></svg>';}
+function toggleSound(){soundOn=!soundOn;state.sound=soundOn;setSoundIcon();save(state);}
+
+/* ---- geometry helpers ---- */
+function P(){return PUZZLES[cur];}
+function targetSet(p){const s=new Set();p.target.forEach(([r,c])=>s.add(r+','+c));return s;}
+/* placed[cur] = { pieceIndex : {r,c} }  -> anchor (min-normalized) top-left offset on the board */
+function placedCells(p,idx){
+  const pl=state.placed[cur][idx]; if(!pl)return null;
+  return p.pieces[idx].shape.map(([r,c])=>[r+pl.r,c+pl.c]);
+}
+function occupied(p){
+  const occ={}; // "r,c" -> pieceIndex
+  for(const k in state.placed[cur]){
+    const cells=placedCells(p,parseInt(k));
+    if(cells)cells.forEach(([r,c])=>occ[r+','+c]=parseInt(k));
+  }
+  return occ;
+}
+function solved(i){
+  const p=PUZZLES[i]; const pl=state.placed[i]||{};
+  if(Object.keys(pl).length!==p.pieces.length)return false;
+  const occ=new Set();
+  for(const k in pl){
+    const off=pl[k];
+    for(const [r,c] of p.pieces[k].shape){occ.add((r+off.r)+','+(c+off.c));}
+  }
+  if(occ.size!==p.target.length)return false;
+  for(const [r,c] of p.target){if(!occ.has(r+','+c))return false;}
+  return true;
+}
+
+/* ---- render ---- */
+function renderProgress(){document.getElementById('round').textContent=(cur+1)+'/'+PUZZLES.length;}
+function renderHead(){document.getElementById('hsub').innerHTML='નીચે આપેલા ટુકડાઓ ગોઠવીને “'+P().title_gu+'” આકાર પૂરો કરો.';}
+
+function cellPx(){
+  const p=P();
+  const boardW=Math.min(document.querySelector('.wrap').clientWidth-28-4, 432)-4;
+  const gap=5;
+  const px=Math.floor((boardW-(p.cols-1)*gap)/p.cols);
+  return Math.max(26,Math.min(px,54));
+}
+
+function renderBoard(){
+  const p=P(); const b=document.getElementById('board');
+  const cp=cellPx();
+  b.style.gridTemplateColumns='repeat('+p.cols+','+cp+'px)';
+  b.style.gridAutoRows=cp+'px';
+  b.innerHTML='';
+  const tset=targetSet(p);
+  const occ=occupied(p);
+  for(let r=0;r<p.rows;r++)for(let c=0;c<p.cols;c++){
+    const d=document.createElement('div');
+    const key=r+','+c;
+    d.dataset.r=r;d.dataset.c=c;
+    if(!tset.has(key)){d.className='gcell empty';}
+    else if(occ[key]!==undefined){
+      d.className='gcell filled';
+      d.style.background=p.pieces[occ[key]].color;
+      d.dataset.piece=occ[key];
+      d.addEventListener('click',()=>pickUp(occ[key]));
+    } else {
+      d.className='gcell slot';
+    }
+    b.appendChild(d);
+  }
+}
+
+function renderTray(){
+  const p=P(); const tray=document.getElementById('tray'); tray.innerHTML='';
+  const cp=Math.max(15,Math.min(Math.round(cellPx()*0.62),24));
+  p.pieces.forEach((pc,idx)=>{
+    const card=document.createElement('div');
+    const isUsed=state.placed[cur][idx]!==undefined;
+    card.className='slotcard'+(isUsed?' used':'');
+    const el=buildPieceEl(pc,cp);
+    el.dataset.idx=idx;
+    if(!isUsed) el.addEventListener('pointerdown',e=>startDrag(idx,el,e));
+    card.appendChild(el);
+    tray.appendChild(card);
+  });
+}
+function buildPieceEl(pc,cp){
+  let maxr=0,maxc=0; pc.shape.forEach(([r,c])=>{maxr=Math.max(maxr,r);maxc=Math.max(maxc,c);});
+  const el=document.createElement('div'); el.className='piece';
+  el.style.gridTemplateColumns='repeat('+(maxc+1)+','+cp+'px)';
+  el.style.gridAutoRows=cp+'px';
+  el.style.setProperty('--pc',cp+'px');
+  const set=new Set(pc.shape.map(([r,c])=>r+','+c));
+  for(let r=0;r<=maxr;r++)for(let c=0;c<=maxc;c++){
+    const cell=document.createElement('div');
+    if(set.has(r+','+c)){cell.className='pcell';cell.style.background=pc.color;}
+    else{cell.style.width=cp+'px';cell.style.height=cp+'px';}
+    el.appendChild(cell);
+  }
+  return el;
+}
+
+function renderActions(){
+  const isLast=cur===PUZZLES.length-1;
+  document.getElementById('btnPrev').disabled=(cur===0);
+  document.getElementById('btnNext').disabled=!(solved(cur)&&!isLast);
+}
+function renderAll(){renderProgress();renderHead();renderBoard();renderTray();renderActions();setSoundIcon();clearStatus();}
+
+/* ---- status ---- */
+let stTimer;
+function status(type,msg,sticky){const s=document.getElementById('status');s.className='status show '+type;s.textContent=msg;clearTimeout(stTimer);if(!sticky)stTimer=setTimeout(clearStatus,2300);}
+function clearStatus(){document.getElementById('status').className='status';}
+
+/* ---- drag & drop ---- */
+let drag=null;
+function startDrag(idx,el,e){
+  if(solved(cur))return;
+  if(e.button!==undefined&&e.button!==0)return;
+  e.preventDefault();
+  const p=P(); const pc=p.pieces[idx];
+  const cp=cellPx();
+  let maxr=0,maxc=0; pc.shape.forEach(([r,c])=>{maxr=Math.max(maxr,r);maxc=Math.max(maxc,c);});
+
+  // figure out which cell of the piece the finger grabbed (relative row/col)
+  const trayEl=el.getBoundingClientRect();
+  const trayCp=trayEl.width/(maxc+1);
+  let grabR=Math.floor((e.clientY-trayEl.top)/trayCp);
+  let grabC=Math.floor((e.clientX-trayEl.left)/trayCp);
+  grabR=Math.max(0,Math.min(maxr,grabR));
+  grabC=Math.max(0,Math.min(maxc,grabC));
+  const set=new Set(pc.shape.map(([r,c])=>r+','+c));
+  // if grabbed on a hole, snap to the nearest filled piece cell
+  if(!set.has(grabR+','+grabC)){
+    let best=pc.shape[0],bd=1e9;
+    pc.shape.forEach(([r,c])=>{const d=Math.abs(r-grabR)+Math.abs(c-grabC);if(d<bd){bd=d;best=[r,c];}});
+    grabR=best[0];grabC=best[1];
+  }
+
+  const ghost=document.createElement('div');
+  ghost.className='dragghost';
+  ghost.style.gridTemplateColumns='repeat('+(maxc+1)+','+cp+'px)';
+  ghost.style.gridAutoRows=cp+'px';
+  ghost.style.setProperty('--gc',cp+'px');
+  for(let r=0;r<=maxr;r++)for(let c=0;c<=maxc;c++){
+    const cell=document.createElement('div');
+    if(set.has(r+','+c)){cell.className='pcell';cell.style.background=pc.color;}
+    else{cell.style.width=cp+'px';cell.style.height=cp+'px';}
+    ghost.appendChild(cell);
+  }
+  document.body.appendChild(ghost);
+  el.classList.add('grabbing');
+  drag={idx,ghost,el,pc,cp,grabR,grabC,over:null,valid:false,pid:e.pointerId};
+  moveGhost(e.clientX,e.clientY);
+  try{el.setPointerCapture(e.pointerId);}catch(_){}
+}
+/* position the ghost so the grabbed piece cell sits under the finger */
+function moveGhost(x,y){
+  if(!drag)return;
+  const pitch=drag.cp+5; // cell size + board gap
+  drag.ghost.style.left=(x-drag.grabC*pitch-drag.cp/2)+'px';
+  drag.ghost.style.top=(y-drag.grabR*pitch-drag.cp/2)+'px';
+}
+function clearDrop(){document.querySelectorAll('.gcell.drop,.gcell.baddrop').forEach(d=>d.classList.remove('drop','baddrop'));}
+/* returns {r,c} board offset so the grabbed piece cell lands under the pointer.
+   Uses the board's own geometry so it works even over gaps/holes. */
+function hitOffset(x,y){
+  const board=document.getElementById('board');
+  const b=board.getBoundingClientRect();
+  const p=P(); const cp=drag?drag.cp:cellPx(); const pitch=cp+5;
+  // which board row/col is under the finger
+  let br=Math.floor((y-b.top)/pitch);
+  let bc=Math.floor((x-b.left)/pitch);
+  if(br<0||bc<0||br>=p.rows||bc>=p.cols)return null;
+  // offset = hovered board cell minus the grabbed piece cell
+  return {r:br-(drag?drag.grabR:0), c:bc-(drag?drag.grabC:0)};
+}
+function pieceFits(idx,off){
+  const p=P(); const tset=targetSet(p); const occ=occupied(p);
+  for(const [r,c] of p.pieces[idx].shape){
+    const rr=r+off.r, cc=c+off.c; const key=rr+','+cc;
+    if(!tset.has(key))return false;
+    if(occ[key]!==undefined)return false;
+  }
+  return true;
+}
+function previewDrop(idx,off,ok){
+  clearDrop();
+  const p=P();
+  for(const [r,c] of p.pieces[idx].shape){
+    const cell=document.querySelector('.gcell[data-r="'+(r+off.r)+'"][data-c="'+(c+off.c)+'"]');
+    if(cell)cell.classList.add(ok?'drop':'baddrop');
+  }
+}
+function onDragMove(e){
+  if(!drag)return; e.preventDefault();
+  moveGhost(e.clientX,e.clientY);
+  const off=hitOffset(e.clientX,e.clientY);
+  if(off){
+    const ok=pieceFits(drag.idx,off);
+    drag.over=off; drag.valid=ok;
+    previewDrop(drag.idx,off,ok);
+  }else{drag.over=null;drag.valid=false;clearDrop();}
+}
+function onDragEnd(e){
+  if(!drag)return; const d=drag; drag=null;
+  if(e)e.preventDefault();
+  d.ghost.remove(); d.el.classList.remove('grabbing'); clearDrop();
+  if(d.over&&pieceFits(d.idx,d.over)){
+    state.placed[cur][d.idx]={r:d.over.r,c:d.over.c};
+    save(state);
+    renderBoard(); renderTray();
+    if(solved(cur)){onSolved();}
+    else{if(soundOn)playCorrect();status('ok','સરસ! ટુકડો બંધ બેઠો.');}
+  }else if(d.over){
+    if(soundOn)playWrong(); status('bad','અહીં બંધ નથી બેસતો. ફરી જુઓ.');
+  }
+}
+
+/* tap a placed piece to return it to the tray */
+function pickUp(idx){
+  if(solved(cur))return;
+  if(state.placed[cur][idx]===undefined)return;
+  delete state.placed[cur][idx];
+  save(state); renderBoard(); renderTray(); clearStatus();
+}
+
+/* ---- solved ---- */
+function onSolved(){
+  renderBoard(); renderTray(); renderActions();
+  const all=PUZZLES.every((p,i)=>solved(i));
+  if(all){
+    status('done','બધા કોયડા પૂર્ણ. ખૂબ સરસ! 🌸',true);
+    if(soundOn)playWin();
+    if(!state.celebrated){state.celebrated=true;save(state);showCelebrate();}
+    markDone();
+  }else{
+    status('done','આ કોયડો પૂર્ણ. તૈયાર હો ત્યારે આગળ વધો.',true);
+    if(soundOn)playLevel();
+  }
+}
+
+/* full solver: offsets for EVERY piece (ignores current placements) */
+function solveFull(){
+  const p=P(); const tset=targetSet(p);
+  const cand=p.pieces.map(pc=>{
+    const list=[];
+    for(let dr=0;dr<p.rows;dr++)for(let dc=0;dc<p.cols;dc++){
+      let ok=true;
+      for(const [r,c] of pc.shape){if(!tset.has((r+dr)+','+(c+dc))){ok=false;break;}}
+      if(ok)list.push({r:dr,c:dc});
+    }
+    return list;
+  });
+  const order=p.pieces.map((_,i)=>i).sort((a,b)=>cand[a].length-cand[b].length);
+  const used=new Set(); const result={};
+  function bt(k){
+    if(k===order.length)return used.size===p.target.length;
+    const i=order[k];
+    for(const off of cand[i]){
+      const keys=p.pieces[i].shape.map(([r,c])=>(r+off.r)+','+(c+off.c));
+      if(keys.some(kk=>used.has(kk)))continue;
+      keys.forEach(kk=>used.add(kk)); result[i]=off;
+      if(bt(k+1))return true;
+      keys.forEach(kk=>used.delete(kk)); delete result[i];
+    }
+    return false;
+  }
+  return bt(0)?result:null;
+}
+
+/* is piece idx already sitting exactly where the solution wants it? */
+function correctlyPlaced(idx,sol){
+  const pl=state.placed[cur][idx]; if(!pl)return false;
+  return pl.r===sol[idx].r && pl.c===sol[idx].c;
+}
+
+/* ---- hint: reveal one piece's correct spot briefly ---- */
+function useHint(){
+  if(solved(cur)){status('hint','આ કોયડો પહેલેથી પૂર્ણ છે.');return;}
+  const p=P();
+  const sol=solveFull();
+  if(!sol){status('hint','ટુકડા જાતે ગોઠવવાનો પ્રયાસ કરો.');return;}
+  // prefer a piece that is not yet placed; otherwise one placed in the wrong spot
+  let target=-1;
+  for(let i=0;i<p.pieces.length;i++){if(state.placed[cur][i]===undefined){target=i;break;}}
+  if(target<0){
+    for(let i=0;i<p.pieces.length;i++){if(!correctlyPlaced(i,sol)){target=i;break;}}
+  }
+  if(target<0){status('hint','બધા ટુકડા સાચી જગ્યાએ છે.');return;}
+
+  // if the target cells are blocked by a wrongly-placed piece, lift that piece first
+  const off=sol[target];
+  const cells=p.pieces[target].shape.map(([r,c])=>[r+off.r,c+off.c]);
+  const occ=occupied(p);
+  cells.forEach(([r,c])=>{const pi=occ[r+','+c];if(pi!==undefined&&pi!==target&&!correctlyPlaced(pi,sol))delete state.placed[cur][pi];});
+  save(state); renderBoard(); renderTray();
+
+  cells.forEach(([r,c])=>{
+    const el=document.querySelector('.gcell[data-r="'+r+'"][data-c="'+c+'"]');
+    if(el&&el.classList.contains('slot')){el.classList.add('hint');el.style.background=p.pieces[target].color;}
+  });
+  if(soundOn)playHint();
+  status('hint','💡 “'+p.title_gu+'” માટે આ ટુકડો અહીં આવશે.');
+  setTimeout(()=>cells.forEach(([r,c])=>{
+    const el=document.querySelector('.gcell[data-r="'+r+'"][data-c="'+c+'"]');
+    if(el){el.classList.remove('hint');if(el.classList.contains('slot'))el.style.background='';}
+  }),1700);
+}
+
+/* ---- nav ---- */
+function nextPuzzle(){if(cur<PUZZLES.length-1&&solved(cur)){cur++;state.tab=cur;save(state);renderAll();window.scrollTo({top:0,behavior:'smooth'});}}
+function prevPuzzle(){if(cur>0){cur--;state.tab=cur;save(state);renderAll();window.scrollTo({top:0,behavior:'smooth'});}}
+
+/* ---- help sheet ---- */
+function openHelp(){document.getElementById('scrim').classList.add('open');document.getElementById('sheet').classList.add('open');}
+function closeHelp(){document.getElementById('scrim').classList.remove('open');document.getElementById('sheet').classList.remove('open');}
+
+/* ---- celebration ---- */
+function showCelebrate(){const c=document.getElementById('celebrate');c.classList.add('show');const ems=['🌸','🌼','✨','🍃','💜'];for(let i=0;i<16;i++){const pt=document.createElement('div');pt.className='petal';pt.textContent=ems[i%ems.length];pt.style.left=(Math.random()*100)+'%';pt.style.animationDuration=(2.4+Math.random()*1.6)+'s';pt.style.animationDelay=(Math.random()*.6)+'s';document.body.appendChild(pt);setTimeout(()=>pt.remove(),4600);}}
+function closeCelebrate(){document.getElementById('celebrate').classList.remove('show');postToApp({type:'GO_BACK'});}
+
+/* ---- listeners ---- */
+window.addEventListener('pointermove',onDragMove,{passive:false});
+window.addEventListener('pointerup',onDragEnd);
+window.addEventListener('pointercancel',onDragEnd);
+window.addEventListener('resize',()=>{if(!drag){renderBoard();renderTray();}});
+
+/* ---- init ---- */
+preloadSounds();
+renderAll();
+if(PUZZLES.every((p,i)=>solved(i))){
+  status('done','બધા કોયડા પૂર્ણ. ખૂબ સરસ! 🌸',true);
+  _completed=true; pushProgress();
+}else if(solved(cur)){
+  status('done','આ કોયડો પૂર્ણ. તૈયાર હો ત્યારે આગળ વધો.',true);
+}
+</script>
+</body>
+</html>
