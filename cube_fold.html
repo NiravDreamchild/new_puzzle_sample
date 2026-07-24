@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#FBF9FC">
+<title>Dreamchild · Cube Fold</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Vadodara:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FBF9FC;
+  --surface:#FFFFFF;
+  --ink:#2E2A32;
+  --muted:#8C8794;
+  --line:#ECE7F0;
+  --brand:#752886;
+  --brand-deep:#561F69;
+  --brand-soft:#F3E9F8;
+  --accent:#F2A03D;
+  --accent-soft:#FCEFDC;
+  --mint:#2F9B63;
+  --mint-soft:#E5F4EC;
+  --rose:#C75C72;
+  --rose-soft:#FAEAEE;
+  --box-line:#D9C7E2;
+  --shadow:0 10px 30px -12px rgba(78,33,95,.18);
+  --shadow-sm:0 4px 14px -8px rgba(78,33,95,.20);
+  --r-lg:22px; --r-md:16px; --r-sm:12px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg);color:var(--ink);
+  font-family:'Hind Vadodara',sans-serif;
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+  background-image:radial-gradient(120% 60% at 50% -10%, var(--brand-soft) 0%, rgba(243,233,248,0) 60%);
+}
+.wrap{max-width:460px;margin:0 auto;padding:16px 16px 28px;position:relative;z-index:1;}
+
+/* ---- header ---- */
+.phead{background:var(--surface);border:1px solid var(--line);border-radius:18px;
+  box-shadow:0 6px 20px -12px rgba(78,33,95,.16);padding:15px 16px;margin-bottom:14px;}
+.hrow1{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.ptitle{font-weight:700;font-size:23px;line-height:1.05;color:var(--brand);margin:0;letter-spacing:-.01em;}
+.hctrls{display:flex;align-items:center;gap:8px;flex:none;}
+.rpill{display:flex;align-items:center;justify-content:center;min-width:50px;height:38px;padding:0 12px;
+  border:1px solid var(--line);border-radius:11px;background:var(--surface);
+  font-weight:600;font-size:16px;color:var(--ink);letter-spacing:.01em;}
+.hbtn{width:40px;height:38px;border:1px solid var(--line);border-radius:11px;background:var(--surface);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-appearance:none;padding:0;
+  transition:background .15s ease;}
+.hbtn:active{background:var(--brand-soft);}
+.hbtn svg{width:20px;height:20px;fill:none;stroke:var(--muted);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.hbtn.info{width:38px;background:var(--brand-soft);border-color:transparent;}
+.hbtn.info svg{stroke:var(--brand);}
+.hsub{text-align:center;font-weight:600;font-size:15px;line-height:1.5;color:var(--ink);margin:13px 0 1px;}
+
+/* ---- stage card ---- */
+.stage{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
+  box-shadow:0 8px 28px -10px rgba(78,33,95,.16), 0 2px 8px -3px rgba(78,33,95,.08);padding:16px;margin-bottom:14px;}
+
+/* net (unfolded cube) */
+.netwrap{display:flex;flex-direction:column;align-items:center;gap:9px;}
+.netcap{font-size:12.5px;font-weight:600;color:var(--muted);letter-spacing:.02em;}
+.net{width:100%;max-width:236px;}
+.net svg{width:100%;height:auto;display:block;filter:drop-shadow(0 5px 12px rgba(78,33,95,.10));}
+
+.divide{height:1px;background:var(--line);margin:16px 0 13px;border:0;}
+.ask{text-align:center;font-size:13.5px;font-weight:600;color:var(--ink);margin:0 0 13px;}
+
+/* options (candidate cubes) */
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:11px;}
+.opt{position:relative;border:1.5px solid var(--line);border-radius:16px;background:#FCFBFD;
+  padding:10px 8px 8px;cursor:pointer;-webkit-appearance:none;overflow:hidden;
+  display:flex;flex-direction:column;align-items:center;
+  transition:border-color .15s ease,background .15s ease,transform .1s ease,box-shadow .15s ease;}
+.opt:active{transform:scale(.98);}
+.opt .tag{position:absolute;top:9px;left:11px;font-size:12.5px;font-weight:700;color:var(--muted);letter-spacing:.02em;}
+.opt svg{width:82%;height:auto;display:block;}
+.opt.sel{border-color:var(--brand);background:var(--brand-soft);box-shadow:var(--shadow-sm);}
+.opt.sel .tag{color:var(--brand);}
+.opt.ok{border-color:var(--mint);background:var(--mint-soft);}
+.opt.ok .tag{color:var(--mint);}
+.opt.err{border-color:var(--rose);background:var(--rose-soft);}
+.opt.err .tag{color:var(--rose);}
+.opt.locked{cursor:default;}
+.opt .mark{position:absolute;top:7px;right:9px;width:20px;height:20px;opacity:0;transition:opacity .2s ease;}
+.opt .mark svg{width:20px;height:20px;stroke-width:2.4;}
+.opt.ok .mark,.opt.err .mark{opacity:1;}
+.opt.ok .mark svg{stroke:var(--mint);}
+.opt.err .mark svg{stroke:var(--rose);}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.opt.shake{animation:shake .3s ease;}
+
+/* ---- status ---- */
+.status{min-height:24px;text-align:center;font-size:14px;line-height:1.4;font-weight:500;
+  color:var(--muted);padding:2px 8px;margin:6px 0;opacity:0;transition:opacity .25s ease;}
+.status.show{opacity:1;}
+.status.ok{color:var(--mint);}
+.status.bad{color:var(--rose);}
+.status.hint{color:#B5781E;}
+.status.done{color:var(--brand);font-weight:600;}
+
+/* ---- action bar ---- */
+.actionbar{margin-top:14px;}
+.actionbar .inner{display:flex;flex-direction:row;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:6px;row-gap:8px;}
+.cmid{display:flex;align-items:center;gap:6px;}
+.cbtn{font-family:'Hind Vadodara',sans-serif;cursor:pointer;-webkit-appearance:none;
+  display:flex;align-items:center;justify-content:center;gap:5px;
+  transition:transform .12s ease,opacity .2s ease,background .2s ease,box-shadow .2s ease;}
+.cbtn:active{transform:scale(.97);}
+.cbtn svg{width:16px;height:16px;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;}
+.cbtn.check{min-height:36px;border-radius:12px;padding:0 22px;background:var(--brand);border:none;color:#fff;
+  font-weight:700;font-size:13.5px;box-shadow:0 8px 20px -8px rgba(110,42,133,.5);}
+.cbtn.check:disabled{background:var(--surface);border:1px solid var(--line);color:var(--muted);
+  box-shadow:none;font-weight:600;cursor:default;}
+.cbtn.prev,.cbtn.next{min-height:36px;border-radius:12px;padding:0 20px;background:var(--brand);border:none;color:#fff;
+  font-weight:700;font-size:13.5px;box-shadow:0 8px 20px -8px rgba(110,42,133,.5);}
+.cbtn.prev svg,.cbtn.next svg{stroke:#fff;}
+.cbtn:disabled{cursor:default;}
+.cbtn.prev:disabled,.cbtn.next:disabled{background:var(--surface);border:1px solid var(--line);color:var(--muted);box-shadow:none;font-weight:600;}
+.cbtn.prev:disabled svg,.cbtn.next:disabled svg{stroke:var(--muted);}
+
+/* ---- footer ---- */
+.foot{text-align:center;font-size:11px;color:var(--muted);letter-spacing:.03em;margin-top:18px;}
+.foot b{font-weight:600;color:#a79bb0;}
+
+/* ---- help sheet ---- */
+.scrim{position:fixed;inset:0;background:rgba(46,42,50,.42);backdrop-filter:blur(2px);z-index:40;
+  opacity:0;pointer-events:none;transition:opacity .28s ease;}
+.scrim.open{opacity:1;pointer-events:auto;}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:41;background:var(--surface);
+  border-radius:26px 26px 0 0;box-shadow:0 -16px 40px -16px rgba(46,42,50,.3);
+  max-width:460px;margin:0 auto;padding:10px 22px calc(26px + env(safe-area-inset-bottom));
+  transform:translateY(110%);transition:transform .34s cubic-bezier(.22,1,.36,1);}
+.sheet.open{transform:translateY(0);}
+.grab{width:42px;height:5px;border-radius:999px;background:var(--line);margin:6px auto 16px;}
+.sheet h3{font-weight:700;font-size:20px;margin:0 0 4px;}
+.sheet .lead{font-size:14px;color:var(--muted);margin:0 0 18px;line-height:1.5;}
+.step{display:flex;gap:14px;align-items:flex-start;margin-bottom:16px;}
+.step .ic{flex:none;width:46px;height:46px;border-radius:14px;background:var(--brand-soft);
+  display:flex;align-items:center;justify-content:center;}
+.step .ic svg{width:26px;height:26px;stroke:var(--brand);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
+.step .tx b{display:block;font-weight:600;font-size:15px;color:var(--ink);margin-bottom:2px;}
+.step .tx p{margin:0;font-size:13.5px;color:var(--muted);line-height:1.5;}
+.sheet .got{width:100%;margin-top:6px;background:var(--brand);color:#fff;border:none;cursor:pointer;
+  font-family:'Hind Vadodara',sans-serif;border-radius:14px;min-height:48px;font-weight:700;font-size:15px;}
+
+/* ---- celebration ---- */
+.celebrate{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;
+  background:rgba(251,249,252,.86);backdrop-filter:blur(3px);text-align:center;padding:30px;}
+.celebrate.show{display:flex;flex-direction:column;}
+.celebrate .em{font-size:54px;margin-bottom:6px;animation:rise .6s cubic-bezier(.22,1,.36,1);}
+.celebrate h2{font-weight:700;font-size:24px;color:var(--brand);margin:0 0 8px;}
+.celebrate p{font-size:15px;color:var(--ink);font-weight:500;margin:0 0 22px;max-width:280px;line-height:1.5;}
+.celebrate .btn{min-width:200px;background:var(--brand);color:#fff;border:none;cursor:pointer;
+  font-family:'Hind Vadodara',sans-serif;border-radius:14px;min-height:55px;font-weight:700;font-size:18px;}
+@keyframes rise{from{transform:translateY(16px) scale(.8);opacity:0}to{transform:none;opacity:1}}
+.petal{position:fixed;top:-24px;z-index:49;font-size:18px;animation:drift linear forwards;pointer-events:none;}
+@keyframes drift{to{transform:translateY(106vh) rotate(360deg);opacity:0}}
+
+/* ---- ambient puzzle-piece background ---- */
+.bg{position:fixed;top:0;left:0;right:0;height:100vh;height:100lvh;overflow:hidden;pointer-events:none;z-index:0;}
+.piece{position:absolute;transform:rotate(var(--rot,0deg));opacity:.2;}
+.piece svg{display:block;width:100%;height:auto;fill:currentColor;}
+.piece.f1{top:-30px;left:-46px;width:150px;color:#fa7068;--rot:-14deg;}
+.piece.f2{top:78px;right:-52px;width:150px;color:#fbca5f;--rot:18deg;}
+.piece.f3{top:46%;right:-58px;width:110px;color:#a0c95d;--rot:26deg;}
+.piece.f4{bottom:-40px;right:-30px;width:170px;color:#9ddbe6;--rot:-18deg;}
+.piece.f5{bottom:46px;left:-56px;width:150px;color:#f3adc9;--rot:8deg;}
+.piece.f6{top:36%;left:-70px;width:100px;color:#d4ab99;--rot:30deg;}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001ms !important;transition-duration:.05ms !important;}
+}
+:focus-visible{outline:2.5px solid var(--brand);outline-offset:2px;border-radius:6px;}
+</style>
+</head>
+<body>
+<div class="bg" aria-hidden="true">
+  <div class="piece f1"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece f2"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece f3"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece f4"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece f5"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece f6"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+</div>
+
+<div class="wrap">
+  <!-- header -->
+  <header class="phead">
+    <div class="hrow1">
+      <h1 class="ptitle">Cube Fold</h1>
+      <div class="hctrls">
+        <span class="rpill" id="round"></span>
+        <button class="hbtn" id="soundBtn" onclick="toggleSound()" aria-label="Sound"></button>
+        <button class="hbtn info" onclick="openHelp()" aria-label="How to play">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><circle cx="12" cy="8" r="0.6" fill="currentColor" stroke="none"/></svg>
+        </button>
+      </div>
+    </div>
+    <p class="hsub">આપેલી આકૃતિને મનમાં વાળી ઘન બનાવો.<br>પછી કયો ઘન બની શકે તે પસંદ કરો.</p>
+  </header>
+
+  <!-- STAGE -->
+  <div class="stage">
+    <div class="netwrap">
+      <span class="netcap">આ પાથરણ વાળ્યા પછી કયો ઘન બને?</span>
+      <div class="net" id="net"></div>
+    </div>
+    <hr class="divide">
+    <p class="ask">નીચેનામાંથી કયો ઘન બની શકે તે પસંદ કરો.</p>
+    <div class="opts" id="opts"></div>
+  </div>
+
+  <!-- status -->
+  <div class="status" id="status"></div>
+
+  <!-- action bar: Back · Check Answer · Next -->
+  <div class="actionbar">
+    <div class="inner">
+      <button class="cbtn prev" id="btnPrev" onclick="prevPuzzle()"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>Back</button>
+      <div class="cmid">
+        <button class="cbtn check" id="btnCheck" onclick="checkAnswer()" disabled>Check Answer</button>
+      </div>
+      <button class="cbtn next" id="btnNext" onclick="nextPuzzle()">Next<svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+    </div>
+  </div>
+
+  <div class="foot">© <b>Dreamchild Garbhsanskar</b></div>
+</div>
+
+<!-- help sheet -->
+<div class="scrim" id="scrim" onclick="closeHelp()"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="How to play">
+  <div class="grab"></div>
+  <h3>કેવી રીતે રમવું</h3>
+  <p class="lead">આપેલી આકૃતિને મનમાં વાળી ઘન બનાવો. ઉતાવળ નહીં — શાંતિથી વિચારો.</p>
+
+  <div class="step">
+    <div class="ic"><svg viewBox="0 0 24 24"><path d="M3 9h6v6H3z"/><path d="M9 9h6v6H9z"/><path d="M9 3h6v6H9z"/><path d="M9 15h6v6H9z"/></svg></div>
+    <div class="tx"><b>આકૃતિ સમજો</b><p>ઉપર દેખાતી આકૃતિ ઘનનું ખુલ્લું પાથરણ છે. તેમાં ઘનની છ બાજુઓ દર્શાવેલી છે.</p></div>
+  </div>
+
+  <div class="step">
+    <div class="ic"><svg viewBox="0 0 24 24"><path d="M12 2l9 5v10l-9 5-9-5V7z"/><path d="M12 12l9-5M12 12v10M12 12L3 7"/></svg></div>
+    <div class="tx"><b>ઘન બનાવો</b><p>આ પાથરણને મનમાં વાળી ઘન બનાવો. યાદ રાખો — સામસામેની બાજુઓ ઘનમાં ક્યારેય એકસાથે દેખાતી નથી.</p></div>
+  </div>
+
+  <div class="step">
+    <div class="ic"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></div>
+    <div class="tx"><b>પસંદ કરી ચકાસો</b><p>જે ઘન આ પાથરણમાંથી બની શકે તે વિકલ્પ પસંદ કરી “Check Answer” દબાવો.</p></div>
+  </div>
+
+  <button class="got" onclick="closeHelp()">Close</button>
+</div>
+
+<!-- celebration -->
+<div class="celebrate" id="celebrate">
+  <div class="em">🌸</div>
+  <h2>બધા કોયડા પૂર્ણ</h2>
+  <p>ખૂબ સરસ! તમારી અવકાશી કલ્પના કમાલની છે.</p>
+  <button class="btn" onclick="closeCelebrate()">Congratulations</button>
+</div>
+
+<script>
+/* =========================================================================
+   CUBE FOLD — puzzle data
+   Fixed cross net.  Slot geometry (verified by isometric projection):
+       .  U  .  .
+       W  S  E  N
+       .  D  .  .
+   Opposite face pairs (by slot):  U<->D , W<->E , S<->N
+   A cube view is BUILDABLE iff its 3 visible faces contain NO opposite pair
+   (opposite faces can never be seen together).  The correct option is always
+   drawn as the real front-top-right corner: U on top, S on left, E on right.
+   The answer index is DERIVED at runtime from the buildable rule, so the
+   drawing and the answer key can never disagree.
+   ========================================================================= */
+const PUZZLES = [
+  { id:'p1',
+    symbols:{ U:'🌙', W:'🍃', S:'🌸', E:'🍎', N:'⭐', D:'☀️' },
+    options:[
+      { top:'🍃', left:'🌸', right:'🍎' },   /* W,S,E  -> W&E opposite  ✗ */
+      { top:'🌙', left:'🌸', right:'🍎' },   /* U,S,E  -> buildable      ✓ */
+      { top:'🌙', left:'☀️', right:'🍎' },   /* U,D,E  -> U&D opposite   ✗ */
+      { top:'🌙', left:'🌸', right:'⭐' }    /* U,S,N  -> S&N opposite   ✗ */
+    ] },
+  { id:'p2',
+    symbols:{ U:'🐣', W:'🌷', S:'🦋', E:'🍯', N:'🐢', D:'🌈' },
+    options:[
+      { top:'🌷', left:'🦋', right:'🍯' },   /* W,S,E  -> W&E opposite   ✗ */
+      { top:'🐣', left:'🦋', right:'🐢' },   /* U,S,N  -> S&N opposite   ✗ */
+      { top:'🐣', left:'🦋', right:'🍯' },   /* U,S,E  -> buildable      ✓ */
+      { top:'🐣', left:'🌈', right:'🍯' }    /* U,D,E  -> U&D opposite   ✗ */
+    ] },
+  { id:'p3',
+    symbols:{ U:'🎈', W:'🍓', S:'🐘', E:'🌻', N:'🚗', D:'🦉' },
+    options:[
+      { top:'🎈', left:'🐘', right:'🌻' },   /* U,S,E  -> buildable      ✓ */
+      { top:'🎈', left:'🐘', right:'🚗' },   /* U,S,N  -> S&N opposite   ✗ */
+      { top:'🍓', left:'🐘', right:'🌻' },   /* W,S,E  -> W&E opposite   ✗ */
+      { top:'🎈', left:'🦉', right:'🌻' }    /* U,D,E  -> U&D opposite   ✗ */
+    ] }
+];
+
+/* opposite-slot pairs */
+const OPP = [['U','D'],['W','E'],['S','N']];
+function slotOf(P,sym){ for(const k in P.symbols){ if(P.symbols[k]===sym) return k; } return null; }
+function areOpp(P,a,b){ const sa=slotOf(P,a), sb=slotOf(P,b);
+  return OPP.some(([x,y])=>(sa===x&&sb===y)||(sa===y&&sb===x)); }
+function buildable(P,o){ const f=[o.top,o.left,o.right];
+  return !(areOpp(P,f[0],f[1])||areOpp(P,f[0],f[2])||areOpp(P,f[1],f[2])); }
+function answerIndex(P){ let idx=-1,cnt=0;
+  P.options.forEach((o,i)=>{ if(buildable(P,o)){ idx=i; cnt++; } });
+  return {idx,cnt}; }
+/* self-check: exactly one buildable option per puzzle */
+PUZZLES.forEach((P,i)=>{ const r=answerIndex(P);
+  if(r.cnt!==1) console.warn('Puzzle',i,'has',r.cnt,'buildable options — expected 1'); });
+
+const KEY='dcgs_cubefold_v1';
+const TAGS=['A','B','C','D'];
+
+function save(d){try{localStorage.setItem(KEY,JSON.stringify(d))}catch(e){}}
+function load(){try{return JSON.parse(localStorage.getItem(KEY))}catch(e){return null}}
+
+/* ---- app bridge (RN WebView) ---- */
+function postToApp(m){try{window.ReactNativeWebView&&window.ReactNativeWebView.postMessage(JSON.stringify(m));}catch(e){}}
+function activityDone(){postToApp({type:'ACTIVITY_DONE'});}   /* -> onWebActivityComplete */
+
+/* active time only (pauses while the app is backgrounded) */
+let _active=0,_since=Date.now(),_completed=false;
+document.addEventListener('visibilitychange',function(){
+  if(document.hidden){_active+=Date.now()-_since;}else{_since=Date.now();}
+  pushProgress();
+});
+function timeSpentSec(){return Math.round((_active+(document.hidden?0:Date.now()-_since))/1000);}
+function pushProgress(){postToApp({type:'PROGRESS',time_spent_sec:timeSpentSec(),completed:_completed});}
+setInterval(pushProgress,3000);
+pushProgress();
+function markDone(){ _completed=true; activityDone(); pushProgress(); }
+window.addEventListener('pagehide',pushProgress);
+
+/* ---- state ---- */
+let state = load() || { tab:0, sound:false, celebrated:false, solved:[false,false,false], picked:[null,null,null] };
+if(!state.solved) state.solved=[false,false,false];
+if(!state.picked) state.picked=[null,null,null];
+let soundOn = !!state.sound;
+let cur = state.tab||0;
+let sel = state.picked[cur];   /* current selection index (or null) */
+
+/* ---- sound (mp3 assets) ---- */
+const SND={
+  correct:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Right.mp3',
+  wrong:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Wrong.mp3',
+  level:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Level.mp3',
+  win:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Complete.mp3',
+  hint:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Hint.mp3'
+};
+const _audio={};
+function preloadSounds(){for(const k in SND){try{const a=new Audio(SND[k]);a.preload='auto';_audio[k]=a;}catch(e){}}}
+function playSound(k){if(!soundOn)return;const a=_audio[k];if(!a)return;try{a.pause();a.currentTime=0;a.play().catch(function(){});}catch(e){}}
+function playCorrect(){playSound('correct');}
+function playWrong(){playSound('wrong');}
+function playLevel(){playSound('level');}
+function playWin(){playSound('win');}
+function setSoundIcon(){const b=document.getElementById('soundBtn');b.innerHTML=soundOn
+  ?'<svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M16 9a3.5 3.5 0 0 1 0 6"/><path d="M19 7a7 7 0 0 1 0 10"/></svg>'
+  :'<svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M22 9l-5 6M17 9l5 6"/></svg>';}
+function toggleSound(){soundOn=!soundOn;state.sound=soundOn;setSoundIcon();save(state);}
+
+function solved(i){return !!state.solved[i];}
+function allSolved(){return state.solved.every(Boolean);}
+
+/* ---- isometric cube SVG ---- */
+/* vertices for a 120x120 viewBox: cx=60 cy=58 A=38 B=21 */
+function cubeSVG(o){
+  const T='60,16', R='98,37', RB='98,79', BO='60,100', LB='22,79', L='22,37', C='60,58';
+  const topFace  = `${T} ${R} ${C} ${L}`;
+  const leftFace = `${L} ${C} ${BO} ${LB}`;
+  const rightFace= `${C} ${R} ${RB} ${BO}`;
+  return ''
+    +'<svg viewBox="0 0 120 116" aria-hidden="true">'
+    +`<polygon points="${leftFace}"  fill="#F1E7F7" stroke="#CBB6D8" stroke-width="1.4" stroke-linejoin="round"/>`
+    +`<polygon points="${rightFace}" fill="#E4D5EE" stroke="#CBB6D8" stroke-width="1.4" stroke-linejoin="round"/>`
+    +`<polygon points="${topFace}"   fill="#FFFFFF" stroke="#CBB6D8" stroke-width="1.4" stroke-linejoin="round"/>`
+    +`<text x="60" y="37"   font-size="21" text-anchor="middle" dominant-baseline="central">${o.top}</text>`
+    +`<text x="41" y="68.5" font-size="19" text-anchor="middle" dominant-baseline="central">${o.left}</text>`
+    +`<text x="79" y="68.5" font-size="19" text-anchor="middle" dominant-baseline="central">${o.right}</text>`
+    +'</svg>';
+}
+const CHECK_ICON='<svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>';
+const CROSS_ICON='<svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+
+/* ---- render ---- */
+function renderProgress(){document.getElementById('round').textContent=(cur+1)+'/'+PUZZLES.length;}
+
+/* one connected cross net: unified silhouette + dashed fold lines between faces */
+function netSVG(sym){
+  const FILL='#FAF7FB', LINE='#D9C7E2';
+  /* cross outline (cell = 54px):  U on top, W S E N middle band, D below S */
+  const outline='M54,0 H108 V54 H216 V108 H108 V162 H54 V108 H0 V54 H54 Z';
+  const folds=[
+    'M54,54 H108',   /* U | S */
+    'M54,108 H108',  /* S | D */
+    'M54,54 V108',   /* W | S */
+    'M108,54 V108',  /* S | E */
+    'M162,54 V108'   /* E | N */
+  ].join(' ');
+  const cells=[['U',81,27],['W',27,81],['S',81,81],['E',135,81],['N',189,81],['D',81,135]];
+  let txt='';
+  cells.forEach(([k,x,y])=>{ txt+=`<text x="${x}" y="${y}" font-size="27" text-anchor="middle" dominant-baseline="central">${sym[k]}</text>`; });
+  return '<svg viewBox="-4 -4 224 170" aria-hidden="true">'
+    +`<path d="${outline}" fill="${FILL}" stroke="${LINE}" stroke-width="2.4" stroke-linejoin="round"/>`
+    +`<path d="${folds}" fill="none" stroke="${LINE}" stroke-width="1.4" stroke-dasharray="4 4.5" stroke-linecap="round" opacity=".75"/>`
+    +txt+'</svg>';
+}
+function renderNet(){
+  document.getElementById('net').innerHTML=netSVG(PUZZLES[cur].symbols);
+}
+
+function renderOpts(){
+  const P=PUZZLES[cur], wrap=document.getElementById('opts'); wrap.innerHTML='';
+  const isSolved=solved(cur);
+  const correctIdx=answerIndex(P).idx;
+  P.options.forEach((o,i)=>{
+    const b=document.createElement('button');
+    let cls='opt';
+    if(isSolved){ cls+=' locked'; if(i===correctIdx) cls+=' ok'; }
+    else if(i===sel){ cls+=' sel'; }
+    b.className=cls;
+    b.innerHTML='<span class="tag">'+TAGS[i]+'</span>'
+      +'<span class="mark">'+(i===correctIdx?CHECK_ICON:CROSS_ICON)+'</span>'
+      +cubeSVG(o);
+    if(!isSolved){ b.addEventListener('click',()=>pickOption(i)); }
+    wrap.appendChild(b);
+  });
+}
+
+function renderActions(){
+  const isLast = cur===PUZZLES.length-1;
+  document.getElementById('btnPrev').disabled = (cur===0);
+  document.getElementById('btnNext').disabled = !(solved(cur) && !isLast);
+  document.getElementById('btnCheck').disabled = solved(cur) || sel===null;
+}
+
+function renderAll(){renderProgress();renderNet();renderOpts();renderActions();setSoundIcon();clearStatus();
+  if(solved(cur)) status('done','આ કોયડો પૂર્ણ. 🌸',true);}
+
+/* ---- status ---- */
+let stTimer;
+function status(type,msg,sticky){const s=document.getElementById('status');s.className='status show '+type;s.textContent=msg;clearTimeout(stTimer);if(!sticky)stTimer=setTimeout(clearStatus,2300);}
+function clearStatus(){document.getElementById('status').className='status';}
+
+/* ---- interaction ---- */
+function pickOption(i){
+  if(solved(cur)) return;
+  sel=i; state.picked[cur]=i; save(state);
+  /* clear any error styling, re-render selection */
+  renderOpts(); renderActions(); clearStatus();
+}
+
+function checkAnswer(){
+  if(solved(cur) || sel===null) return;
+  const P=PUZZLES[cur], correctIdx=answerIndex(P).idx;
+  if(sel===correctIdx){
+    state.solved[cur]=true; save(state);
+    renderOpts(); renderActions();
+    onSolvedPuzzle();
+  } else {
+    /* wrong: shake + mark the chosen option, keep it selectable */
+    const btn=document.querySelectorAll('.opt')[sel];
+    if(btn){
+      btn.classList.remove('sel'); btn.classList.add('err');
+      btn.querySelector('.mark').innerHTML=CROSS_ICON;
+      btn.classList.remove('shake'); void btn.offsetWidth; btn.classList.add('shake');
+    }
+    status('bad','આ ઘન બની ન શકે — સામસામેની બાજુઓ તપાસો.');
+    if(soundOn) playWrong();
+  }
+}
+
+function onSolvedPuzzle(){
+  if(allSolved()){
+    status('done','બધા કોયડા પૂર્ણ. ખૂબ સરસ! 🌸',true);
+    if(soundOn) playWin();
+    if(!state.celebrated){ state.celebrated=true; save(state); showCelebrate(); }
+    markDone();
+  } else {
+    status('ok','સાચો જવાબ! આ ઘન બની શકે. 🌸',true);
+    if(soundOn) playLevel();
+  }
+}
+
+/* ---- navigation ---- */
+function nextPuzzle(){
+  if(cur<PUZZLES.length-1 && solved(cur)){
+    cur++; state.tab=cur; sel=state.picked[cur]; save(state);
+    renderAll(); window.scrollTo({top:0,behavior:'smooth'});
+  }
+}
+function prevPuzzle(){
+  if(cur>0){
+    cur--; state.tab=cur; sel=state.picked[cur]; save(state);
+    renderAll(); window.scrollTo({top:0,behavior:'smooth'});
+  }
+}
+
+/* ---- help sheet ---- */
+function openHelp(){document.getElementById('scrim').classList.add('open');document.getElementById('sheet').classList.add('open');}
+function closeHelp(){document.getElementById('scrim').classList.remove('open');document.getElementById('sheet').classList.remove('open');}
+
+/* ---- celebration ---- */
+function showCelebrate(){const c=document.getElementById('celebrate');c.classList.add('show');const ems=['🌸','🌼','✨','🍃','💜'];for(let i=0;i<16;i++){const p=document.createElement('div');p.className='petal';p.textContent=ems[i%ems.length];p.style.left=(Math.random()*100)+'%';p.style.animationDuration=(2.4+Math.random()*1.6)+'s';p.style.animationDelay=(Math.random()*.6)+'s';document.body.appendChild(p);setTimeout(()=>p.remove(),4600);}}
+function closeCelebrate(){document.getElementById('celebrate').classList.remove('show');postToApp({type:'GO_BACK'});}
+
+/* ---- init ---- */
+preloadSounds();
+renderAll();
+if(allSolved()){
+  status('done','બધા કોયડા પૂર્ણ. ખૂબ સરસ! 🌸',true);
+  _completed=true; pushProgress();
+}
+</script>
+</body>
+</html>

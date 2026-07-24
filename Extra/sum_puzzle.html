@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#FBF9FC">
+<title>Dreamchild · Puzzle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Vadodara:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FBF9FC;
+  --surface:#FFFFFF;
+  --ink:#2E2A32;
+  --muted:#8C8794;
+  --line:#ECE7F0;
+  --brand:#752886;
+  --brand-deep:#561F69;
+  --brand-soft:#F3E9F8;
+  --accent:#F2A03D;
+  --accent-soft:#FCEFDC;
+  --mint:#2F9B63;
+  --mint-soft:#E5F4EC;
+  --rose:#C75C72;
+  --rose-soft:#FAEAEE;
+  --shadow:0 10px 30px -12px rgba(78,33,95,.18);
+  --shadow-sm:0 4px 14px -8px rgba(78,33,95,.20);
+  --r-lg:22px; --r-md:16px; --r-sm:12px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg);color:var(--ink);
+  font-family:'Hind Vadodara',sans-serif;
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+  background-image:radial-gradient(120% 60% at 50% -10%, var(--brand-soft) 0%, rgba(243,233,248,0) 60%);
+}
+.wrap{max-width:460px;margin:0 auto;padding:16px 16px 28px;position:relative;z-index:1;}
+
+/* ---- header (own card / band) ---- */
+.phead{background:var(--surface);border:1px solid var(--line);border-radius:18px;
+  box-shadow:0 6px 20px -12px rgba(78,33,95,.16);padding:15px 16px;margin-bottom:14px;}
+.hrow1{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.ptitle{font-weight:700;font-size:23px;line-height:1.05;color:var(--brand);margin:0;letter-spacing:-.01em;}
+.hctrls{display:flex;align-items:center;gap:8px;flex:none;}
+.rpill{display:flex;align-items:center;justify-content:center;min-width:50px;height:38px;padding:0 12px;
+  border:1px solid var(--line);border-radius:11px;background:var(--surface);
+  font-weight:600;font-size:16px;color:var(--ink);letter-spacing:.01em;}
+.hbtn{width:40px;height:38px;border:1px solid var(--line);border-radius:11px;background:var(--surface);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-appearance:none;padding:0;
+  transition:background .15s ease;}
+.hbtn:active{background:var(--brand-soft);}
+.hbtn svg{width:20px;height:20px;fill:none;stroke:var(--muted);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.hbtn.info{width:38px;background:var(--brand-soft);border-color:transparent;}
+.hbtn.info svg{stroke:var(--brand);}
+.hsub{text-align:center;font-weight:600;font-size:15px;line-height:1.5;color:var(--ink);margin:13px 0 1px;}
+
+/* ---- stage card ---- */
+.stage{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
+  box-shadow:0 8px 28px -10px rgba(78,33,95,.16), 0 2px 8px -3px rgba(78,33,95,.08);padding:14px;margin-bottom:14px;}
+
+/* sum board */
+.board{display:grid;gap:5px;justify-content:stretch;margin:0 auto;
+  touch-action:manipulation;user-select:none;-webkit-user-select:none;}
+.corner{}
+/* column target — downward pointer */
+.ctgt{background:linear-gradient(135deg,var(--brand),var(--brand-deep));color:#fff;font-weight:700;
+  font-size:clamp(14px,4vw,17px);display:flex;align-items:flex-start;justify-content:center;padding-top:7px;
+  min-height:42px;clip-path:polygon(0 0,100% 0,100% 68%,50% 100%,0 68%);}
+/* row target — rightward arrow */
+.rtgt{background:linear-gradient(135deg,var(--brand),var(--brand-deep));color:#fff;font-weight:700;
+  font-size:clamp(13px,3.8vw,16px);display:flex;align-items:center;justify-content:flex-start;padding-left:7px;
+  min-height:42px;clip-path:polygon(0 0,68% 0,100% 50%,68% 100%,0 100%);}
+
+.cell{background:#FAF7FB;border-radius:9px;min-height:42px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:clamp(15px,4.4vw,20px);font-weight:600;color:#564B5E;cursor:pointer;
+  transition:background .15s ease,color .15s ease,box-shadow .15s ease,transform .12s ease;}
+.cell:active{transform:scale(.96);}
+.cell.sel{background:var(--brand-soft);color:var(--brand);box-shadow:inset 0 0 0 2px var(--brand);}
+.cell.lock{cursor:default;}
+.cell.lock:active{transform:none;}
+.cell.win{background:linear-gradient(135deg,var(--brand),var(--brand-deep));color:#fff;box-shadow:none;}
+.cell.hintblink{background:var(--accent-soft);color:#9A5A12;box-shadow:inset 0 0 0 2.5px var(--accent);}
+
+.sum{border-radius:9px;min-height:28px;display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:700;background:var(--rose-soft);color:var(--rose);transition:all .15s ease;}
+.sum.ok{background:var(--mint-soft);color:var(--mint);}
+
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.shake{animation:shake .3s ease;}
+
+/* ---- status line ---- */
+.status{min-height:24px;text-align:center;font-size:14px;line-height:1.4;font-weight:500;
+  color:var(--muted);padding:2px 8px;margin-bottom:6px;opacity:0;transition:opacity .25s ease;}
+.status.show{opacity:1;}
+.status.ok{color:var(--mint);}
+.status.bad{color:var(--rose);}
+.status.hint{color:#B5781E;}
+.status.done{color:var(--brand);font-weight:600;}
+
+/* ---- action bar ---- */
+.actionbar{margin-top:14px;}
+.actionbar .inner{display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:6px;row-gap:8px;}
+.cmid{display:flex;align-items:center;gap:6px;}
+.cbtn{font-family:'Hind Vadodara',sans-serif;cursor:pointer;-webkit-appearance:none;
+  display:flex;align-items:center;justify-content:center;gap:5px;
+  transition:transform .12s ease,opacity .2s ease,background .2s ease,box-shadow .2s ease;}
+.cbtn:active{transform:scale(.97);}
+.cbtn svg{width:16px;height:16px;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;}
+.cbtn.hint{min-height:36px;border-radius:12px;padding:0 20px;background:var(--surface);border:1px solid var(--line);
+  color:var(--ink);font-weight:600;font-size:13px;box-shadow:var(--shadow-sm);}
+.cbtn.hint svg{stroke:var(--brand);}
+.cbtn.prev,.cbtn.next{min-height:36px;border-radius:12px;padding:0 20px;background:var(--brand);border:none;color:#fff;
+  font-weight:700;font-size:13.5px;box-shadow:0 8px 20px -8px rgba(110,42,133,.5);}
+.cbtn.prev svg,.cbtn.next svg{stroke:#fff;}
+.cbtn:disabled{cursor:default;}
+.cbtn.prev:disabled,.cbtn.next:disabled{background:var(--surface);border:1px solid var(--line);color:var(--muted);box-shadow:none;font-weight:600;}
+.cbtn.prev:disabled svg,.cbtn.next:disabled svg{stroke:var(--muted);}
+
+/* ---- footer ---- */
+.foot{text-align:center;font-size:11px;color:var(--muted);letter-spacing:.03em;margin-top:18px;}
+.foot b{font-weight:600;color:#a79bb0;}
+
+/* ---- help sheet ---- */
+.scrim{position:fixed;inset:0;background:rgba(46,42,50,.42);backdrop-filter:blur(2px);z-index:40;
+  opacity:0;pointer-events:none;transition:opacity .28s ease;}
+.scrim.open{opacity:1;pointer-events:auto;}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:41;background:var(--surface);
+  border-radius:26px 26px 0 0;box-shadow:0 -16px 40px -16px rgba(46,42,50,.3);
+  max-width:460px;margin:0 auto;padding:10px 22px calc(26px + env(safe-area-inset-bottom));
+  transform:translateY(110%);transition:transform .34s cubic-bezier(.22,1,.36,1);}
+.sheet.open{transform:translateY(0);}
+.grab{width:42px;height:5px;border-radius:999px;background:var(--line);margin:6px auto 16px;}
+.sheet h3{font-weight:700;font-size:20px;margin:0 0 4px;}
+.sheet .lead{font-size:14px;color:var(--muted);margin:0 0 18px;line-height:1.5;}
+.step{display:flex;gap:14px;align-items:flex-start;margin-bottom:16px;}
+.step .ic{flex:none;width:46px;height:46px;border-radius:14px;background:var(--brand-soft);
+  display:flex;align-items:center;justify-content:center;}
+.step .ic svg{width:26px;height:26px;stroke:var(--brand);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
+.step .tx b{display:block;font-weight:600;font-size:15px;color:var(--ink);margin-bottom:2px;}
+.step .tx p{margin:0;font-size:13.5px;color:var(--muted);line-height:1.5;}
+.sheet .got{width:100%;margin-top:6px;background:var(--brand);color:#fff;border:none;cursor:pointer;
+  font-family:'Hind Vadodara',sans-serif;border-radius:14px;min-height:48px;font-weight:700;font-size:15px;}
+
+/* ---- celebration ---- */
+.celebrate{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;
+  background:rgba(251,249,252,.86);backdrop-filter:blur(3px);text-align:center;padding:30px;}
+.celebrate.show{display:flex;flex-direction:column;}
+.celebrate .em{font-size:54px;margin-bottom:6px;animation:rise .6s cubic-bezier(.22,1,.36,1);}
+.celebrate h2{font-weight:700;font-size:24px;color:var(--brand);margin:0 0 8px;}
+.celebrate p{font-size:15px;color:var(--ink);font-weight:500;margin:0 0 22px;max-width:280px;line-height:1.5;}
+.celebrate .btn{min-width:200px;background:var(--brand);color:#fff;border:none;cursor:pointer;
+  font-family:'Hind Vadodara',sans-serif;border-radius:14px;min-height:55px;font-weight:700;font-size:18px;}
+@keyframes rise{from{transform:translateY(16px) scale(.8);opacity:0}to{transform:none;opacity:1}}
+.petal{position:fixed;top:-24px;z-index:49;font-size:18px;animation:drift linear forwards;pointer-events:none;}
+@keyframes drift{to{transform:translateY(106vh) rotate(360deg);opacity:0}}
+
+/* ---- ambient puzzle-piece background ---- */
+.bg{position:fixed;top:0;left:0;right:0;height:100vh;height:100lvh;overflow:hidden;pointer-events:none;z-index:0;}
+.piece{position:absolute;transform:rotate(var(--rot,0deg));opacity:.2;}
+.piece svg{display:block;width:100%;height:auto;fill:currentColor;}
+.piece.f1{top:-30px;left:-46px;width:150px;color:#fa7068;--rot:-14deg;}
+.piece.f2{top:78px;right:-52px;width:150px;color:#fbca5f;--rot:18deg;}
+.piece.f3{top:46%;right:-58px;width:110px;color:#a0c95d;--rot:26deg;}
+.piece.f4{bottom:-40px;right:-30px;width:170px;color:#9ddbe6;--rot:-18deg;}
+.piece.f5{bottom:46px;left:-56px;width:150px;color:#f3adc9;--rot:8deg;}
+.piece.f6{top:36%;left:-70px;width:100px;color:#d4ab99;--rot:30deg;}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001ms !important;transition-duration:.05ms !important;}
+}
+:focus-visible{outline:2.5px solid var(--brand);outline-offset:2px;border-radius:6px;}
+</style>
+</head>
+<body>
+<div class="bg" aria-hidden="true">
+  <div class="piece f1"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece f2"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece f3"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece f4"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece f5"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece f6"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+</div>
+
+<div class="wrap">
+  <!-- header -->
+  <header class="phead">
+    <div class="hrow1">
+      <h1 class="ptitle">સરવાળો કોયડો</h1>
+      <div class="hctrls">
+        <span class="rpill" id="round"></span>
+        <button class="hbtn" id="soundBtn" onclick="toggleSound()" aria-label="Sound"></button>
+        <button class="hbtn info" onclick="openHelp()" aria-label="How to play">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><circle cx="12" cy="8" r="0.6" fill="currentColor" stroke="none"/></svg>
+        </button>
+      </div>
+    </div>
+    <p class="hsub">ખાનાં પર ટૅપ કરી એવી સંખ્યાઓ પસંદ કરો કે જેથી દરેક હરોળ અને કૉલમનો સરવાળો આપેલા લક્ષ્યાંક જેટલો થાય.</p>
+  </header>
+
+  <!-- STAGE -->
+  <div class="stage">
+    <div class="board" id="board"></div>
+  </div>
+
+  <!-- status -->
+  <div class="status" id="status"></div>
+
+  <!-- actions -->
+  <div class="actionbar">
+    <div class="inner">
+      <button class="cbtn prev" id="btnPrev" onclick="prevPuzzle()"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>Back</button>
+      <div class="cmid">
+        <button class="cbtn hint" onclick="useHint()"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 1 4 10.5c-.7.6-1 1.2-1 2v.5H9v-.5c0-.8-.3-1.4-1-2A6 6 0 0 1 12 3z"/></svg>Hint</button>
+      </div>
+      <button class="cbtn next" id="btnNext" onclick="nextPuzzle()">Next<svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+    </div>
+  </div>
+
+  <div class="foot">© <b>Dreamchild Garbhsanskar</b></div>
+</div>
+
+<!-- help sheet -->
+<div class="scrim" id="scrim" onclick="closeHelp()"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="How to play">
+  <div class="grab"></div>
+  <h3>કેવી રીતે રમવું</h3>
+  <p class="lead">દરેક હરોળ અને કૉલમનો સરવાળો લક્ષ્યાંક જેટલો કરવાનો છે. ઉતાવળ નહીં — શાંતિથી.</p>
+
+  <div class="step">
+    <div class="ic"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M9 12l2 2 4-4"/></svg></div>
+    <div class="tx"><b>ટૅપ કરીને પસંદ કરો</b><p>કોઈપણ સંખ્યાના ખાના પર ટૅપ કરી તેને પસંદ કરો; ફરી ટૅપ કરવાથી પસંદગી રદ થાય.</p></div>
+  </div>
+
+  <div class="step">
+    <div class="ic"><svg viewBox="0 0 24 24"><path d="M4 12h12"/><path d="M12 6l6 6-6 6"/></svg></div>
+    <div class="tx"><b>હરોળનો સરવાળો</b><p>દરેક હરોળમાં પસંદ કરેલી સંખ્યાઓનો સરવાળો ડાબી બાજુના જાંબલી લક્ષ્યાંક જેટલો કરો.</p></div>
+  </div>
+
+  <div class="step">
+    <div class="ic"><svg viewBox="0 0 24 24"><path d="M12 4v12"/><path d="M6 12l6 6 6-6"/></svg></div>
+    <div class="tx"><b>કૉલમનો સરવાળો</b><p>દરેક કૉલમમાં પણ પસંદ કરેલી સંખ્યાઓનો સરવાળો ઉપરના લક્ષ્યાંક જેટલો કરો.</p></div>
+  </div>
+
+  <div class="step">
+    <div class="ic"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></div>
+    <div class="tx"><b>પૂરું કરો</b><p>બધી હરોળ અને કૉલમના સરવાળા લીલા થાય એટલે કોયડો પૂર્ણ. વધી જાય તો કોઈ ખાનું રદ કરો.</p></div>
+  </div>
+
+  <button class="got" onclick="closeHelp()">Close</button>
+</div>
+
+<!-- celebration -->
+<div class="celebrate" id="celebrate">
+  <div class="em">🌸</div>
+  <h2>બધા કોયડા પૂર્ણ</h2>
+  <p>ખૂબ સરસ! તમારી એકાગ્રતા કમાલની છે.</p>
+  <button class="btn" onclick="closeCelebrate()">Congratulations</button>
+</div>
+
+<script>
+/* ===== puzzle data (solutions verified: every row/col matches its target) ===== */
+const PUZZLES=[
+  { // P1 — 4x4
+    grid:[[7,2,3,3],[8,1,9,4],[5,7,1,3],[9,3,2,9]],
+    rowT:[6,12,10,12], colT:[8,10,3,19],
+    sol:[[0,0,1,1],[1,0,0,1],[0,1,0,1],[0,1,0,1]]
+  },
+  { // P2 — 4x4
+    grid:[[9,5,4,5],[4,3,3,3],[2,5,5,5],[2,7,9,7]],
+    rowT:[9,7,5,9], colT:[6,10,9,5],
+    sol:[[0,0,1,1],[1,1,0,0],[0,0,1,0],[1,1,0,0]]
+  },
+  { // P3 — 5x5
+    grid:[[4,5,1,7,7],[2,3,5,2,9],[7,1,6,5,2],[7,4,7,1,4],[2,2,5,7,2]],
+    rowT:[12,14,7,8,11], colT:[11,9,6,15,11],
+    sol:[[0,1,0,1,0],[1,1,0,0,1],[0,1,1,0,0],[1,0,0,1,0],[1,0,0,1,1]]
+  }
+];
+const KEY='dcgs_sumselect_v1';
+
+function save(d){try{localStorage.setItem(KEY,JSON.stringify(d))}catch(e){}}
+function load(){try{return JSON.parse(localStorage.getItem(KEY))}catch(e){return null}}
+
+/* ---- app bridge (RN WebView) ---- */
+function postToApp(m){try{window.ReactNativeWebView&&window.ReactNativeWebView.postMessage(JSON.stringify(m));}catch(e){}}
+function activityDone(){postToApp({type:'ACTIVITY_DONE'});}   /* -> onWebActivityComplete in the app */
+
+/* active time only (pauses while the app is backgrounded) */
+let _active=0,_since=Date.now(),_completed=false;
+document.addEventListener('visibilitychange',function(){
+  if(document.hidden){_active+=Date.now()-_since;}else{_since=Date.now();}
+  pushProgress();
+});
+function timeSpentSec(){return Math.round((_active+(document.hidden?0:Date.now()-_since))/1000);}
+
+/* heartbeat: keep native updated so it can fire puzzle_exited on unmount (back press) */
+function pushProgress(){postToApp({type:'PROGRESS',time_spent_sec:timeSpentSec(),completed:_completed});}
+setInterval(pushProgress,3000);
+pushProgress();
+
+function markDone(){ _completed=true; activityDone(); pushProgress(); }   /* call when the whole set is solved */
+window.addEventListener('pagehide',pushProgress);   /* best-effort, where it fires */
+
+/* ===== state ===== */
+let state=load();
+if(!state || !state.sel || state.sel.length!==PUZZLES.length){
+  state={tab:0,sound:false,celebrated:false,
+    sel:PUZZLES.map(p=>p.grid.map(row=>row.map(()=>0))),
+    solved:PUZZLES.map(()=>false)};
+}
+let soundOn=!!state.sound, cur=state.tab||0;
+
+/* ===== sound (mp3 assets) ===== */
+const SND={
+  correct : 'https://dreamchildapp.com/backend/assets/acitivty_sounds/Right.mp3',
+  wrong   : 'https://dreamchildapp.com/backend/assets/acitivty_sounds/Wrong.mp3',
+  level   : 'https://dreamchildapp.com/backend/assets/acitivty_sounds/Level.mp3',
+  win     : 'https://dreamchildapp.com/backend/assets/acitivty_sounds/Complete.mp3',
+  hint    : 'https://dreamchildapp.com/backend/assets/acitivty_sounds/Hint.mp3'
+};
+const _audio={};
+function preloadSounds(){for(const k in SND){try{const a=new Audio(SND[k]);a.preload='auto';_audio[k]=a;}catch(e){}}}
+function playSound(k){
+  if(!soundOn) return;
+  const a=_audio[k]; if(!a) return;
+  try{ a.pause(); a.currentTime=0; a.play().catch(function(){}); }catch(e){}
+}
+function playCorrect(){ playSound('correct'); }
+function playWrong(){   playSound('wrong');   }
+function playLevel(){   playSound('level');   }
+function playWin(){     playSound('win');     }
+function playHint(){    playSound('hint');    }
+function setSoundIcon(){const b=document.getElementById('soundBtn');b.innerHTML=soundOn
+  ?'<svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M16 9a3.5 3.5 0 0 1 0 6"/><path d="M19 7a7 7 0 0 1 0 10"/></svg>'
+  :'<svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M22 9l-5 6M17 9l5 6"/></svg>';}
+function toggleSound(){soundOn=!soundOn;state.sound=soundOn;setSoundIcon();save(state);}
+
+/* ===== helpers ===== */
+const $=id=>document.getElementById(id);
+function P(){return PUZZLES[cur];}
+function selM(){return state.sel[cur];}
+function rowSum(r){const p=P();let s=0;for(let c=0;c<p.grid[0].length;c++) if(selM()[r][c]) s+=p.grid[r][c];return s;}
+function colSum(c){const p=P();let s=0;for(let r=0;r<p.grid.length;r++) if(selM()[r][c]) s+=p.grid[r][c];return s;}
+function solvedNow(){
+  const p=P();
+  for(let r=0;r<p.grid.length;r++) if(rowSum(r)!==p.rowT[r]) return false;
+  for(let c=0;c<p.grid[0].length;c++) if(colSum(c)!==p.colT[c]) return false;
+  return true;
+}
+
+/* ===== render ===== */
+function div(cls){const d=document.createElement('div');d.className=cls;return d;}
+function renderProgress(){$('round').textContent=(cur+1)+'/'+PUZZLES.length;}
+function cellEl(r,c){return document.querySelector('.cell[data-r="'+r+'"][data-c="'+c+'"]');}
+
+function buildBoard(){
+  const p=P(), R=p.grid.length, C=p.grid[0].length;
+  const b=$('board');
+  b.style.gridTemplateColumns='34px repeat('+C+',1fr) 32px';
+  b.innerHTML='';
+  const locked=state.solved[cur];
+
+  // top row: corner + column targets + corner
+  b.appendChild(div('corner'));
+  for(let c=0;c<C;c++){const t=div('ctgt');t.textContent=p.colT[c];b.appendChild(t);}
+  b.appendChild(div('corner'));
+
+  // data rows: row target + cells + row sum
+  for(let r=0;r<R;r++){
+    const rt=div('rtgt');rt.textContent=p.rowT[r];b.appendChild(rt);
+    for(let c=0;c<C;c++){
+      const cell=document.createElement('div');
+      cell.className='cell'+(selM()[r][c]?' sel':'')+(locked?' lock':'')
+        +(locked&&selM()[r][c]?' win':'');
+      cell.textContent=p.grid[r][c];
+      cell.dataset.r=r;cell.dataset.c=c;
+      if(!locked) cell.addEventListener('click',()=>toggle(r,c,cell));
+      b.appendChild(cell);
+    }
+    const rs=div('sum');rs.id='rs'+r;b.appendChild(rs);
+  }
+  // bottom row: corner + column sums + corner
+  b.appendChild(div('corner'));
+  for(let c=0;c<C;c++){const cs=div('sum');cs.id='cs'+c;b.appendChild(cs);}
+  b.appendChild(div('corner'));
+
+  updateSums();
+}
+
+function updateSums(){
+  const p=P(),R=p.grid.length,C=p.grid[0].length;
+  for(let r=0;r<R;r++){const s=rowSum(r),el=$('rs'+r);el.textContent=s;el.classList.toggle('ok',s===p.rowT[r]);}
+  for(let c=0;c<C;c++){const s=colSum(c),el=$('cs'+c);el.textContent=s;el.classList.toggle('ok',s===p.colT[c]);}
+}
+
+function renderActions(){
+  const isLast=cur===PUZZLES.length-1;
+  $('btnPrev').disabled=(cur===0);
+  $('btnNext').disabled=!(state.solved[cur]&&!isLast);
+}
+function renderAll(){renderProgress();buildBoard();renderActions();setSoundIcon();clearStatus();}
+
+/* ===== status ===== */
+let stTimer;
+function status(type,msg,sticky){const s=$('status');s.className='status show '+type;s.textContent=msg;clearTimeout(stTimer);if(!sticky)stTimer=setTimeout(clearStatus,2300);}
+function clearStatus(){$('status').className='status';}
+
+/* ===== interaction ===== */
+function toggle(r,c,cell){
+  if(state.solved[cur]) return;
+  const p=P();
+  selM()[r][c]=selM()[r][c]?0:1;
+  cell.classList.toggle('sel',!!selM()[r][c]);
+  updateSums();
+  save(state);
+  // wrong-direction feedback: this selection pushed a sum over its target
+  if(selM()[r][c] && (rowSum(r)>p.rowT[r] || colSum(c)>p.colT[c])){
+    cell.classList.remove('shake');void cell.offsetWidth;cell.classList.add('shake');
+    cell.addEventListener('animationend',()=>cell.classList.remove('shake'),{once:true});
+    status('bad','સરવાળો વધી ગયો — કોઈ ખાનું રદ કરો.');
+    if(soundOn) playWrong();
+  } else {
+    if(soundOn) playCorrect();
+    clearStatus();
+  }
+  checkDone();   // may play level/win on top of the move sound — expected
+}
+
+function checkDone(){
+  if(state.solved[cur] || !solvedNow()) return;
+  state.solved[cur]=true;
+  save(state);
+  buildBoard();       // locks + paints selected cells in brand fill
+  renderActions();
+  const all=state.solved.every(Boolean);
+  if(all){
+    status('done','બધા કોયડા પૂર્ણ. ખૂબ સરસ! 🌸',true);
+    if(soundOn) playWin();
+    if(!state.celebrated){ state.celebrated=true; save(state); showCelebrate(); }
+    markDone();
+  } else {
+    status('done','આ કોયડો પૂર્ણ. તૈયાર હો ત્યારે આગળ વધો.',true);
+    if(soundOn) playLevel();
+  }
+}
+
+function useHint(){
+  if(state.solved[cur]){ status('hint','આ કોયડો પહેલેથી પૂર્ણ છે.'); return; }   // nothing to show — no sound
+  const p=P(),R=p.grid.length,C=p.grid[0].length;
+  let fr=-1,fc=-1;
+  for(let r=0;r<R&&fr<0;r++)for(let c=0;c<C;c++){
+    if(selM()[r][c]!==p.sol[r][c]){fr=r;fc=c;break;}
+  }
+  if(fr<0) return;
+  selM()[fr][fc]=p.sol[fr][fc];
+  save(state);
+  buildBoard();
+  const el=cellEl(fr,fc);
+  if(el){ el.classList.add('hintblink'); setTimeout(()=>{ if(el) el.classList.remove('hintblink'); },1300); }
+  playHint();
+  status('hint','એક સાચું ખાનું ગોઠવ્યું.');
+  checkDone();
+}
+
+function nextPuzzle(){if(cur<PUZZLES.length-1&&state.solved[cur]){cur++;state.tab=cur;save(state);renderAll();restoreStatus();window.scrollTo({top:0,behavior:'smooth'});}}
+function prevPuzzle(){if(cur>0){cur--;state.tab=cur;save(state);renderAll();restoreStatus();window.scrollTo({top:0,behavior:'smooth'});}}
+function restoreStatus(){
+  if(state.solved.every(Boolean)) status('done','બધા કોયડા પૂર્ણ. ખૂબ સરસ! 🌸',true);
+  else if(state.solved[cur]) status('done','આ કોયડો પૂર્ણ. તૈયાર હો ત્યારે આગળ વધો.',true);
+}
+
+/* ===== help sheet ===== */
+function openHelp(){document.getElementById('scrim').classList.add('open');document.getElementById('sheet').classList.add('open');}
+function closeHelp(){document.getElementById('scrim').classList.remove('open');document.getElementById('sheet').classList.remove('open');}
+
+/* ===== celebration ===== */
+function showCelebrate(){const c=document.getElementById('celebrate');c.classList.add('show');const ems=['🌸','🌼','✨','🍃','💜'];for(let i=0;i<16;i++){const p=document.createElement('div');p.className='petal';p.textContent=ems[i%ems.length];p.style.left=(Math.random()*100)+'%';p.style.animationDuration=(2.4+Math.random()*1.6)+'s';p.style.animationDelay=(Math.random()*.6)+'s';document.body.appendChild(p);setTimeout(()=>p.remove(),4600);}}
+function closeCelebrate(){
+  document.getElementById('celebrate').classList.remove('show');
+  postToApp({type:'GO_BACK'});
+}
+
+/* ===== init ===== */
+preloadSounds();
+renderAll();
+if(state.solved.every(Boolean)){
+  status('done','બધા કોયડા પૂર્ણ. ખૂબ સરસ! 🌸',true);
+  _completed=true;
+  pushProgress();
+}
+else if(state.solved[cur]) status('done','આ કોયડો પૂર્ણ. તૈયાર હો ત્યારે આગળ વધો.',true);
+</script>
+</body>
+</html>

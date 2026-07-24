@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#FBF9FC">
+<title>Dreamchild · Dice Journey</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Vadodara:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FBF9FC;
+  --surface:#FFFFFF;
+  --ink:#2E2A32;
+  --muted:#8C8794;
+  --line:#ECE7F0;
+  --brand:#752886;
+  --brand-deep:#561F69;
+  --brand-soft:#F3E9F8;
+  --accent:#F2A03D;
+  --accent-soft:#FCEFDC;
+  --mint:#2F9B63;
+  --mint-soft:#E5F4EC;
+  --rose:#C75C72;
+  --rose-soft:#FAEAEE;
+  --shadow:0 10px 30px -12px rgba(78,33,95,.18);
+  --shadow-sm:0 4px 14px -8px rgba(78,33,95,.20);
+  --r-lg:22px; --r-md:16px; --r-sm:12px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg);color:var(--ink);
+  font-family:'Hind Vadodara',sans-serif;
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+  background-image:radial-gradient(120% 60% at 50% -10%, var(--brand-soft) 0%, rgba(243,233,248,0) 60%);
+}
+.wrap{max-width:460px;margin:0 auto;padding:16px 16px 28px;position:relative;z-index:1;}
+
+/* ---- header ---- */
+.phead{background:var(--surface);border:1px solid var(--line);border-radius:18px;
+  box-shadow:0 6px 20px -12px rgba(78,33,95,.16);padding:15px 16px;margin-bottom:14px;}
+.hrow1{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.ptitle{font-weight:700;font-size:23px;line-height:1.05;color:var(--brand);margin:0;letter-spacing:-.01em;}
+.hctrls{display:flex;align-items:center;gap:8px;flex:none;}
+.rpill{display:flex;align-items:center;justify-content:center;min-width:50px;height:38px;padding:0 12px;
+  border:1px solid var(--line);border-radius:11px;background:var(--surface);
+  font-family:'Hind Vadodara',sans-serif;font-weight:600;font-size:16px;color:var(--ink);letter-spacing:.01em;}
+.hbtn{width:40px;height:38px;border:1px solid var(--line);border-radius:11px;background:var(--surface);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-appearance:none;padding:0;
+  transition:background .15s ease;}
+.hbtn:active{background:var(--brand-soft);}
+.hbtn svg{width:20px;height:20px;fill:none;stroke:var(--muted);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.hbtn.info{width:38px;background:var(--brand-soft);border-color:transparent;}
+.hbtn.info svg{stroke:var(--brand);}
+.hsub{text-align:center;font-weight:600;font-size:15px;line-height:1.5;color:var(--ink);margin:13px 0 1px;}
+
+/* ---- stage ---- */
+.stage{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
+  box-shadow:0 8px 28px -10px rgba(78,33,95,.16), 0 2px 8px -3px rgba(78,33,95,.08);padding:14px;margin-bottom:14px;}
+
+/* ---- goal + live 3D preview strip ---- */
+.topstrip{display:flex;align-items:stretch;gap:10px;margin-bottom:13px;}
+.goalcard{flex:1;min-width:0;display:flex;align-items:center;justify-content:center;gap:9px;
+  padding:9px 10px;border-radius:14px;background:var(--accent-soft);border:1px solid rgba(242,160,61,.3);
+  transition:background .25s ease,border-color .25s ease;}
+.goalcard .lbl{font-weight:600;font-size:12.5px;color:#9A5A12;line-height:1.35;text-align:center;}
+.goalcard .face{flex:none;width:32px;height:32px;border-radius:8px;background:#fff;
+  border:1px solid rgba(242,160,61,.45);display:flex;align-items:center;justify-content:center;}
+.goalcard .face svg{width:76%;height:76%;display:block;}
+.goalcard .face .pip{fill:#9A5A12;}
+.goalcard.met{background:var(--mint-soft);border-color:rgba(47,155,99,.32);}
+.goalcard.met .lbl{color:#1F6E45;}
+.goalcard.met .face{border-color:rgba(47,155,99,.45);}
+.goalcard.met .face .pip{fill:#1F6E45;}
+
+/* big readable 3D die — the single reference cube.
+   A 56px cube rotated isometrically needs ~80x92px of room, so the tile
+   is sized to fit its full rotated bounding box (no clipping). */
+.viewer{flex:none;width:100px;min-height:104px;border-radius:14px;
+  background:radial-gradient(70% 70% at 50% 38%, #FFFFFF 0%, #F4EDF8 100%);
+  border:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;padding:4px;}
+.scene{width:56px;height:56px;perspective:260px;}
+.cube{position:relative;width:100%;height:100%;transform-style:preserve-3d;
+  transform:rotateX(-35deg) rotateY(-45deg);
+  transition:transform .38s cubic-bezier(.34,1.25,.5,1);}
+.cube .f{position:absolute;inset:0;border-radius:9px;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.20);}
+.cube .f svg{width:70%;height:70%;display:block;}
+.cube .f .pip{fill:#fff;filter:drop-shadow(0 1px 1px rgba(0,0,0,.28));}
+/* light from upper-left: top brightest, front mid, right darkest */
+.cube .up   {background:linear-gradient(150deg,#A85CBC 0%,#8B3A9E 100%);}
+.cube .front{background:linear-gradient(150deg,#7E2E92 0%,#63216F 100%);}
+.cube .right{background:linear-gradient(150deg,#5C1E6B 0%,#45164F 100%);}
+.cube.win .up   {background:linear-gradient(150deg,#55C98B 0%,#34A76B 100%);}
+.cube.win .front{background:linear-gradient(150deg,#2F9B63 0%,#25804F 100%);}
+.cube.win .right{background:linear-gradient(150deg,#1F6E45 0%,#175636 100%);}
+
+/* board */
+.boardwrap{display:flex;justify-content:center;width:100%;min-width:0;}
+.bhost{position:relative;width:100%;max-width:100%;min-width:0;touch-action:pan-y;}
+.board{max-width:100%;min-width:0;}
+.board{display:grid;gap:5px;user-select:none;-webkit-user-select:none;width:100%;}
+.sq{position:relative;aspect-ratio:1/1;border-radius:10px;background:#FAF7FB;border:1px solid var(--line);
+  transition:background .18s ease,border-color .18s ease;}
+.sq.wall{background:#E6DEEB;border-color:#D6CADE;
+  background-image:repeating-linear-gradient(45deg,rgba(117,40,134,.07) 0 5px,transparent 5px 10px);}
+.sq.goal{background:var(--accent-soft);border-color:rgba(242,160,61,.55);border-style:dashed;}
+.sq.trail{background:var(--brand-soft);border-color:transparent;}
+.sq.goal.trail{background:var(--accent-soft);border-style:dashed;}
+.sq.step{background:#F6EEFA;border-color:rgba(117,40,134,.28);cursor:pointer;}
+.sq .flag{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-size:clamp(13px,4vw,17px);color:#B5781E;font-weight:700;pointer-events:none;}
+.sq .dot{position:absolute;left:50%;top:50%;width:7px;height:7px;margin:-3.5px 0 0 -3.5px;
+  border-radius:50%;background:rgba(117,40,134,.34);pointer-events:none;}
+
+/* the die on the board — a flat tile, like the original */
+.dietile{position:absolute;z-index:3;pointer-events:none;border-radius:11px;
+  background:linear-gradient(135deg,var(--brand),var(--brand-deep));
+  box-shadow:0 8px 18px -6px rgba(78,33,95,.5);
+  display:flex;align-items:center;justify-content:center;
+  transition:left .2s cubic-bezier(.4,1.3,.5,1), top .2s cubic-bezier(.4,1.3,.5,1);}
+.dietile svg{width:72%;height:72%;display:block;}
+.dietile .pip{fill:#fff;}
+.dietile.win{background:linear-gradient(135deg,var(--mint),#217A4B);
+  box-shadow:0 8px 20px -6px rgba(47,155,99,.55);}
+@keyframes nudge{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.dietile.bump{animation:nudge .3s ease;}
+
+/* swipe affordance */
+.swipehint{text-align:center;font-size:12.5px;color:var(--muted);font-weight:500;margin-top:11px;}
+.swipehint b{color:var(--brand);font-weight:600;}
+
+/* move counter row */
+.mrow{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:11px;}
+.mcount{font-weight:600;font-size:13.5px;color:var(--muted);}
+.mcount b{color:var(--brand);font-weight:700;}
+.ubtn{min-height:42px;padding:0 15px;border:1px solid var(--line);border-radius:13px;background:var(--surface);
+  display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;-webkit-appearance:none;
+  font-family:'Hind Vadodara',sans-serif;font-weight:600;font-size:13.5px;color:var(--ink);
+  box-shadow:var(--shadow-sm);transition:transform .1s ease,background .15s ease,opacity .2s ease;}
+.ubtn:active{transform:scale(.97);background:var(--brand-soft);}
+.ubtn svg{width:17px;height:17px;fill:none;stroke:var(--brand);stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;}
+.ubtn:disabled{opacity:.35;box-shadow:none;cursor:default;}
+.ubtn:disabled svg{stroke:var(--muted);}
+
+/* ---- status ---- */
+.status{min-height:24px;text-align:center;font-size:14px;line-height:1.4;font-weight:500;
+  color:var(--muted);padding:2px 8px;margin:6px 0;opacity:0;transition:opacity .25s ease;}
+.status.show{opacity:1;}
+.status.ok{color:var(--mint);}
+.status.bad{color:var(--rose);}
+.status.hint{color:#B5781E;}
+.status.done{color:var(--brand);font-weight:600;}
+
+/* ---- action bar ---- */
+.actionbar{margin-top:14px;}
+.actionbar .inner{display:flex;flex-direction:row;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:12px;row-gap:8px;}
+.cmid{display:flex;align-items:center;gap:6px;}
+.cbtn{font-family:'Hind Vadodara',sans-serif;cursor:pointer;-webkit-appearance:none;
+  display:flex;align-items:center;justify-content:center;gap:5px;
+  transition:transform .12s ease,opacity .2s ease,background .2s ease,box-shadow .2s ease;}
+.cbtn:active{transform:scale(.97);}
+.cbtn svg{width:16px;height:16px;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;}
+.cbtn.hint{min-height:36px;border-radius:12px;padding:0 22px;background:var(--surface);border:1px solid var(--line);
+  color:var(--ink);font-weight:600;font-size:13px;box-shadow:var(--shadow-sm);}
+.cbtn.hint svg{stroke:var(--brand);}
+.cbtn.prev,.cbtn.next{min-height:36px;border-radius:12px;padding:0 20px;background:var(--brand);border:none;color:#fff;
+  font-weight:700;font-size:13.5px;box-shadow:0 8px 20px -8px rgba(110,42,133,.5);}
+.cbtn.prev svg,.cbtn.next svg{stroke:#fff;}
+.cbtn:disabled{cursor:default;}
+.cbtn.prev:disabled,.cbtn.next:disabled{background:var(--surface);border:1px solid var(--line);color:var(--muted);box-shadow:none;font-weight:600;}
+.cbtn.prev:disabled svg,.cbtn.next:disabled svg{stroke:var(--muted);}
+
+/* ---- footer ---- */
+.foot{text-align:center;font-size:11px;color:var(--muted);letter-spacing:.03em;margin-top:18px;}
+.foot b{font-weight:600;color:#a79bb0;}
+
+/* ---- help sheet ---- */
+.scrim{position:fixed;inset:0;background:rgba(46,42,50,.42);backdrop-filter:blur(2px);z-index:40;
+  opacity:0;pointer-events:none;transition:opacity .28s ease;}
+.scrim.open{opacity:1;pointer-events:auto;}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:41;background:var(--surface);
+  border-radius:26px 26px 0 0;box-shadow:0 -16px 40px -16px rgba(46,42,50,.3);
+  max-width:460px;margin:0 auto;padding:10px 22px calc(26px + env(safe-area-inset-bottom));
+  transform:translateY(110%);transition:transform .34s cubic-bezier(.22,1,.36,1);
+  max-height:88vh;overflow-y:auto;}
+.sheet.open{transform:translateY(0);}
+.grab{width:42px;height:5px;border-radius:999px;background:var(--line);margin:6px auto 16px;}
+.sheet h3{font-weight:700;font-size:20px;margin:0 0 4px;}
+.sheet .lead{font-size:14px;color:var(--muted);margin:0 0 18px;line-height:1.5;}
+.step{display:flex;gap:14px;align-items:flex-start;margin-bottom:16px;}
+.step .ic{flex:none;width:46px;height:46px;border-radius:14px;background:var(--brand-soft);
+  display:flex;align-items:center;justify-content:center;}
+.step .ic svg{width:26px;height:26px;stroke:var(--brand);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
+.step .tx b{display:block;font-weight:600;font-size:15px;color:var(--ink);margin-bottom:2px;}
+.step .tx p{margin:0;font-size:13.5px;color:var(--muted);line-height:1.5;}
+.sheet .got{width:100%;margin-top:6px;background:var(--brand);color:#fff;border:none;cursor:pointer;
+  font-family:'Hind Vadodara',sans-serif;border-radius:14px;min-height:48px;font-weight:700;font-size:15px;}
+
+/* ---- celebration ---- */
+.celebrate{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;
+  background:rgba(251,249,252,.86);backdrop-filter:blur(3px);text-align:center;padding:30px;}
+.celebrate.show{display:flex;flex-direction:column;}
+.celebrate .em{font-size:54px;margin-bottom:6px;animation:rise .6s cubic-bezier(.22,1,.36,1);}
+.celebrate h2{font-weight:700;font-size:24px;color:var(--brand);margin:0 0 8px;}
+.celebrate p{font-size:15px;color:var(--ink);font-weight:500;margin:0 0 22px;max-width:280px;line-height:1.5;}
+.celebrate .btn{min-width:200px;background:var(--brand);color:#fff;border:none;cursor:pointer;
+  font-family:'Hind Vadodara',sans-serif;border-radius:14px;min-height:55px;font-weight:700;font-size:18px;}
+@keyframes rise{from{transform:translateY(16px) scale(.8);opacity:0}to{transform:none;opacity:1}}
+.petal{position:fixed;top:-24px;z-index:49;font-size:18px;animation:drift linear forwards;pointer-events:none;}
+@keyframes drift{to{transform:translateY(106vh) rotate(360deg);opacity:0}}
+
+/* ---- ambient puzzle-piece background ---- */
+.bg{position:fixed;top:0;left:0;right:0;height:100vh;height:100lvh;overflow:hidden;pointer-events:none;z-index:0;}
+.piece{position:absolute;transform:rotate(var(--rot,0deg));opacity:.2;}
+.piece svg{display:block;width:100%;height:auto;fill:currentColor;}
+.piece.f1{top:-30px;left:-46px;width:150px;color:#fa7068;--rot:-14deg;}
+.piece.f2{top:78px;right:-52px;width:150px;color:#fbca5f;--rot:18deg;}
+.piece.f3{top:46%;right:-58px;width:110px;color:#a0c95d;--rot:26deg;}
+.piece.f4{bottom:-40px;right:-30px;width:170px;color:#9ddbe6;--rot:-18deg;}
+.piece.f5{bottom:46px;left:-56px;width:150px;color:#f3adc9;--rot:8deg;}
+.piece.f6{top:36%;left:-70px;width:100px;color:#d4ab99;--rot:30deg;}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001ms !important;transition-duration:.05ms !important;}
+}
+:focus-visible{outline:2.5px solid var(--brand);outline-offset:2px;border-radius:6px;}
+</style>
+</head>
+<body>
+<div class="bg" aria-hidden="true">
+  <div class="piece f1"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece f2"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece f3"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece f4"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece f5"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece f6"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+</div>
+
+<div class="wrap">
+  <!-- header -->
+  <header class="phead">
+    <div class="hrow1">
+      <h1 class="ptitle">પાસાની સફર</h1>
+      <div class="hctrls">
+        <span class="rpill" id="round"></span>
+        <button class="hbtn" id="soundBtn" onclick="toggleSound()" aria-label="Sound"></button>
+        <button class="hbtn info" onclick="openHelp()" aria-label="How to play">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><circle cx="12" cy="8" r="0.6" fill="currentColor" stroke="none"/></svg>
+        </button>
+      </div>
+    </div>
+    <p class="hsub" id="hsub"></p>
+  </header>
+
+  <!-- stage -->
+  <div class="stage">
+    <div class="topstrip">
+      <div class="goalcard" id="goalcard">
+        <span class="lbl">લક્ષ્ય પર ઉપર<br>આવવો જોઈએ</span>
+        <span class="face" id="goalface"></span>
+      </div>
+      <div class="viewer">
+        <div class="scene">
+          <div class="cube" id="bigcube">
+            <div class="f up"    id="bfUp"></div>
+            <div class="f front" id="bfFront"></div>
+            <div class="f right" id="bfRight"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="boardwrap">
+      <div class="bhost" id="bhost">
+        <div class="board" id="board"></div>
+        <div class="dietile" id="die"></div>
+      </div>
+    </div>
+
+    <p class="swipehint" id="swipehint">પાસા પર <b>આંગળી સરકાવો</b> — અથવા બાજુના ખાના પર ટૅપ કરો</p>
+
+    <div class="mrow">
+      <span class="mcount" id="mcount"></span>
+      <button class="ubtn" id="undoBtn" onclick="undo()">
+        <svg viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h11a6 6 0 0 1 0 12h-4"/></svg>
+        Undo
+      </button>
+      <button class="ubtn" id="resetBtn" onclick="resetPuzzle()">
+        <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+        Reset
+      </button>
+    </div>
+  </div>
+
+  <!-- status -->
+  <div class="status" id="status"></div>
+
+  <!-- action bar -->
+  <div class="actionbar">
+    <div class="inner">
+      <button class="cbtn prev" id="btnPrev" onclick="prevPuzzle()"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>Back</button>
+      <div class="cmid">
+        <button class="cbtn hint" onclick="useHint()"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 1 4 10.5c-.7.6-1 1.2-1 2v.5H9v-.5c0-.8-.3-1.4-1-2A6 6 0 0 1 12 3z"/></svg>Hint</button>
+      </div>
+      <button class="cbtn next" id="btnNext" onclick="nextPuzzle()">Next<svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+    </div>
+  </div>
+
+  <div class="foot">© <b>Dreamchild Garbhsanskar</b></div>
+</div>
+
+<!-- help sheet -->
+<div class="scrim" id="scrim" onclick="closeHelp()"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="How to play">
+  <div class="grab"></div>
+  <h3>કેવી રીતે રમવું</h3>
+  <p class="lead">પાસાને ગબડાવીને લક્ષ્ય સુધી પહોંચાડો — પણ ઉપરની બાજુ સાચો અંક હોવો જોઈએ.</p>
+
+  <div class="step">
+    <div class="ic"><svg viewBox="0 0 24 24"><path d="M5 12h9"/><path d="M12 7l5 5-5 5"/><circle cx="18" cy="12" r="0.6" fill="currentColor" stroke="none"/></svg></div>
+    <div class="tx"><b>આંગળી સરકાવો</b><p>પાસા પર આંગળી મૂકીને જે દિશામાં ગબડાવવો હોય તે તરફ સરકાવો. બાજુના ખાના પર ટૅપ પણ કરી શકાય.</p></div>
+  </div>
+
+  <div class="step">
+    <div class="ic"><svg viewBox="0 0 24 24"><path d="M12 2l9 5v10l-9 5-9-5V7z"/><path d="M12 12l9-5M12 12v10M12 12L3 7"/></svg></div>
+    <div class="tx"><b>પાસો પલટી ખાય છે</b><p>પાસો સરકતો નથી — પલટી ખાય છે. જે બાજુ હતી તે ઉપર આવે છે. ઉપરના ખૂણે મોટા પાસામાં ત્રણેય બાજુ દેખાય છે.</p></div>
+  </div>
+
+  <div class="step">
+    <div class="ic"><svg viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M4 8h16"/><path d="M4 16h16"/></svg></div>
+    <div class="tx"><b>સામસામેની બાજુ = 7</b><p>પાસાની સામસામેની બાજુનો સરવાળો હંમેશા 7 થાય. ઉપર 1 હોય તો નીચે 6.</p></div>
+  </div>
+
+  <div class="step">
+    <div class="ic"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></div>
+    <div class="tx"><b>રસ્તો વિચારો</b><p>ટૂંકો રસ્તો હંમેશા સાચો નથી. લક્ષ્ય પર પહોંચો અને ઉપર માગેલો અંક હોય તો કોયડો પૂર્ણ.</p></div>
+  </div>
+
+  <button class="got" onclick="closeHelp()">Close</button>
+</div>
+
+<!-- celebration -->
+<div class="celebrate" id="celebrate">
+  <div class="em">🌸</div>
+  <h2>બધા કોયડા પૂર્ણ</h2>
+  <p>ખૂબ સરસ! તમારી એકાગ્રતા કમાલની છે.</p>
+  <button class="btn" onclick="closeCelebrate()">Congratulations</button>
+</div>
+
+<script>
+/* ---- puzzle data (verified: naive shortest path never satisfies `want`) ---- */
+const PUZZLES=[
+ {id:'p1',W:4,H:4,blocked:[[2,0],[2,1],[3,3]],want:1,start:[0,3],goal:[3,0],best:8,
+  sub_gu:'પાસાને ગબડાવીને લક્ષ્ય સુધી લઈ જાઓ.'},
+ {id:'p2',W:5,H:4,blocked:[[0,2],[2,0],[3,2]],want:3,start:[0,3],goal:[4,0],best:9,
+  sub_gu:'ધ્યાન રાખો — ઉપરની બાજુ કઈ આવે છે?'},
+ {id:'p3',W:5,H:5,blocked:[[0,1],[1,3],[1,4],[3,1]],want:2,start:[0,4],goal:[4,0],best:12,
+  sub_gu:'છેલ્લો કોયડો — રસ્તો ધ્યાનથી પસંદ કરો.'}
+];
+/* Standard die, matching the reference net:
+   top=1 bottom=6 | front=2 back=5 | right=3 left=4  (opposite faces sum to 7)
+   Stored as top / north(=back) / east(=right). */
+const INIT={top:1,north:5,east:3};
+const KEY='dcgs_dicejourney_v4';
+
+function save(d){try{localStorage.setItem(KEY,JSON.stringify(d))}catch(e){}}
+function load(){try{return JSON.parse(localStorage.getItem(KEY))}catch(e){return null}}
+
+/* ---- app bridge (RN WebView) ---- */
+function postToApp(m){try{window.ReactNativeWebView&&window.ReactNativeWebView.postMessage(JSON.stringify(m));}catch(e){}}
+function activityDone(){postToApp({type:'ACTIVITY_DONE'});}   /* -> onWebActivityComplete in the app */
+
+/* active time only (pauses while the app is backgrounded) */
+let _active=0,_since=Date.now(),_completed=false;
+document.addEventListener('visibilitychange',function(){
+  if(document.hidden){_active+=Date.now()-_since;}else{_since=Date.now();}
+  pushProgress();
+});
+function timeSpentSec(){return Math.round((_active+(document.hidden?0:Date.now()-_since))/1000);}
+
+/* heartbeat: keep native updated so it can fire puzzle_exited on unmount (back press) */
+function pushProgress(){postToApp({type:'PROGRESS',time_spent_sec:timeSpentSec(),completed:_completed});}
+setInterval(pushProgress,3000);
+pushProgress();
+
+function markDone(){ _completed=true; activityDone(); pushProgress(); }   /* whole set solved */
+window.addEventListener('pagehide',pushProgress);
+
+let state=load()||{tab:0,sound:false,celebrated:false,solved:[false,false,false]};
+if(!state.solved)state.solved=[false,false,false];
+let soundOn=!!state.sound, cur=state.tab||0;
+
+/* live (non-persisted) run state */
+let pos, die, history, trail, spin;
+
+/* ---- sound ---- */
+const SND={
+  correct:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Right.mp3',
+  wrong:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Wrong.mp3',
+  level:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Level.mp3',
+  win:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Complete.mp3',
+  hint:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Hint.mp3'
+};
+const _audio={};
+function preloadSounds(){for(const k in SND){try{const a=new Audio(SND[k]);a.preload='auto';_audio[k]=a;}catch(e){}}}
+function playSound(k){
+  if(!soundOn)return;
+  const a=_audio[k]; if(!a)return;
+  try{a.pause();a.currentTime=0;a.play().catch(function(){});}catch(e){}
+}
+function playCorrect(){playSound('correct');}
+function playWrong(){playSound('wrong');}
+function playLevel(){playSound('level');}
+function playWin(){playSound('win');}
+function playHint(){playSound('hint');}
+function setSoundIcon(){const b=document.getElementById('soundBtn');b.innerHTML=soundOn
+  ?'<svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M16 9a3.5 3.5 0 0 1 0 6"/><path d="M19 7a7 7 0 0 1 0 10"/></svg>'
+  :'<svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M22 9l-5 6M17 9l5 6"/></svg>';}
+function toggleSound(){soundOn=!soundOn;state.sound=soundOn;setSoundIcon();save(state);}
+
+/* ---- pip faces ---- */
+const PIPS={1:[[50,50]],2:[[28,28],[72,72]],3:[[28,28],[50,50],[72,72]],
+  4:[[28,28],[72,28],[28,72],[72,72]],5:[[28,28],[72,28],[50,50],[28,72],[72,72]],
+  6:[[28,26],[72,26],[28,50],[72,50],[28,74],[72,74]]};
+function dieSVG(n,cls){
+  let s='<svg viewBox="0 0 100 100" aria-hidden="true">';
+  (PIPS[n]||[]).forEach(p=>{s+='<circle class="pip" cx="'+p[0]+'" cy="'+p[1]+'" r="9.5"/>';});
+  return s+'</svg>';
+}
+
+/* ---- cube state: opposite faces always sum to 7 ---- */
+function rollDie(d,dir){
+  const t=d.top,n=d.north,e=d.east;
+  if(dir==='N')return{top:7-n,north:t,east:e};
+  if(dir==='S')return{top:n,north:7-t,east:e};
+  if(dir==='E')return{top:7-e,north:n,east:t};
+  if(dir==='W')return{top:e,north:n,east:7-t};
+  return d;
+}
+const DIRS={N:[0,-1],S:[0,1],E:[1,0],W:[-1,0]};
+/* faces the camera can see: top, front(=south), right(=east) */
+function visibleFaces(d){return{up:d.top,front:7-d.north,right:d.east};}
+
+function P(){return PUZZLES[cur];}
+function isWall(x,y){return P().blocked.some(b=>b[0]===x&&b[1]===y);}
+function inBoard(x,y){return x>=0&&x<P().W&&y>=0&&y<P().H;}
+function atGoal(){return pos[0]===P().goal[0]&&pos[1]===P().goal[1];}
+function isWin(){return atGoal()&&die.top===P().want;}
+function canMove(dir){
+  const nx=pos[0]+DIRS[dir][0], ny=pos[1]+DIRS[dir][1];
+  return inBoard(nx,ny)&&!isWall(nx,ny);
+}
+
+/* ---- BFS solver (Hint) ---- */
+function solveFrom(sPos,sDie){
+  const p=P(), key=(x,y,d)=>x+','+y+','+d.top+','+d.north+','+d.east;
+  const q=[[sPos,sDie,[]]]; const seen=new Set([key(sPos[0],sPos[1],sDie)]);
+  let head=0;
+  while(head<q.length){
+    const item=q[head++]; const ps=item[0], ds=item[1], path=item[2];
+    if(ps[0]===p.goal[0]&&ps[1]===p.goal[1]&&ds.top===p.want)return path;
+    for(const dir in DIRS){
+      const nx=ps[0]+DIRS[dir][0], ny=ps[1]+DIRS[dir][1];
+      if(nx<0||nx>=p.W||ny<0||ny>=p.H)continue;
+      if(p.blocked.some(b=>b[0]===nx&&b[1]===ny))continue;
+      const nd=rollDie(ds,dir), k=key(nx,ny,nd);
+      if(seen.has(k))continue;
+      seen.add(k); q.push([[nx,ny],nd,path.concat(dir)]);
+    }
+  }
+  return null;
+}
+
+/* ---- 3D cube painting ----
+   The cube is 3 CSS-3D planes. `spin` accumulates real rotation so each roll
+   visibly tumbles in the direction travelled; face contents are re-synced
+   after the animation so the visible faces always match the logical state. */
+function cubeTransform(sc){
+  return 'rotateX('+(-35+spin.x)+'deg) rotateY('+(-45+spin.y)+'deg)';
+}
+function paintCube(prefix,size){
+  const v=visibleFaces(die), half=size/2;
+  const up=document.getElementById(prefix+'Up'),
+        fr=document.getElementById(prefix+'Front'),
+        ri=document.getElementById(prefix+'Right');
+  up.innerHTML=dieSVG(v.up);
+  fr.innerHTML=dieSVG(v.front);
+  ri.innerHTML=dieSVG(v.right);
+  up.style.transform='rotateX(90deg) translateZ('+half+'px)';
+  fr.style.transform='translateZ('+half+'px)';
+  ri.style.transform='rotateY(90deg) translateZ('+half+'px)';
+}
+function renderCubes(){
+  /* the single 3D reference die in the header */
+  paintCube('bf',56);
+  const big=document.getElementById('bigcube');
+  big.style.transform=cubeTransform();
+  big.classList.toggle('win',isWin());
+  /* the board piece is a flat tile showing the top face */
+  const el=document.getElementById('die');
+  el.innerHTML=dieSVG(die.top);
+  el.classList.toggle('win',isWin());
+}
+
+/* ---- render ---- */
+function renderProgress(){document.getElementById('round').textContent=(cur+1)+'/'+PUZZLES.length;}
+function renderHead(){document.getElementById('hsub').textContent=P().sub_gu;}
+function renderGoal(){
+  document.getElementById('goalface').innerHTML=dieSVG(P().want);
+  document.getElementById('goalcard').classList.toggle('met',isWin());
+}
+function renderBoard(){
+  const p=P(), b=document.getElementById('board');
+  b.style.gridTemplateColumns='repeat('+p.W+',minmax(0,1fr))';
+  b.innerHTML='';
+  const done=state.solved[cur];
+  for(let y=0;y<p.H;y++)for(let x=0;x<p.W;x++){
+    const d=document.createElement('div');
+    let cls='sq';
+    if(isWall(x,y))cls+=' wall';
+    if(x===p.goal[0]&&y===p.goal[1])cls+=' goal';
+    if(trail.some(t=>t[0]===x&&t[1]===y))cls+=' trail';
+    /* adjacent, legal squares are tappable */
+    const adj=Math.abs(x-pos[0])+Math.abs(y-pos[1])===1;
+    if(adj&&!isWall(x,y)&&!done)cls+=' step';
+    d.className=cls;d.dataset.x=x;d.dataset.y=y;
+    if(x===p.goal[0]&&y===p.goal[1])d.innerHTML='<span class="flag">◎</span>';
+    else if(adj&&!isWall(x,y)&&!done)d.innerHTML='<span class="dot"></span>';
+    if(adj&&!isWall(x,y)&&!done){
+      d.addEventListener('click',()=>{
+        const dx=x-pos[0], dy=y-pos[1];
+        for(const dir in DIRS){if(DIRS[dir][0]===dx&&DIRS[dir][1]===dy)tryRoll(dir);}
+      });
+    }
+    b.appendChild(d);
+  }
+  placeDie();
+}
+function placeDie(){
+  const p=P(), b=document.getElementById('board'), el=document.getElementById('die');
+  const gap=5;
+  const cw=(b.clientWidth-gap*(p.W-1))/p.W;
+  el.style.width=cw+'px';el.style.height=cw+'px';
+  el.style.left=(pos[0]*(cw+gap))+'px';
+  el.style.top=(pos[1]*(cw+gap))+'px';
+  renderCubes();
+}
+function renderMeta(){
+  document.getElementById('mcount').innerHTML='ચાલ <b>'+history.length+'</b>';
+  document.getElementById('undoBtn').disabled=history.length===0||state.solved[cur];
+  document.getElementById('resetBtn').disabled=state.solved[cur];
+  document.getElementById('swipehint').style.opacity=state.solved[cur]?'.35':'1';
+}
+function renderActions(){
+  const isLast=cur===PUZZLES.length-1;
+  document.getElementById('btnPrev').disabled=(cur===0);
+  document.getElementById('btnNext').disabled=!(state.solved[cur]&&!isLast);
+}
+function renderAll(){renderProgress();renderHead();renderGoal();renderBoard();renderMeta();renderActions();setSoundIcon();}
+
+/* ---- status ---- */
+let stTimer;
+function status(type,msg,sticky){const s=document.getElementById('status');s.className='status show '+type;s.textContent=msg;clearTimeout(stTimer);if(!sticky)stTimer=setTimeout(clearStatus,2300);}
+function clearStatus(){document.getElementById('status').className='status';}
+
+/* ---- run state ---- */
+function initRun(solvedView){
+  const p=P();
+  pos=[p.start[0],p.start[1]];
+  die={top:INIT.top,north:INIT.north,east:INIT.east};
+  history=[];trail=[[pos[0],pos[1]]];spin={x:0,y:0};
+  if(solvedView){
+    const path=solveFrom(pos,die)||[];
+    path.forEach(dir=>{
+      pos=[pos[0]+DIRS[dir][0],pos[1]+DIRS[dir][1]];
+      die=rollDie(die,dir);
+      history.push(dir);trail.push([pos[0],pos[1]]);
+    });
+  }
+}
+
+/* ---- moves ---- */
+function tryRoll(dir){
+  if(state.solved[cur])return;
+  if(!canMove(dir)){
+    const el=document.getElementById('die');
+    el.classList.remove('bump');void el.offsetWidth;el.classList.add('bump');
+    if(soundOn)playWrong();
+    status('bad','ત્યાં જઈ શકાય એમ નથી.');
+    return;
+  }
+  history.push(dir);
+  pos=[pos[0]+DIRS[dir][0],pos[1]+DIRS[dir][1]];
+  die=rollDie(die,dir);
+  trail.push([pos[0],pos[1]]);
+  /* accumulate a real 90° tumble in the direction of travel */
+  if(dir==='N')spin.x-=90;
+  if(dir==='S')spin.x+=90;
+  if(dir==='E')spin.y+=90;
+  if(dir==='W')spin.y-=90;
+  renderBoard();renderMeta();renderGoal();
+  checkDone();
+}
+function undo(){
+  if(!history.length||state.solved[cur])return;
+  const dir=history.pop();
+  const back={N:'S',S:'N',E:'W',W:'E'}[dir];
+  die=rollDie(die,back);
+  pos=[pos[0]-DIRS[dir][0],pos[1]-DIRS[dir][1]];
+  trail.pop();
+  if(dir==='N')spin.x+=90;
+  if(dir==='S')spin.x-=90;
+  if(dir==='E')spin.y-=90;
+  if(dir==='W')spin.y+=90;
+  renderBoard();renderMeta();renderGoal();clearStatus();
+}
+function resetPuzzle(){
+  if(state.solved[cur]){status('hint','આ કોયડો પહેલેથી પૂર્ણ છે.');return;}
+  initRun(false);
+  renderAll();status('hint','આ કોયડો ફરી શરૂ.');
+}
+
+/* ---- swipe on the board ---- */
+const SWIPE_MIN=24;
+let sw=null;
+const host=document.getElementById('bhost');
+host.addEventListener('pointerdown',e=>{
+  if(state.solved[cur])return;
+  sw={x:e.clientX,y:e.clientY,fired:false};
+},{passive:true});
+host.addEventListener('pointermove',e=>{
+  if(!sw||sw.fired)return;
+  const dx=e.clientX-sw.x, dy=e.clientY-sw.y;
+  if(Math.max(Math.abs(dx),Math.abs(dy))<SWIPE_MIN)return;
+  const dir=Math.abs(dx)>Math.abs(dy)?(dx>0?'E':'W'):(dy>0?'S':'N');
+  sw.fired=true;
+  tryRoll(dir);
+},{passive:true});
+host.addEventListener('pointerup',()=>{sw=null;});
+host.addEventListener('pointercancel',()=>{sw=null;});
+
+/* ---- hint ---- */
+function useHint(){
+  if(state.solved[cur]){status('hint','આ કોયડો પહેલેથી પૂર્ણ છે.');return;}
+  const path=solveFrom(pos,die);
+  if(!path||!path.length){
+    if(soundOn)playHint();
+    status('hint','અહીંથી પહોંચાય એમ નથી — "Reset" દબાવો.');
+    return;
+  }
+  const dir=path[0];
+  const nx=pos[0]+DIRS[dir][0], ny=pos[1]+DIRS[dir][1];
+  const cell=document.querySelector('.sq[data-x="'+nx+'"][data-y="'+ny+'"]');
+  if(cell){
+    const ob=cell.style.background, obc=cell.style.borderColor;
+    cell.style.background='var(--accent-soft)';
+    cell.style.borderColor='var(--accent)';
+    setTimeout(()=>{cell.style.background=ob;cell.style.borderColor=obc;},1400);
+  }
+  const names={N:'ઉપર',S:'નીચે',E:'જમણે',W:'ડાબે'};
+  if(soundOn)playHint();
+  status('hint','હવે '+names[dir]+' ગબડાવો.');
+}
+
+/* ---- done ---- */
+function checkDone(){
+  if(!atGoal())return;
+  if(!isWin()){
+    if(soundOn)playWrong();
+    status('bad','લક્ષ્ય પર છો, પણ ઉપર '+P().want+' હોવો જોઈએ.');
+    return;
+  }
+  if(state.solved[cur])return;
+  state.solved[cur]=true;save(state);
+  renderBoard();renderMeta();renderActions();renderGoal();
+  const all=state.solved.every(Boolean);
+  if(all){
+    status('done','બધા કોયડા પૂર્ણ. ખૂબ સરસ! 🌸',true);
+    if(soundOn)playWin();
+    if(!state.celebrated){state.celebrated=true;save(state);showCelebrate();}
+    markDone();
+  }else{
+    status('done','આ કોયડો પૂર્ણ. તૈયાર હો ત્યારે આગળ વધો.',true);
+    if(soundOn)playLevel();
+  }
+}
+
+/* ---- navigation ---- */
+function nextPuzzle(){
+  if(cur<PUZZLES.length-1&&state.solved[cur]){
+    cur++;state.tab=cur;save(state);
+    initRun(state.solved[cur]);renderAll();clearStatus();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+}
+function prevPuzzle(){
+  if(cur>0){
+    cur--;state.tab=cur;save(state);
+    initRun(state.solved[cur]);renderAll();clearStatus();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+}
+
+/* ---- help sheet ---- */
+function openHelp(){document.getElementById('scrim').classList.add('open');document.getElementById('sheet').classList.add('open');}
+function closeHelp(){document.getElementById('scrim').classList.remove('open');document.getElementById('sheet').classList.remove('open');}
+
+/* ---- celebration ---- */
+function showCelebrate(){const c=document.getElementById('celebrate');c.classList.add('show');const ems=['🌸','🌼','✨','🍃','💜'];for(let i=0;i<16;i++){const p=document.createElement('div');p.className='petal';p.textContent=ems[i%ems.length];p.style.left=(Math.random()*100)+'%';p.style.animationDuration=(2.4+Math.random()*1.6)+'s';p.style.animationDelay=(Math.random()*.6)+'s';document.body.appendChild(p);setTimeout(()=>p.remove(),4600);}}
+function closeCelebrate(){
+  document.getElementById('celebrate').classList.remove('show');
+  postToApp({type:'GO_BACK'});
+}
+
+/* ---- keyboard ---- */
+window.addEventListener('keydown',e=>{
+  const m={ArrowUp:'N',ArrowDown:'S',ArrowLeft:'W',ArrowRight:'E'};
+  if(m[e.key]){e.preventDefault();tryRoll(m[e.key]);}
+  else if(e.key==='Backspace'){e.preventDefault();undo();}
+});
+
+/* ---- init ---- */
+window.addEventListener('resize',()=>placeDie());
+preloadSounds();
+initRun(state.solved[cur]);
+renderAll();
+if(state.solved.every(Boolean)){
+  status('done','બધા કોયડા પૂર્ણ. ખૂબ સરસ! 🌸',true);
+  _completed=true;
+  pushProgress();
+}else if(state.solved[cur]){
+  status('done','આ કોયડો પૂર્ણ. તૈયાર હો ત્યારે આગળ વધો.',true);
+}
+</script>
+</body>
+</html>

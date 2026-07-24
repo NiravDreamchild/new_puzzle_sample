@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#FBF9FC">
+<title>Dreamchild · Puzzle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Vadodara:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FBF9FC;
+  --surface:#FFFFFF;
+  --ink:#2E2A32;
+  --muted:#8C8794;
+  --line:#ECE7F0;
+  --brand:#752886;
+  --brand-deep:#561F69;
+  --brand-soft:#F3E9F8;
+  --accent:#F2A03D;
+  --accent-soft:#FCEFDC;
+  --mint:#2F9B63;
+  --mint-soft:#E5F4EC;
+  --rose:#C75C72;
+  --rose-soft:#FAEAEE;
+  --shadow:0 10px 30px -12px rgba(78,33,95,.18);
+  --shadow-sm:0 4px 14px -8px rgba(78,33,95,.20);
+  --r-lg:22px; --r-md:16px; --r-sm:12px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg);color:var(--ink);
+  font-family:'Hind Vadodara',sans-serif;
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+  background-image:radial-gradient(120% 60% at 50% -10%, var(--brand-soft) 0%, rgba(243,233,248,0) 60%);
+}
+.wrap{max-width:460px;margin:0 auto;padding:16px 16px 28px;position:relative;z-index:1;}
+
+/* ---- header (own card / band) ---- */
+.phead{background:var(--surface);border:1px solid var(--line);border-radius:18px;
+  box-shadow:0 6px 20px -12px rgba(78,33,95,.16);padding:15px 16px;margin-bottom:14px;}
+.hrow1{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.ptitle{font-family:'Hind Vadodara',sans-serif;font-weight:700;font-size:23px;line-height:1.05;color:var(--brand);margin:0;letter-spacing:-.01em;}
+.hctrls{display:flex;align-items:center;gap:8px;flex:none;}
+.rpill{display:flex;align-items:center;justify-content:center;min-width:50px;height:38px;padding:0 12px;
+  border:1px solid var(--line);border-radius:11px;background:var(--surface);
+  font-family:'Hind Vadodara',sans-serif;font-weight:600;font-size:16px;color:var(--ink);letter-spacing:.01em;}
+.hbtn{width:40px;height:38px;border:1px solid var(--line);border-radius:11px;background:var(--surface);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-appearance:none;padding:0;
+  transition:background .15s ease;}
+.hbtn:active{background:var(--brand-soft);}
+.hbtn svg{width:20px;height:20px;fill:none;stroke:var(--muted);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.hbtn.info{width:38px;background:var(--brand-soft);border-color:transparent;}
+.hbtn.info svg{stroke:var(--brand);}
+.hsub{font-family:'Hind Vadodara',sans-serif;text-align:center;font-weight:600;font-size:15px;
+  line-height:1.5;color:var(--ink);margin:13px 0 1px;}
+
+/* ---- stage card ---- */
+.stage{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
+  box-shadow:0 8px 28px -10px rgba(78,33,95,.16), 0 2px 8px -3px rgba(78,33,95,.08);padding:16px;margin-bottom:14px;}
+
+/* bridges board (SVG) */
+.board{width:100%;display:block;touch-action:none;user-select:none;-webkit-user-select:none;}
+.isl{cursor:pointer;}
+.isl .body{fill:#FAF7FB;stroke:var(--line);stroke-width:2.5;transition:fill .18s ease,stroke .18s ease;}
+.isl .num{font-family:'Hind Vadodara',sans-serif;font-weight:600;font-size:34px;fill:#564B5E;
+  text-anchor:middle;pointer-events:none;transition:fill .18s ease;}
+.isl .hit{fill:transparent;pointer-events:all;}
+.isl.sel .body{fill:var(--brand-soft);stroke:var(--brand);stroke-width:4;}
+.isl.sel .num{fill:var(--brand);font-weight:700;}
+.isl.ok .body{fill:url(#gbrand);stroke:var(--brand-deep);}
+.isl.ok .num{fill:#fff;font-weight:700;}
+.isl.over .body{fill:var(--rose);stroke:#A8455A;}
+.isl.over .num{fill:#fff;font-weight:700;}
+.isl.shake{animation:ishake .3s ease;}
+@keyframes ishake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+.bridge{stroke:var(--brand);stroke-width:8;stroke-linecap:round;}
+.bridge.thin{stroke-width:7;}
+.bridge.pop{animation:bpop .22s ease;}
+@keyframes bpop{from{stroke-width:1;opacity:.2}}
+/* dotted "a bridge can go here" corridors */
+.guide{stroke:#DFD2E7;stroke-width:3.5;stroke-dasharray:.5 11;stroke-linecap:round;pointer-events:none;}
+.guide.hot{stroke:var(--accent);stroke-width:5;stroke-dasharray:.5 12;animation:gdash .9s linear infinite;}
+@keyframes gdash{to{stroke-dashoffset:-25}}
+.isl.target .body{fill:var(--accent-soft);stroke:var(--accent);stroke-width:4;animation:tpulse 1s ease infinite;}
+.isl.target .num{fill:#9A5A12;}
+@keyframes tpulse{0%,100%{stroke-width:4}50%{stroke-width:7}}
+.preview{stroke:var(--accent);stroke-width:6;stroke-linecap:round;stroke-dasharray:3 14;opacity:.95;pointer-events:none;}
+.hintline{stroke:var(--accent);stroke-width:9;stroke-linecap:round;stroke-dasharray:2 17;pointer-events:none;
+  animation:hblink .42s ease 3;}
+.hintline.remove{stroke:var(--rose);}
+@keyframes hblink{0%,100%{opacity:.25}50%{opacity:1}}
+.gridline{stroke:#F4EFF6;stroke-width:1.5;}
+.badge circle{stroke:#fff;stroke-width:2.5;}
+.badge.okb circle{fill:var(--mint);}
+.badge.overb circle{fill:#A8455A;}
+.badge path{fill:none;stroke:#fff;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;}
+.badge text{font-family:'Hind Vadodara',sans-serif;font-weight:700;font-size:17px;fill:#fff;text-anchor:middle;}
+.badge{pointer-events:none;}
+
+/* ---- status line ---- */
+.status{min-height:24px;text-align:center;font-size:14px;line-height:1.4;font-weight:500;
+  color:var(--muted);padding:2px 8px;margin-bottom:6px;transition:color .2s ease;opacity:0;
+  transition:opacity .25s ease;}
+.status.show{opacity:1;}
+.status.ok{color:var(--mint);}
+.status.bad{color:var(--rose);}
+.status.hint{color:#B5781E;}
+.status.done{color:var(--brand);font-weight:600;}
+
+/* ---- action bar ---- */
+.actionbar{margin-top:14px;}
+.actionbar .inner{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;row-gap:8px;}
+.cmid{display:flex;align-items:center;gap:6px;}
+.cbtn{font-family:'Hind Vadodara',sans-serif;cursor:pointer;-webkit-appearance:none;
+  display:flex;align-items:center;justify-content:center;gap:5px;
+  transition:transform .12s ease,opacity .2s ease,background .2s ease,box-shadow .2s ease;}
+.cbtn:active{transform:scale(.97);}
+.cbtn svg{width:16px;height:16px;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;}
+.cbtn.hint{min-height:36px;border-radius:12px;padding:0 20px;background:var(--surface);border:1px solid var(--line);
+  color:var(--ink);font-weight:600;font-size:13px;box-shadow:var(--shadow-sm);}
+.cbtn.hint svg{stroke:var(--brand);}
+.cbtn.prev,.cbtn.next{min-height:36px;border-radius:12px;padding:0 20px;background:var(--brand);border:none;color:#fff;
+  font-weight:700;font-size:13.5px;box-shadow:0 8px 20px -8px rgba(110,42,133,.5);}
+.cbtn.prev svg,.cbtn.next svg{stroke:#fff;}
+.cbtn:disabled{cursor:default;}
+.cbtn.prev:disabled,.cbtn.next:disabled{background:var(--surface);border:1px solid var(--line);color:var(--muted);box-shadow:none;font-weight:600;}
+.cbtn.prev:disabled svg,.cbtn.next:disabled svg{stroke:var(--muted);}
+
+.btn{border:none;cursor:pointer;-webkit-appearance:none;font-family:'Hind Vadodara',sans-serif;
+  border-radius:14px;min-height:48px;font-weight:700;font-size:15px;display:flex;align-items:center;
+  justify-content:center;gap:7px;transition:transform .12s ease,box-shadow .2s ease,opacity .2s ease;}
+.btn:active{transform:scale(.98);}
+
+/* ---- footer ---- */
+.foot{text-align:center;font-family:'Hind Vadodara',sans-serif;font-size:11px;color:var(--muted);
+  letter-spacing:.03em;margin-top:18px;}
+.foot b{font-weight:600;color:#a79bb0;}
+
+/* ---- help sheet ---- */
+.scrim{position:fixed;inset:0;background:rgba(46,42,50,.42);backdrop-filter:blur(2px);z-index:40;
+  opacity:0;pointer-events:none;transition:opacity .28s ease;}
+.scrim.open{opacity:1;pointer-events:auto;}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:41;background:var(--surface);
+  border-radius:26px 26px 0 0;box-shadow:0 -16px 40px -16px rgba(46,42,50,.3);
+  max-width:460px;margin:0 auto;padding:10px 22px calc(26px + env(safe-area-inset-bottom));
+  transform:translateY(110%);transition:transform .34s cubic-bezier(.22,1,.36,1);}
+.sheet.open{transform:translateY(0);}
+.grab{width:42px;height:5px;border-radius:999px;background:var(--line);margin:6px auto 16px;}
+.sheet h3{font-family:'Hind Vadodara',sans-serif;font-weight:700;font-size:20px;margin:0 0 4px;}
+.sheet .lead{font-size:14px;color:var(--muted);margin:0 0 18px;line-height:1.5;}
+.step{display:flex;gap:14px;align-items:flex-start;margin-bottom:16px;}
+.step .ic{flex:none;width:46px;height:46px;border-radius:14px;background:var(--brand-soft);
+  display:flex;align-items:center;justify-content:center;}
+.step .ic svg{width:26px;height:26px;stroke:var(--brand);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
+.step .tx b{display:block;font-family:'Hind Vadodara',sans-serif;font-weight:600;font-size:15px;color:var(--ink);margin-bottom:2px;}
+.step .tx p{margin:0;font-size:13.5px;color:var(--muted);line-height:1.5;}
+.sheet .got{width:100%;margin-top:6px;background:var(--brand);color:#fff;}
+
+/* ---- celebration ---- */
+.celebrate{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;
+  background:rgba(251,249,252,.86);backdrop-filter:blur(3px);text-align:center;padding:30px;}
+.celebrate.show{display:flex;flex-direction:column;}
+.celebrate .em{font-size:54px;margin-bottom:6px;animation:rise .6s cubic-bezier(.22,1,.36,1);}
+.celebrate h2{font-family:'Hind Vadodara',sans-serif;font-weight:700;font-size:24px;color:var(--brand);margin:0 0 8px;}
+.celebrate p{font-size:15px;color:var(--ink);font-weight:500;margin:0 0 22px;max-width:280px;line-height:1.5;}
+.celebrate .btn{min-width:200px;background:var(--brand);color:#fff;min-height:55px;font-size:18px;}
+@keyframes rise{from{transform:translateY(16px) scale(.8);opacity:0}to{transform:none;opacity:1}}
+.petal{position:fixed;top:-24px;z-index:49;font-size:18px;animation:drift linear forwards;pointer-events:none;}
+@keyframes drift{to{transform:translateY(106vh) rotate(360deg);opacity:0}}
+
+/* ---- ambient puzzle-piece background ---- */
+.bg{position:fixed;top:0;left:0;right:0;height:100vh;height:100lvh;overflow:hidden;pointer-events:none;z-index:0;}
+.piece{position:absolute;transform:rotate(var(--rot,0deg));opacity:.3;}
+.piece svg{display:block;width:100%;height:auto;fill:currentColor;}
+.piece.f1{top:-30px;left:-46px;width:150px;color:#fa7068;--rot:-14deg;}
+.piece.f2{top:78px;right:-52px;width:150px;color:#fbca5f;--rot:18deg;}
+.piece.f3{top:46%;right:-58px;width:110px;color:#a0c95d;--rot:26deg;}
+.piece.f4{bottom:-40px;right:-30px;width:170px;color:#9ddbe6;--rot:-18deg;}
+.piece.f5{bottom:46px;left:-56px;width:150px;color:#f3adc9;--rot:8deg;}
+.piece.f6{top:36%;left:-70px;width:100px;color:#d4ab99;--rot:30deg;}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001ms !important;transition-duration:.05ms !important;}
+}
+:focus-visible{outline:2.5px solid var(--brand);outline-offset:2px;border-radius:6px;}
+</style>
+</head>
+<body>
+<div class="bg" aria-hidden="true">
+  <div class="piece f1"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece f2"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece f3"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece f4"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece f5"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece f6"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+</div>
+<div class="wrap">
+
+  <!-- header -->
+  <header class="phead">
+    <div class="hrow1">
+      <h1 class="ptitle">પુલ બાંધો</h1>
+      <div class="hctrls">
+        <span class="rpill" id="round"></span>
+        <button class="hbtn" id="soundBtn" onclick="toggleSound()" aria-label="Sound"></button>
+        <button class="hbtn info" onclick="openHelp()" aria-label="How to play">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><circle cx="12" cy="8" r="0.6" fill="currentColor" stroke="none"/></svg>
+        </button>
+      </div>
+    </div>
+    <p class="hsub" id="hsub">દરેક ટાપુ પર લખેલા અંક જેટલા પુલ જોડો.<br>ઊભા કે આડા • વધુમાં વધુ 2 પુલ • પુલ ઓળંગાય નહીં.</p>
+  </header>
+
+  <!-- STAGE -->
+  <div class="stage">
+    <svg class="board" id="board" viewBox="0 0 630 630" role="application" aria-label="Bridges puzzle board">
+      <defs>
+        <linearGradient id="gbrand" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#752886"/><stop offset="1" stop-color="#561F69"/>
+        </linearGradient>
+      </defs>
+      <g id="glines"></g>
+      <g id="gguides"></g>
+      <g id="gbridges"></g>
+      <g id="gislands"></g>
+      <g id="goverlay"></g>
+    </svg>
+  </div>
+
+  <!-- status -->
+  <div class="status" id="status"></div>
+
+  <!-- actions -->
+  <div class="actionbar">
+    <div class="inner">
+      <button class="cbtn prev" id="btnPrev" onclick="prevPuzzle()"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>Back</button>
+      <div class="cmid">
+        <button class="cbtn hint" onclick="useHint()"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 1 4 10.5c-.7.6-1 1.2-1 2v.5H9v-.5c0-.8-.3-1.4-1-2A6 6 0 0 1 12 3z"/></svg>Hint</button>
+      </div>
+      <button class="cbtn next" id="btnNext" onclick="nextPuzzle()">Next<svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+    </div>
+  </div>
+
+  <div class="foot">© <b>Dreamchild Garbhsanskar</b></div>
+</div>
+
+<!-- help sheet -->
+<div class="scrim" id="scrim" onclick="closeHelp()"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="How to play">
+  <div class="grab"></div>
+  <h3>કેવી રીતે રમવું</h3>
+  <p class="lead">ટાપુઓને પુલથી જોડવાના છે. ઉતાવળ નહીં — શાંતિથી.</p>
+
+  <div class="step">
+    <div class="ic"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="2.6"/><circle cx="19" cy="12" r="2.6"/><path d="M8 12h8"/></svg></div>
+    <div class="tx"><b>વચ્ચેની જગ્યા પર ટૅપ કરો</b><p>બે ટાપુની વચ્ચે ટપકાંવાળી લાઇન દેખાય છે — તે જગ્યા પર ટૅપ કરો, પુલ તરત બની જશે. બે ટાપુ પર વારાફરતી ટૅપ કરીને કે આંગળી સરકાવીને પણ જોડી શકાય.</p></div>
+  </div>
+
+  <div class="step">
+    <div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M9.5 15v-6l5 6v-6"/></svg></div>
+    <div class="tx"><b>અંક પ્રમાણે પુલ</b><p>દરેક ટાપુને તેના પર લખેલા અંક જેટલા જ પુલ જોઈએ. બે ટાપુ વચ્ચે વધુમાં વધુ 2 પુલ બની શકે.</p></div>
+  </div>
+
+  <div class="step">
+    <div class="ic"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 18h16"/><path d="M8 6v12M16 6v12"/></svg></div>
+    <div class="tx"><b>સીધા જ, ઓળંગ્યા વિના</b><p>પુલ ફક્ત ઊભા કે આડા બને અને એકબીજાને ઓળંગી ન શકે. પુલ પર ફરી ટૅપ કરો: 1 → 2 → દૂર.</p></div>
+  </div>
+
+  <div class="step">
+    <div class="ic"><svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.4"/><circle cx="18" cy="6" r="2.4"/><circle cx="6" cy="18" r="2.4"/><circle cx="18" cy="18" r="2.4"/><path d="M8.4 6h7.2M6 8.4v7.2M8.4 18h7.2M18 8.4v7.2"/></svg></div>
+    <div class="tx"><b>બધા એક જાળમાં</b><p>અંતે બધા ટાપુ પુલથી એકબીજા સાથે જોડાયેલા હોવા જોઈએ — કોઈ ટાપુ એકલો ન રહે.</p></div>
+  </div>
+
+  <button class="btn got" onclick="closeHelp()">Close</button>
+</div>
+
+<!-- celebration -->
+<div class="celebrate" id="celebrate">
+  <div class="em">🌸</div>
+  <h2>બધા કોયડા પૂર્ણ</h2>
+  <p>ખૂબ સરસ! તમારી એકાગ્રતા કમાલની છે.</p>
+  <button class="btn" onclick="closeCelebrate()">Congratulations</button>
+</div>
+
+<script>
+/* ---- puzzle data (verified: each has exactly one solution) ----
+   islands: [row, col, bridgesNeeded]   sol: "a-b":count (island indexes, a<b) */
+const PUZZLES=[
+ {islands:[[0,0,3],[0,3,4],[0,6,2],[3,0,1],[3,3,3],[3,6,2],[6,3,1]],
+  sol:{"0-1":2,"0-3":1,"1-2":1,"1-4":1,"2-5":1,"4-5":1,"4-6":1}},
+ {islands:[[0,0,2],[0,4,5],[0,6,3],[2,2,1],[3,4,4],[3,6,3],[5,0,2],[5,2,2],[6,4,1],[6,6,1]],
+  sol:{"0-1":1,"0-6":1,"1-2":2,"1-4":2,"2-5":1,"3-7":1,"4-5":1,"4-8":1,"5-9":1,"6-7":1}},
+ {islands:[[0,0,2],[0,3,4],[0,6,2],[2,1,1],[2,4,1],[3,6,2],[4,0,1],[4,3,2],[5,6,2],[6,1,3],[6,4,4],[6,6,2]],
+  sol:{"0-1":1,"0-6":1,"1-2":1,"1-7":2,"2-5":1,"3-9":1,"4-10":1,"5-8":1,"8-11":1,"9-10":2,"10-11":1}}
+];
+const KEY='dcgs_bridges_v1';
+const PAD=45, GAP=90, R=38, RHIT=44;   // svg geometry (7x7 grid → 630x630)
+
+function save(d){try{localStorage.setItem(KEY,JSON.stringify(d))}catch(e){}}
+function load(){try{return JSON.parse(localStorage.getItem(KEY))}catch(e){return null}}
+
+/* ---- app bridge (RN WebView) ---- */
+function postToApp(m){try{window.ReactNativeWebView&&window.ReactNativeWebView.postMessage(JSON.stringify(m));}catch(e){}}
+function activityDone(){postToApp({type:'ACTIVITY_DONE'});}   /* -> onWebActivityComplete in the app */
+
+/* active time only (pauses while the app is backgrounded) */
+let _active=0,_since=Date.now(),_completed=false;
+document.addEventListener('visibilitychange',function(){
+  if(document.hidden){_active+=Date.now()-_since;}else{_since=Date.now();}
+  pushProgress();
+});
+function timeSpentSec(){return Math.round((_active+(document.hidden?0:Date.now()-_since))/1000);}
+
+/* heartbeat: keep native updated so it can fire puzzle_exited on unmount (back press) */
+function pushProgress(){postToApp({type:'PROGRESS',time_spent_sec:timeSpentSec(),completed:_completed});}
+setInterval(pushProgress,3000);
+pushProgress();
+
+function markDone(){ _completed=true; activityDone(); pushProgress(); }   /* call when the whole set is solved */
+window.addEventListener('pagehide',pushProgress);   /* best-effort, where it fires */
+
+let state=load()||{tab:0,sound:false,celebrated:false,edges:[{},{},{}],solved:[false,false,false]};
+if(!state.edges)state.edges=[{},{},{}];
+if(!state.solved)state.solved=[false,false,false];
+let soundOn=!!state.sound, cur=state.tab||0;
+
+/* ---- sound (mp3 assets) ---- */
+const SND={
+  correct:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Right.mp3',
+  wrong:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Wrong.mp3',
+  level:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Level.mp3',
+  win:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Complete.mp3',
+  hint:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Hint.mp3'
+};
+const _audio={};
+function preloadSounds(){for(const k in SND){try{const a=new Audio(SND[k]);a.preload='auto';_audio[k]=a;}catch(e){}}}
+function playSound(k){if(!soundOn)return;const a=_audio[k];if(!a)return;try{a.pause();a.currentTime=0;a.play().catch(function(){});}catch(e){}}
+function playCorrect(){playSound('correct');}
+function playWrong(){playSound('wrong');}
+function playLevel(){playSound('level');}
+function playWin(){playSound('win');}
+function playHint(){playSound('hint');}
+function setSoundIcon(){const b=document.getElementById('soundBtn');b.innerHTML=soundOn
+  ?'<svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M16 9a3.5 3.5 0 0 1 0 6"/><path d="M19 7a7 7 0 0 1 0 10"/></svg>'
+  :'<svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M22 9l-5 6M17 9l5 6"/></svg>';}
+function toggleSound(){soundOn=!soundOn;state.sound=soundOn;setSoundIcon();save(state);}
+
+/* ---- geometry helpers ---- */
+function isl(i){return PUZZLES[cur].islands[i];}
+function cx(i){return PAD+isl(i)[1]*GAP;}
+function cy(i){return PAD+isl(i)[0]*GAP;}
+function ekey(a,b){return Math.min(a,b)+'-'+Math.max(a,b);}
+function ecount(a,b){return state.edges[cur][ekey(a,b)]||0;}
+function solved(i){return !!state.solved[i];}
+
+/* nearest visible neighbours (right + down), same rule the solver used */
+function neighborPairs(){
+  const P=PUZZLES[cur].islands, pos={};
+  P.forEach((s,i)=>pos[s[0]+','+s[1]]=i);
+  const set=new Set();
+  P.forEach((s,i)=>{
+    for(let c=s[1]+1;c<=6;c++){const j=pos[s[0]+','+c];if(j!==undefined){set.add(ekey(i,j));break;}}
+    for(let r=s[0]+1;r<=6;r++){const j=pos[r+','+s[1]];if(j!==undefined){set.add(ekey(i,j));break;}}
+  });
+  return set;
+}
+let PAIRS=new Set();
+
+function degree(i){
+  let d=0;const E=state.edges[cur];
+  for(const k in E){const [a,b]=k.split('-').map(Number);if(a===i||b===i)d+=E[k];}
+  return d;
+}
+/* would segment a-b cross an existing bridge? */
+function crossesExisting(a,b){
+  const r1=isl(a)[0],c1=isl(a)[1],r2=isl(b)[0],c2=isl(b)[1];
+  const E=state.edges[cur];
+  for(const k in E){
+    if(!E[k])continue;
+    const [p,q]=k.split('-').map(Number);
+    if(p===a||p===b||q===a||q===b)continue;
+    const R1=isl(p)[0],C1=isl(p)[1],R2=isl(q)[0],C2=isl(q)[1];
+    const h1=r1===r2, h2=R1===R2;
+    if(h1===h2)continue;
+    if(h1){const lo=Math.min(c1,c2),hi=Math.max(c1,c2),Lo=Math.min(R1,R2),Hi=Math.max(R1,R2);
+      if(Lo<r1&&r1<Hi&&lo<C1&&C1<hi)return true;}
+    else{const lo=Math.min(C1,C2),hi=Math.max(C1,C2),Lo=Math.min(r1,r2),Hi=Math.max(r1,r2);
+      if(Lo<R1&&R1<Hi&&lo<c1&&c1<hi)return true;}
+  }
+  return false;
+}
+function isConnected(){
+  const n=PUZZLES[cur].islands.length,adj=Array.from({length:n},()=>[]);
+  const E=state.edges[cur];
+  for(const k in E){if(!E[k])continue;const [a,b]=k.split('-').map(Number);adj[a].push(b);adj[b].push(a);}
+  const seen=new Set([0]),st=[0];
+  while(st.length){const u=st.pop();for(const v of adj[u]){if(!seen.has(v)){seen.add(v);st.push(v);}}}
+  return seen.size===n;
+}
+function isExact(){const P=PUZZLES[cur].islands;for(let i=0;i<P.length;i++){if(degree(i)!==P[i][2])return false;}return true;}
+function totalBridges(){let t=0;const E=state.edges[cur];for(const k in E)t+=E[k];return t;}
+
+/* ---- render ---- */
+const svg=document.getElementById('board');
+function G(id){return document.getElementById(id);}
+function el(name,attrs,parent){const e=document.createElementNS('http://www.w3.org/2000/svg',name);
+  for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
+
+function renderProgress(){document.getElementById('round').textContent=(cur+1)+'/'+PUZZLES.length;}
+function renderLines(){
+  const g=G('glines');g.innerHTML='';
+  for(let k=0;k<7;k++){
+    el('line',{class:'gridline',x1:PAD,y1:PAD+k*GAP,x2:PAD+6*GAP,y2:PAD+k*GAP},g);
+    el('line',{class:'gridline',x1:PAD+k*GAP,y1:PAD,x2:PAD+k*GAP,y2:PAD+6*GAP},g);
+  }
+}
+let lastChangedKey=null;
+function renderBridges(){
+  const gb=G('gbridges');gb.innerHTML='';
+  const E=state.edges[cur];
+  for(const k in E){
+    const c=E[k];if(!c)continue;
+    const [a,b]=k.split('-').map(Number);
+    const x1=cx(a),y1=cy(a),x2=cx(b),y2=cy(b);
+    const horiz=y1===y2, off=9, pop=(k===lastChangedKey)?' pop':'';
+    if(c===1){el('line',{class:'bridge'+pop,'data-k':k,x1,y1,x2,y2},gb);}
+    else{
+      el('line',{class:'bridge thin'+pop,'data-k':k,x1:horiz?x1:x1-off,y1:horiz?y1-off:y1,x2:horiz?x2:x2-off,y2:horiz?y2-off:y2},gb);
+      el('line',{class:'bridge thin'+pop,'data-k':k,x1:horiz?x1:x1+off,y1:horiz?y1+off:y1,x2:horiz?x2:x2+off,y2:horiz?y2+off:y2},gb);
+    }
+  }
+  lastChangedKey=null;
+  renderGuides();
+}
+/* dotted corridors: every open place a bridge could go right now */
+function renderGuides(){
+  const gg=G('gguides');gg.innerHTML='';
+  if(solved(cur))return;
+  PAIRS.forEach(k=>{
+    const [a,b]=k.split('-').map(Number);
+    if(ecount(a,b)>0)return;                 // a real bridge is already drawn
+    if(crossesExisting(a,b))return;          // corridor currently blocked
+    const horiz=cy(a)===cy(b);
+    const x1=Math.min(cx(a),cx(b)),x2=Math.max(cx(a),cx(b));
+    const y1=Math.min(cy(a),cy(b)),y2=Math.max(cy(a),cy(b));
+    const len=horiz?x2-x1:y2-y1;
+    const trim=Math.min(R+9,(len-8)/2);      // clamp for islands one cell apart
+    const hot=(sel===a||sel===b)?' hot':'';
+    if(horiz)el('line',{class:'guide'+hot,x1:x1+trim,y1:cy(a),x2:x2-trim,y2:cy(a)},gg);
+    else el('line',{class:'guide'+hot,x1:cx(a),y1:y1+trim,x2:cx(a),y2:y2-trim},gg);
+  });
+}
+function renderIslands(){
+  const g=G('gislands');g.innerHTML='';
+  PUZZLES[cur].islands.forEach((s,i)=>{
+    const grp=el('g',{class:'isl','data-i':i,role:'button','aria-label':'Island '+s[2]},g);
+    el('circle',{class:'body',cx:cx(i),cy:cy(i),r:R},grp);
+    const t=el('text',{class:'num',x:cx(i),y:cy(i),dy:'.36em'},grp);
+    t.textContent=String(s[2]);
+    el('g',{class:'badge-slot'},grp);
+    el('circle',{class:'hit',cx:cx(i),cy:cy(i),r:RHIT},grp);
+  });
+  paintIslands();
+}
+function paintIslands(){
+  PUZZLES[cur].islands.forEach((s,i)=>{
+    const grp=svg.querySelector('.isl[data-i="'+i+'"]');if(!grp)return;
+    const d=degree(i),need=s[2];
+    grp.classList.remove('ok','over','sel','target');
+    const slot=grp.querySelector('.badge-slot');slot.innerHTML='';
+    if(d===need){
+      grp.classList.add('ok');
+      const bg=el('g',{class:'badge okb'},slot);
+      el('circle',{cx:cx(i)+26,cy:cy(i)-26,r:11},bg);
+      el('path',{d:'M'+(cx(i)+21)+' '+(cy(i)-26)+' l3.5 3.5 l6.5 -7'},bg);
+    }else if(d>need){
+      grp.classList.add('over');
+      const bg=el('g',{class:'badge overb'},slot);
+      el('circle',{cx:cx(i)+26,cy:cy(i)-26,r:11},bg);
+      const tx=el('text',{x:cx(i)+26,y:cy(i)-26,dy:'.36em'},bg);tx.textContent='!';
+    }
+    if(i===sel)grp.classList.add('sel');
+    else if(sel>=0&&PAIRS.has(ekey(sel,i))&&(ecount(sel,i)>0||!crossesExisting(sel,i)))
+      grp.classList.add('target');           // "tap me next" pulse
+  });
+  renderGuides();
+}
+function renderActions(){const isLast=cur===PUZZLES.length-1;
+  document.getElementById('btnPrev').disabled=(cur===0);
+  document.getElementById('btnNext').disabled=!(solved(cur)&&!isLast);}
+function renderAll(){renderProgress();renderLines();renderBridges();renderIslands();renderActions();setSoundIcon();clearStatus();}
+
+/* ---- status ---- */
+let stTimer;
+function status(type,msg,sticky){const s=document.getElementById('status');s.className='status show '+type;s.textContent=msg;clearTimeout(stTimer);if(!sticky)stTimer=setTimeout(clearStatus,2300);}
+function clearStatus(){document.getElementById('status').className='status';}
+
+/* ---- interaction ---- */
+let sel=-1, press={i:-1,x:0,y:0,moved:false}, previewLine=null, lastTarget=-1;
+function svgPoint(x,y){const p=svg.createSVGPoint();p.x=x;p.y=y;const m=svg.getScreenCTM();return m?p.matrixTransform(m.inverse()):p;}
+function islandAt(x,y){const e=document.elementFromPoint(x,y);const g=e&&e.closest?e.closest('.isl'):null;return g?parseInt(g.dataset.i):-1;}
+function shakeIsl(i){const g=svg.querySelector('.isl[data-i="'+i+'"]');if(!g)return;g.classList.remove('shake');void g.getBBox();g.classList.add('shake');setTimeout(()=>g.classList.remove('shake'),320);}
+function clearPreview(){if(previewLine){previewLine.remove();previewLine=null;}
+  if(lastTarget>=0){const g=svg.querySelector('.isl[data-i="'+lastTarget+'"]');if(g)g.classList.remove('target');lastTarget=-1;}}
+
+/* which corridor does a point on the board fall in? (tap between two islands) */
+function pairAt(pt){
+  let best=null,bestD=31;                    // ~28px touch band at 360px width
+  PAIRS.forEach(k=>{
+    const [a,b]=k.split('-').map(Number);
+    const horiz=cy(a)===cy(b);
+    if(horiz){
+      const lo=Math.min(cx(a),cx(b))+R+4, hi=Math.max(cx(a),cx(b))-R-4;
+      if(pt.x<lo||pt.x>hi)return;
+      const d=Math.abs(pt.y-cy(a));
+      if(d<bestD){bestD=d;best=k;}
+    }else{
+      const lo=Math.min(cy(a),cy(b))+R+4, hi=Math.max(cy(a),cy(b))-R-4;
+      if(pt.y<lo||pt.y>hi)return;
+      const d=Math.abs(pt.x-cx(a));
+      if(d<bestD){bestD=d;best=k;}
+    }
+  });
+  return best;
+}
+
+function toggleEdge(a,b){
+  clearStatus();
+  const k=ekey(a,b),E=state.edges[cur];
+  const c=((E[k]||0)+1)%3;
+  lastChangedKey=k;
+  if(c===0)delete E[k];else E[k]=c;
+  save(state);renderBridges();paintIslands();
+  const over=degree(a)>isl(a)[2]||degree(b)>isl(b)[2];
+  if(soundOn){if(over)playWrong();else playCorrect();}
+  if(over)status('bad','આ ટાપુ પર પુલ વધારે થઈ ગયા છે.');
+  checkDone();
+}
+function attemptConnect(a,b){
+  if(solved(cur))return;
+  const k=ekey(a,b);
+  if(!PAIRS.has(k)){shakeIsl(a);shakeIsl(b);if(soundOn)playWrong();
+    status('bad','આ બે ટાપુ સીધા જોડી શકાય નહીં.');return;}
+  if(ecount(a,b)===0&&crossesExisting(a,b)){shakeIsl(a);shakeIsl(b);if(soundOn)playWrong();
+    status('bad','પુલ એકબીજાને ઓળંગી ન શકે.');return;}
+  toggleEdge(a,b);
+}
+
+svg.addEventListener('pointerdown',e=>{
+  e.preventDefault();
+  if(solved(cur))return;
+  const i=islandAt(e.clientX,e.clientY);
+  if(i>=0){press={i,x:e.clientX,y:e.clientY,moved:false};return;}
+  /* tap on the space BETWEEN two islands → build / cycle the bridge there */
+  const k=pairAt(svgPoint(e.clientX,e.clientY));
+  if(k){const [a,b]=k.split('-').map(Number);attemptConnect(a,b);sel=-1;paintIslands();}
+  else if(sel>=0){sel=-1;paintIslands();}    // tap empty board → deselect
+},{passive:false});
+
+window.addEventListener('pointermove',e=>{
+  if(press.i<0)return;
+  if(Math.abs(e.clientX-press.x)>8||Math.abs(e.clientY-press.y)>8)press.moved=true;
+  if(!press.moved)return;
+  const pt=svgPoint(e.clientX,e.clientY);
+  if(!previewLine)previewLine=el('line',{class:'preview',x1:cx(press.i),y1:cy(press.i),x2:pt.x,y2:pt.y},G('goverlay'));
+  const j=islandAt(e.clientX,e.clientY);
+  if(j!==lastTarget){
+    if(lastTarget>=0){const g=svg.querySelector('.isl[data-i="'+lastTarget+'"]');if(g)g.classList.remove('target');}
+    lastTarget=-1;
+    if(j>=0&&j!==press.i&&PAIRS.has(ekey(press.i,j))){lastTarget=j;
+      const g=svg.querySelector('.isl[data-i="'+j+'"]');if(g)g.classList.add('target');}
+  }
+  if(lastTarget>=0){previewLine.setAttribute('x2',cx(lastTarget));previewLine.setAttribute('y2',cy(lastTarget));}
+  else{previewLine.setAttribute('x2',pt.x);previewLine.setAttribute('y2',pt.y);}
+},{passive:false});
+
+window.addEventListener('pointerup',e=>{
+  if(press.i<0)return;
+  const start=press.i,moved=press.moved;press.i=-1;
+  clearPreview();
+  if(solved(cur)){sel=-1;paintIslands();return;}
+  const j=islandAt(e.clientX,e.clientY);
+  if(moved){
+    if(j>=0&&j!==start){attemptConnect(start,j);sel=-1;}
+    else sel=start;                       // drag missed → keep start selected
+  }else{
+    if(sel===start)sel=-1;                // tap same → deselect
+    else if(sel>=0){attemptConnect(sel,start);sel=-1;}
+    else{sel=start;
+      if(totalBridges()<3)status('hint','હવે ઝબકતા ટાપુમાંથી કોઈ એક પર ટૅપ કરો — પુલ બની જશે.');}
+  }
+  paintIslands();
+});
+window.addEventListener('pointercancel',()=>{press.i=-1;clearPreview();});
+
+/* ---- win detection (auto) ---- */
+function checkDone(){
+  if(!isExact())return;
+  if(!isConnected()){status('bad','અંક બધા બરાબર છે, પણ બધા ટાપુ એક જાળમાં જોડાયેલા નથી.',true);return;}
+  state.solved[cur]=true;sel=-1;save(state);paintIslands();onSolved();
+}
+function onSolved(){
+  renderActions();
+  const all=state.solved.every(Boolean);
+  if(all){status('done','બધા કોયડા પૂર્ણ. ખૂબ સરસ! 🌸',true);if(soundOn)playWin();
+    if(!state.celebrated){state.celebrated=true;save(state);showCelebrate();}
+    markDone();}
+  else{status('done','આ કોયડો પૂર્ણ. તૈયાર હો ત્યારે આગળ વધો.',true);if(soundOn)playLevel();}
+}
+
+/* ---- hint ---- */
+let hintTimer;
+function useHint(){
+  if(solved(cur)){status('hint','આ કોયડો પહેલેથી પૂર્ણ છે.');return;}
+  const sol=PUZZLES[cur].sol,E=state.edges[cur];
+  let extra=null,missing=null;
+  for(const k in E){if(E[k]>(sol[k]||0)){extra=k;break;}}
+  if(!extra){for(const k in sol){if((E[k]||0)<sol[k]){missing=k;break;}}}
+  const k=extra||missing;if(!k)return;
+  const [a,b]=k.split('-').map(Number);
+  const ov=G('goverlay');
+  clearTimeout(hintTimer);
+  ov.querySelectorAll('.hintline').forEach(n=>n.remove());
+  el('line',{class:'hintline'+(extra?' remove':''),x1:cx(a),y1:cy(a),x2:cx(b),y2:cy(b)},ov);
+  hintTimer=setTimeout(()=>ov.querySelectorAll('.hintline').forEach(n=>n.remove()),1600);
+  playHint();
+  status('hint',extra?'આ પુલ વધારાનો છે — ફરી ટૅપ કરી દૂર કરો.':'💡 અહીં પુલ બનશે.');
+}
+
+/* ---- navigation ---- */
+function entryStatus(){
+  if(solved(cur))status('done','આ કોયડો પૂર્ણ. તૈયાર હો ત્યારે આગળ વધો.',true);
+  else if(totalBridges()===0)status('hint','બે ટાપુની વચ્ચેની ટપકાંવાળી જગ્યા પર ટૅપ કરો — ત્યાં પુલ બની જશે.',true);
+}
+function nextPuzzle(){if(cur<PUZZLES.length-1&&solved(cur)){cur++;state.tab=cur;save(state);sel=-1;PAIRS=neighborPairs();renderAll();
+  entryStatus();
+  window.scrollTo({top:0,behavior:'smooth'});}}
+function prevPuzzle(){if(cur>0){cur--;state.tab=cur;save(state);sel=-1;PAIRS=neighborPairs();renderAll();
+  entryStatus();
+  window.scrollTo({top:0,behavior:'smooth'});}}
+
+/* ---- help sheet ---- */
+function openHelp(){document.getElementById('scrim').classList.add('open');document.getElementById('sheet').classList.add('open');}
+function closeHelp(){document.getElementById('scrim').classList.remove('open');document.getElementById('sheet').classList.remove('open');}
+
+/* ---- celebration ---- */
+function showCelebrate(){const c=document.getElementById('celebrate');c.classList.add('show');const ems=['🌸','🌼','✨','🍃','💜'];for(let i=0;i<16;i++){const p=document.createElement('div');p.className='petal';p.textContent=ems[i%ems.length];p.style.left=(Math.random()*100)+'%';p.style.animationDuration=(2.4+Math.random()*1.6)+'s';p.style.animationDelay=(Math.random()*.6)+'s';document.body.appendChild(p);setTimeout(()=>p.remove(),4600);}}
+function closeCelebrate(){
+  document.getElementById('celebrate').classList.remove('show');
+  postToApp({type:'GO_BACK'});
+}
+
+/* ---- init ---- */
+preloadSounds();
+PAIRS=neighborPairs();
+renderAll();
+if(state.solved.every(Boolean)){
+  status('done','બધા કોયડા પૂર્ણ. ખૂબ સરસ! 🌸',true);
+  _completed=true;
+  pushProgress();
+}
+else entryStatus();
+</script>
+</body>
+</html>

@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#FBF9FC">
+<title>Dreamchild · Connect the Pipe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Vadodara:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FBF9FC;
+  --surface:#FFFFFF;
+  --ink:#2E2A32;
+  --muted:#8C8794;
+  --line:#ECE7F0;
+  --brand:#752886;
+  --brand-deep:#561F69;
+  --brand-soft:#F3E9F8;
+  --accent:#F2A03D;
+  --accent-soft:#FCEFDC;
+  --mint:#2F9B63;
+  --mint-soft:#E5F4EC;
+  --rose:#C75C72;
+  --rose-soft:#FAEAEE;
+  --shadow:0 10px 30px -12px rgba(78,33,95,.18);
+  --shadow-sm:0 4px 14px -8px rgba(78,33,95,.20);
+  --r-lg:22px; --r-md:16px; --r-sm:12px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg);color:var(--ink);
+  font-family:'Hind Vadodara',sans-serif;
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+  background-image:radial-gradient(120% 60% at 50% -10%, var(--brand-soft) 0%, rgba(243,233,248,0) 60%);
+}
+.wrap{max-width:460px;margin:0 auto;padding:16px 16px 28px;position:relative;z-index:1;}
+
+/* ---- header ---- */
+.phead{background:var(--surface);border:1px solid var(--line);border-radius:18px;
+  box-shadow:0 6px 20px -12px rgba(78,33,95,.16);padding:15px 16px;margin-bottom:14px;}
+.hrow1{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.ptitle{font-weight:700;font-size:23px;line-height:1.05;color:var(--brand);margin:0;letter-spacing:-.01em;}
+.hctrls{display:flex;align-items:center;gap:8px;flex:none;}
+.rpill{display:flex;align-items:center;justify-content:center;min-width:50px;height:38px;padding:0 12px;
+  border:1px solid var(--line);border-radius:11px;background:var(--surface);
+  font-weight:600;font-size:16px;color:var(--ink);letter-spacing:.01em;}
+.hbtn{width:40px;height:38px;border:1px solid var(--line);border-radius:11px;background:var(--surface);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-appearance:none;padding:0;
+  transition:background .15s ease;}
+.hbtn:active{background:var(--brand-soft);}
+.hbtn svg{width:20px;height:20px;fill:none;stroke:var(--muted);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.hbtn.info{width:38px;background:var(--brand-soft);border-color:transparent;}
+.hbtn.info svg{stroke:var(--brand);}
+.hsub{text-align:center;font-weight:600;font-size:15px;line-height:1.5;color:var(--ink);margin:13px 0 1px;}
+
+/* ---- stage card ---- */
+.stage{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
+  box-shadow:0 8px 28px -10px rgba(78,33,95,.16), 0 2px 8px -3px rgba(78,33,95,.08);padding:14px;margin-bottom:14px;}
+
+/* pipe board — distinct tiles that light up as water reaches them */
+.boardwrap{display:flex;justify-content:center;}
+.board{display:grid;gap:6px;touch-action:manipulation;user-select:none;-webkit-user-select:none;
+  width:100%;padding:8px;border-radius:16px;
+  background:linear-gradient(180deg,#FBF8FD,#F5F0F9);
+  border:1px solid var(--line);box-shadow:inset 0 1px 4px rgba(78,33,95,.06);}
+.cell{position:relative;aspect-ratio:1/1;cursor:pointer;overflow:hidden;
+  background:#fff;border:1.5px solid var(--line);border-radius:11px;
+  transition:transform .09s ease,background .22s ease,border-color .22s ease,box-shadow .22s ease;}
+.cell:active{transform:scale(.94);}
+.cell.lit{background:#F1F8FE;border-color:#BFDDF6;box-shadow:0 2px 10px -4px rgba(30,136,229,.35);}
+.cell.win{background:var(--mint-soft);border-color:#AEDCC3;box-shadow:0 2px 10px -4px rgba(47,155,99,.35);}
+.cell.hintcell{background:var(--accent-soft);border-color:#F0C98C;}
+.pipe{position:absolute;inset:0;transition:transform .28s cubic-bezier(.34,1.4,.5,1);will-change:transform;}
+.pipe svg{display:block;width:100%;height:100%;overflow:visible;}
+
+/* casing (tube wall) */
+.cas{stroke:#C7BFD2;stroke-linecap:round;fill:none;transition:stroke .25s ease;}
+.cell.lit .cas{stroke:#0E5AA6;}
+.cell.win .cas{stroke:#1C6B41;}
+.cell.hintcell .cas{stroke:#C77E17;}
+
+/* empty tube interior — the hollow pipe the canvas water physically fills */
+.tube{stroke:#EAE4F0;fill:none;stroke-linecap:round;}
+.tubej{fill:#EAE4F0;}
+
+/* fluid canvas — the water itself is simulated + drawn here every frame */
+.boardwrap{position:relative;}
+#water{position:absolute;inset:0;pointer-events:none;z-index:3;}
+
+/* wet glow */
+.cell.lit .pipe{filter:drop-shadow(0 0 2px rgba(44,151,240,.35));}
+.cell.win .pipe{filter:drop-shadow(0 0 2px rgba(47,155,99,.3));}
+
+/* ---- status ---- */
+.status{min-height:24px;text-align:center;font-size:14px;line-height:1.4;font-weight:500;
+  color:var(--muted);padding:2px 8px;margin-bottom:6px;opacity:0;transition:opacity .25s ease;}
+.status.show{opacity:1;}
+.status.ok{color:var(--mint);}
+.status.bad{color:var(--rose);}
+.status.hint{color:#B5781E;}
+.status.done{color:var(--brand);font-weight:600;}
+
+/* ---- action bar ---- */
+.actionbar{margin-top:14px;}
+.actionbar .inner{display:flex;flex-direction:row;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:6px;row-gap:8px;}
+.cmid{display:flex;align-items:center;gap:6px;}
+.cbtn{font-family:'Hind Vadodara',sans-serif;cursor:pointer;-webkit-appearance:none;
+  display:flex;align-items:center;justify-content:center;gap:5px;
+  transition:transform .12s ease,opacity .2s ease,background .2s ease,box-shadow .2s ease;}
+.cbtn:active{transform:scale(.97);}
+.cbtn svg{width:16px;height:16px;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;}
+.cbtn.hint{min-height:36px;border-radius:12px;padding:0 22px;background:var(--surface);border:1px solid var(--line);
+  color:var(--ink);font-weight:600;font-size:13px;box-shadow:var(--shadow-sm);}
+.cbtn.hint svg{stroke:var(--brand);}
+.cbtn.prev,.cbtn.next{min-height:36px;border-radius:12px;padding:0 20px;background:var(--brand);border:none;color:#fff;
+  font-weight:700;font-size:13.5px;box-shadow:0 8px 20px -8px rgba(110,42,133,.5);}
+.cbtn.prev svg,.cbtn.next svg{stroke:#fff;}
+.cbtn:disabled{cursor:default;}
+.cbtn.prev:disabled,.cbtn.next:disabled{background:var(--surface);border:1px solid var(--line);color:var(--muted);box-shadow:none;font-weight:600;}
+.cbtn.prev:disabled svg,.cbtn.next:disabled svg{stroke:var(--muted);}
+
+/* ---- footer ---- */
+.foot{text-align:center;font-size:11px;color:var(--muted);letter-spacing:.03em;margin-top:18px;}
+.foot b{font-weight:600;color:#a79bb0;}
+
+/* ---- help sheet ---- */
+.scrim{position:fixed;inset:0;background:rgba(46,42,50,.42);backdrop-filter:blur(2px);z-index:40;
+  opacity:0;pointer-events:none;transition:opacity .28s ease;}
+.scrim.open{opacity:1;pointer-events:auto;}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:41;background:var(--surface);
+  border-radius:26px 26px 0 0;box-shadow:0 -16px 40px -16px rgba(46,42,50,.3);
+  max-width:460px;margin:0 auto;padding:10px 22px calc(26px + env(safe-area-inset-bottom));
+  transform:translateY(110%);transition:transform .34s cubic-bezier(.22,1,.36,1);}
+.sheet.open{transform:translateY(0);}
+.grab{width:42px;height:5px;border-radius:999px;background:var(--line);margin:6px auto 16px;}
+.sheet h3{font-weight:700;font-size:20px;margin:0 0 4px;}
+.sheet .lead{font-size:14px;color:var(--muted);margin:0 0 18px;line-height:1.5;}
+.step{display:flex;gap:14px;align-items:flex-start;margin-bottom:16px;}
+.step .ic{flex:none;width:46px;height:46px;border-radius:14px;background:var(--brand-soft);
+  display:flex;align-items:center;justify-content:center;}
+.step .ic svg{width:26px;height:26px;stroke:var(--brand);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
+.step .tx b{display:block;font-weight:600;font-size:15px;color:var(--ink);margin-bottom:2px;}
+.step .tx p{margin:0;font-size:13.5px;color:var(--muted);line-height:1.5;}
+.sheet .got{width:100%;margin-top:6px;background:var(--brand);color:#fff;border:none;cursor:pointer;
+  font-family:'Hind Vadodara',sans-serif;border-radius:14px;min-height:48px;font-weight:700;font-size:15px;}
+
+/* ---- celebration ---- */
+.celebrate{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;
+  background:rgba(251,249,252,.86);backdrop-filter:blur(3px);text-align:center;padding:30px;}
+.celebrate.show{display:flex;flex-direction:column;}
+.celebrate .em{font-size:54px;margin-bottom:6px;animation:rise .6s cubic-bezier(.22,1,.36,1);}
+.celebrate h2{font-weight:700;font-size:24px;color:var(--brand);margin:0 0 8px;}
+.celebrate p{font-size:15px;color:var(--ink);font-weight:500;margin:0 0 22px;max-width:280px;line-height:1.5;}
+.celebrate .btn{min-width:200px;background:var(--brand);color:#fff;border:none;cursor:pointer;
+  font-family:'Hind Vadodara',sans-serif;border-radius:14px;min-height:55px;font-weight:700;font-size:18px;}
+@keyframes rise{from{transform:translateY(16px) scale(.8);opacity:0}to{transform:none;opacity:1}}
+.petal{position:fixed;top:-24px;z-index:49;font-size:18px;animation:drift linear forwards;pointer-events:none;}
+@keyframes drift{to{transform:translateY(106vh) rotate(360deg);opacity:0}}
+
+/* ---- ambient puzzle-piece background ---- */
+.bg{position:fixed;top:0;left:0;right:0;height:100vh;height:100lvh;overflow:hidden;pointer-events:none;z-index:0;}
+.piece{position:absolute;transform:rotate(var(--rot,0deg));opacity:.2;}
+.piece svg{display:block;width:100%;height:auto;fill:currentColor;}
+.piece.f1{top:-30px;left:-46px;width:150px;color:#fa7068;--rot:-14deg;}
+.piece.f2{top:78px;right:-52px;width:150px;color:#fbca5f;--rot:18deg;}
+.piece.f3{top:46%;right:-58px;width:110px;color:#a0c95d;--rot:26deg;}
+.piece.f4{bottom:-40px;right:-30px;width:170px;color:#9ddbe6;--rot:-18deg;}
+.piece.f5{bottom:46px;left:-56px;width:150px;color:#f3adc9;--rot:8deg;}
+.piece.f6{top:36%;left:-70px;width:100px;color:#d4ab99;--rot:30deg;}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001ms !important;transition-duration:.05ms !important;}
+}
+:focus-visible{outline:2.5px solid var(--brand);outline-offset:2px;border-radius:6px;}
+</style>
+</head>
+<body>
+<div class="bg" aria-hidden="true">
+  <div class="piece f1"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece f2"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece f3"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece f4"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece f5"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece f6"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+</div>
+
+<div class="wrap">
+  <!-- header -->
+  <header class="phead">
+    <div class="hrow1">
+      <h1 class="ptitle">પાઈપ જોડો</h1>
+      <div class="hctrls">
+        <span class="rpill" id="round"></span>
+        <button class="hbtn" id="soundBtn" onclick="toggleSound()" aria-label="Sound"></button>
+        <button class="hbtn info" onclick="openHelp()" aria-label="How to play">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><circle cx="12" cy="8" r="0.6" fill="currentColor" stroke="none"/></svg>
+        </button>
+      </div>
+    </div>
+    <p class="hsub" id="hsub"></p>
+  </header>
+
+  <!-- STAGE -->
+  <div class="stage">
+    <div class="boardwrap"><div class="board" id="board"></div><canvas id="water"></canvas></div>
+  </div>
+
+  <!-- status -->
+  <div class="status" id="status"></div>
+
+  <!-- actions -->
+  <div class="actionbar">
+    <div class="inner">
+      <button class="cbtn prev" id="btnPrev" onclick="prevPuzzle()"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>Back</button>
+      <div class="cmid">
+        <button class="cbtn hint" onclick="useHint()"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 1 4 10.5c-.7.6-1 1.2-1 2v.5H9v-.5c0-.8-.3-1.4-1-2A6 6 0 0 1 12 3z"/></svg>Hint</button>
+      </div>
+      <button class="cbtn next" id="btnNext" onclick="nextPuzzle()">Next<svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+    </div>
+  </div>
+
+  <div class="foot">© <b>Dreamchild Garbhsanskar</b></div>
+</div>
+
+<!-- help sheet -->
+<div class="scrim" id="scrim" onclick="closeHelp()"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="How to play">
+  <div class="grab"></div>
+  <h3>કેવી રીતે રમવું</h3>
+  <p class="lead">દરેક પાઈપ ફેરવીને આખું નેટવર્ક જોડવાનું છે. ઉતાવળ નહીં — શાંતિથી.</p>
+
+  <div class="step">
+    <div class="ic"><svg viewBox="0 0 24 24"><path d="M20 11A8.1 8.1 0 0 0 6.7 6.3L3 10"/><path d="M4 13a8.1 8.1 0 0 0 13.3 4.7L21 14"/><path d="M3 5v5h5M21 19v-5h-5"/></svg></div>
+    <div class="tx"><b>ટૅપ કરી ફેરવો</b><p>દરેક પાઈપ પર ટૅપ કરો — તે 90° ઘડિયાળની દિશામાં ફરશે.</p></div>
+  </div>
+
+  <div class="step">
+    <div class="ic"><svg viewBox="0 0 24 24"><path d="M8 12h8"/><path d="M4 12a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2 2 2 0 0 1 2-2h4a2 2 0 0 1 2 2 2 2 0 0 0 2 2h0a2 2 0 0 0 2-2"/><circle cx="4" cy="12" r="0.5"/></svg></div>
+    <div class="tx"><b>છેડા મેળવો</b><p>પાઈપનો છેડો બાજુની પાઈપના છેડા સામે આવે ત્યારે જોડાણ થાય છે.</p></div>
+  </div>
+
+  <div class="step">
+    <div class="ic"><svg viewBox="0 0 24 24"><path d="M12 3s6 6.5 6 10a6 6 0 0 1-12 0c0-3.5 6-10 6-10z"/></svg></div>
+    <div class="tx"><b>સ્રોતથી ભરો</b><p>પીળા સ્રોત સાથે જોડાયેલી પાઈપમાં પાણી ભરાઈને વહેતું દેખાશે.</p></div>
+  </div>
+
+  <div class="step">
+    <div class="ic"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></div>
+    <div class="tx"><b>પૂરું કરો</b><p>બધી પાઈપ જોડાય અને કોઈ છેડો ખુલ્લો ન રહે ત્યારે કોયડો પૂર્ણ.</p></div>
+  </div>
+
+  <button class="got" onclick="closeHelp()">Close</button>
+</div>
+
+<!-- celebration -->
+<div class="celebrate" id="celebrate">
+  <div class="em">🌸</div>
+  <h2>બધા કોયડા પૂર્ણ</h2>
+  <p>ખૂબ સરસ! તમારી એકાગ્રતા કમાલની છે.</p>
+  <button class="btn" onclick="closeCelebrate()">Congratulations</button>
+</div>
+
+<script>
+/* ============ PUZZLE DATA (verified solvable) ============ */
+const RAW=[{"R":4,"C":4,"src":[1,1],"base":"2c68|6bbc|7ac1|12b8","rots":"1010|3010|2310|0230"},{"R":5,"C":5,"src":[2,2],"base":"42c44|52d7d|52bd1|3ead4|2b839","rots":"00030|32030|10133|20212|32000"},{"R":6,"C":6,"src":[3,2],"base":"2aeea8|2c1568|2d47bc|47ffc5|395151|2ab838","rots":"113330|001002|120023|312222|122030|322210"}];
+const P=RAW.map(p=>({R:p.R,C:p.C,src:p.src,
+  base:p.base.split('|').map(r=>r.split('').map(ch=>parseInt(ch,16))),
+  scr:p.rots.split('|').map(r=>r.split('').map(Number))}));
+
+const KEY='dcgs_pipe_v1_final';
+const N=1,E=2,S=4,W=8, DIRS=[N,E,S,W];
+const DR={1:-1,2:0,4:1,8:0}, DC={1:0,2:1,4:0,8:-1}, OPP={1:4,2:8,4:1,8:2};
+const EP={1:[50,0],2:[100,50],4:[50,100],8:[0,50]};
+const rotCW=m=>((m<<1)|(m>>3))&0xF;
+function curMask(base,rot){let m=base;for(let i=0;i<rot;i++)m=rotCW(m);return m;}
+
+function save(d){try{localStorage.setItem(KEY,JSON.stringify(d))}catch(e){}}
+function load(){try{return JSON.parse(localStorage.getItem(KEY))}catch(e){return null}}
+
+/* ---- app bridge (RN WebView) ---- */
+function postToApp(m){try{window.ReactNativeWebView&&window.ReactNativeWebView.postMessage(JSON.stringify(m));}catch(e){}}
+function activityDone(){postToApp({type:'ACTIVITY_DONE'});}
+
+let _active=0,_since=Date.now(),_completed=false;
+document.addEventListener('visibilitychange',function(){
+  if(document.hidden){_active+=Date.now()-_since;}else{_since=Date.now();}
+  pushProgress();
+});
+function timeSpentSec(){return Math.round((_active+(document.hidden?0:Date.now()-_since))/1000);}
+function pushProgress(){postToApp({type:'PROGRESS',time_spent_sec:timeSpentSec(),completed:_completed});}
+setInterval(pushProgress,3000);
+pushProgress();
+function markDone(){ _completed=true; activityDone(); pushProgress(); }
+window.addEventListener('pagehide',pushProgress);
+
+/* ---- state ---- */
+let state=load();
+if(!state||!state.rots){
+  state={tab:0,sound:false,celebrated:false,
+    rots:P.map(p=>p.scr.map(r=>r.slice())),
+    solved:P.map(()=>false),
+    taps:P.map(()=>0)};
+}
+if(!state.solved)state.solved=P.map(()=>false);
+if(!state.taps)state.taps=P.map(()=>0);
+let soundOn=!!state.sound, cur=state.tab||0;
+let spin=[]; /* visual angles, runtime only */
+
+/* ---- sound (mp3 assets) ---- */
+const SND={
+  correct:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Right.mp3',
+  wrong:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Wrong.mp3',
+  level:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Level.mp3',
+  win:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Complete.mp3',
+  hint:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Hint.mp3'
+};
+const _audio={};
+function preloadSounds(){for(const k in SND){try{const a=new Audio(SND[k]);a.preload='auto';_audio[k]=a;}catch(e){}}}
+function playSound(k){if(!soundOn)return;const a=_audio[k];if(!a)return;try{a.pause();a.currentTime=0;a.play().catch(function(){});}catch(e){}}
+function playCorrect(){playSound('correct');}
+function playWrong(){playSound('wrong');}
+function playLevel(){playSound('level');}
+function playWin(){playSound('win');}
+function playHint(){playSound('hint');}
+function setSoundIcon(){const b=document.getElementById('soundBtn');b.innerHTML=soundOn
+  ?'<svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M16 9a3.5 3.5 0 0 1 0 6"/><path d="M19 7a7 7 0 0 1 0 10"/></svg>'
+  :'<svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M22 9l-5 6M17 9l5 6"/></svg>';}
+function toggleSound(){soundOn=!soundOn;state.sound=soundOn;setSoundIcon();save(state);}
+
+/* ---- geometry / connectivity ---- */
+function P0(){return P[cur];}
+function rotsCur(){return state.rots[cur];}
+function cmAt(r,c){return curMask(P0().base[r][c],rotsCur()[r][c]);}
+function inB(r,c){return r>=0&&r<P0().R&&c>=0&&c<P0().C;}
+
+/* set of cells connected to source through matched edges */
+function filledSet(){
+  const {R,C,src}=P0();
+  const seen=Array.from({length:R},()=>Array(C).fill(false));
+  const st=[src.slice()]; seen[src[0]][src[1]]=true;
+  while(st.length){
+    const [r,c]=st.pop(), m=cmAt(r,c);
+    for(const d of DIRS){ if(m&d){ const nr=r+DR[d],nc=c+DC[d];
+      if(inB(nr,nc)&&(cmAt(nr,nc)&OPP[d])&&!seen[nr][nc]){seen[nr][nc]=true;st.push([nr,nc]);}
+    }}
+  }
+  return seen;
+}
+function filledCount(seen){let n=0;for(let r=0;r<P0().R;r++)for(let c=0;c<P0().C;c++)if(seen[r][c])n++;return n;}
+function isSolved(){
+  const {R,C}=P0();
+  for(let r=0;r<R;r++)for(let c=0;c<C;c++){ const m=cmAt(r,c);
+    for(const d of DIRS){ if(m&d){ const nr=r+DR[d],nc=c+DC[d];
+      if(!inB(nr,nc)) return false;
+      if(!(cmAt(nr,nc)&OPP[d])) return false;
+    }}
+  }
+  const seen=filledSet();
+  return filledCount(seen)===R*C;
+}
+
+/* ---- SVG build ---- */
+function segLine(cls,w,d,extra){const [x,y]=EP[d];
+  return '<line class="'+cls+'" x1="50" y1="50" x2="'+x+'" y2="'+y+'" stroke-width="'+w+'"'+(extra||'')+'/>';}
+function cellSVG(base,isSrc){
+  const dirs=DIRS.filter(d=>base&d);
+  let cas='',tube='';
+  for(const d of dirs){
+    cas+=segLine('cas',26,d);
+    tube+=segLine('tube',18,d);
+  }
+  /* the water itself is simulated + rendered on the fluid canvas overlay */
+  return '<svg viewBox="0 0 100 100">'+cas+tube+'<circle class="tubej" cx="50" cy="50" r="14"/></svg>';
+}
+
+/* ---- render ---- */
+function renderProgress(){document.getElementById('round').textContent=(cur+1)+'/'+P.length;}
+function renderHead(){document.getElementById('hsub').innerHTML='દરેક પાઈપ પર ટૅપ કરી ફેરવો.<br>પીળા સ્રોતથી બધા છેડા જોડો — કોઈ ખુલ્લો ન રહે.';}
+function buildBoard(){
+  const {R,C,src}=P0();
+  const b=document.getElementById('board');
+  b.style.gridTemplateColumns='repeat('+C+',1fr)';
+  b.innerHTML='';
+  sim=null;                                   /* fresh board → fresh fill wave */
+  rotLock=Array.from({length:R},()=>Array(C).fill(0));
+  spin=Array.from({length:R},()=>Array(C).fill(0));
+  for(let r=0;r<R;r++)for(let c=0;c<C;c++){
+    const isSrc=(r===src[0]&&c===src[1]);
+    const cell=document.createElement('div');
+    cell.className='cell'+(isSrc?' src':'');
+    cell.dataset.r=r;cell.dataset.c=c;
+    const pipe=document.createElement('div');
+    pipe.className='pipe';
+    pipe.innerHTML=cellSVG(P0().base[r][c],isSrc);
+    spin[r][c]=rotsCur()[r][c]*90;
+    pipe.style.transition='none';
+    pipe.style.transform='rotate('+spin[r][c]+'deg)';
+    cell.appendChild(pipe);
+    cell.addEventListener('click',()=>tapCell(r,c));
+    b.appendChild(cell);
+  }
+  sizeCanvas();
+  /* restore transitions next frame */
+  requestAnimationFrame(()=>{document.querySelectorAll('.pipe').forEach(p=>p.style.transition='');});
+}
+function cellEl(r,c){return document.querySelector('.cell[data-r="'+r+'"][data-c="'+c+'"]');}
+/* BFS from the source through matched edges.
+   d[r][c]  = distance in cells (-1 = not connected)
+   inA[r][c] = the WORLD direction arm through which water enters the cell (0 for the source) */
+function distInfo(){
+  const {R,C,src}=P0();
+  const d=Array.from({length:R},()=>Array(C).fill(-1));
+  const inA=Array.from({length:R},()=>Array(C).fill(0));
+  const q=[src.slice()]; d[src[0]][src[1]]=0; let head=0;
+  while(head<q.length){
+    const [r,c]=q[head++], m=cmAt(r,c);
+    for(const dir of DIRS){ if(m&dir){ const nr=r+DR[dir],nc=c+DC[dir];
+      if(inB(nr,nc)&&(cmAt(nr,nc)&OPP[dir])&&d[nr][nc]<0){
+        d[nr][nc]=d[r][c]+1; inA[nr][nc]=OPP[dir]; q.push([nr,nc]);
+      }
+    }}
+  }
+  return {d,inA};
+}
+
+/* ==================== FLUID ENGINE ====================
+   A 1D pipe-network flow simulation rendered on canvas:
+   • mass conservation — flow splits at junctions, so branches fill slower
+   • pump inertia — the front ramps up + throbs instead of starting flat
+   • wobbling meniscus at every advancing / retreating front
+   • entrained air bubbles advected through the network, popping at dead ends
+   • gravity-accelerated, tip-first draining back toward the source
+   Each arm = half a cell (center→edge). fill ∈ [0,1] along its flow direction;
+   inflow arms (rev) fill edge→center, all others center→edge.            */
+const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const COL={
+  deep:[22,112,196], mid:[44,151,240], light:[140,204,255],
+  wDeep:[29,119,73], wMid:[47,155,99], wLight:[110,210,155]
+};
+let cvs=null,ctx2=null,dpr=1,cellBox=[],rotLock=[],sim=null,lastT=0;
+
+function sizeCanvas(){
+  cvs=cvs||document.getElementById('water');
+  if(!cvs)return; ctx2=ctx2||cvs.getContext('2d');
+  const wrap=cvs.parentElement;
+  dpr=Math.min(2,window.devicePixelRatio||1);
+  cvs.width=Math.max(1,Math.round(wrap.clientWidth*dpr));
+  cvs.height=Math.max(1,Math.round(wrap.clientHeight*dpr));
+  cvs.style.width=wrap.clientWidth+'px';
+  cvs.style.height=wrap.clientHeight+'px';
+  cacheCells();
+}
+function cacheCells(){
+  const {R,C}=P0(); cellBox=[];
+  for(let r=0;r<R;r++){cellBox[r]=[];
+    for(let c=0;c<C;c++){const el=cellEl(r,c);
+      cellBox[r][c]=el?{x:el.offsetLeft,y:el.offsetTop,s:el.offsetWidth}:null;}}
+}
+function armKey(r,c,d){return r+','+c+','+d;}
+function cellWet(r,c){
+  if(!sim)return false;
+  for(const d of DIRS){const a=sim.arms.get(armKey(r,c,d));if(a&&a.fill>0.02)return true;}
+  return false;
+}
+
+/* rebuild the flow graph from the current pipe orientations; fills carry over */
+function buildSim(){
+  const {R,C,src}=P0();
+  const old=sim?sim.arms:null;
+  const info=distInfo();
+  const arms=new Map();
+  for(let r=0;r<R;r++)for(let c=0;c<C;c++){
+    const m=cmAt(r,c);
+    for(const d of DIRS) if(m&d)
+      arms.set(armKey(r,c,d),{r,c,d,fill:0,vD:0,parent:null,share:1,reach:false,rev:false});
+  }
+  /* wire parents in BFS order — inflow arm's parent is the upstream cell's
+     outflow arm; a cell's other arms hang off its own inflow arm */
+  const cells=[];
+  for(let r=0;r<R;r++)for(let c=0;c<C;c++) if(info.d[r][c]>=0)cells.push([info.d[r][c],r,c]);
+  cells.sort((a,b)=>a[0]-b[0]);
+  for(const [dd,r,c] of cells){
+    const m=cmAt(r,c), isS=(dd===0), inW=isS?0:info.inA[r][c];
+    let share=1;
+    if(inW){
+      const nr=r+DR[inW],nc=c+DC[inW];
+      const pk=armKey(nr,nc,OPP[inW]);
+      const inArm=arms.get(armKey(r,c,inW));
+      inArm.reach=true; inArm.rev=true; inArm.parent=pk;
+      share=arms.get(pk).share; inArm.share=share;
+    }
+    let outs=0; for(const d of DIRS) if((m&d)&&d!==inW) outs++;
+    const split=outs>1?1/Math.sqrt(outs):1;   /* softened equal mass split */
+    for(const d of DIRS) if((m&d)&&d!==inW){
+      const a=arms.get(armKey(r,c,d)); a.reach=true;
+      a.parent=isS?'SRC':armKey(r,c,inW);
+      a.share=share*split;
+    }
+  }
+  /* carry water; disconnected arms keep their old parent so drains run tip-first */
+  if(old)for(const [k,a] of arms){
+    const o=old.get(k); if(!o)continue;
+    a.fill=o.fill;
+    if(!a.reach&&o.parent)a.parent=o.parent;
+  }
+  const kids=new Map();
+  for(const [k,a] of arms) if(a.parent&&a.parent!=='SRC'){
+    if(!kids.has(a.parent))kids.set(a.parent,[]);
+    kids.get(a.parent).push(k);
+  }
+  sim={arms,kids,dist:info.d,
+    waveStart:performance.now(),
+    winStart:(sim&&sim.winStart)||0,
+    bubbles:sim?sim.bubbles.filter(b=>arms.has(b.k)):[],
+    drops:sim?sim.drops:[], lastBub:0};
+}
+
+/* ---- physics step ---- */
+function stepSim(dt,now){
+  if(!sim)return;
+  const {arms,kids}=sim;
+  const ramp=REDUCED?1:Math.min(1,(now-sim.waveStart)/250);       /* pump spin-up inertia */
+  const pulse=REDUCED?1:1+0.06*Math.sin(now/290);                 /* pressure throb */
+  const BASE=REDUCED?60:6.5;                                      /* half-cells per second */
+  for(const [k,a] of arms){
+    const locked=rotLock[a.r]&&rotLock[a.r][a.c]>now;             /* pipe still seating */
+    if(a.reach){
+      if(a.fill>=1||locked)continue;
+      const p=a.parent==='SRC'?null:arms.get(a.parent);
+      if(a.parent==='SRC'||(p&&p.fill>=1)){                       /* front continuity */
+        a.fill=Math.min(1,a.fill+BASE*a.share*ramp*pulse*dt); a.vD=0;
+      }
+    }else if(a.fill>0){
+      const ch=kids.get(k); let tip=true;                         /* drain tip-first */
+      if(ch)for(const c2 of ch){const b=arms.get(c2);if(b&&b.fill>0){tip=false;break;}}
+      if(tip){ a.vD=Math.min(16,a.vD+34*dt); a.fill=Math.max(0,a.fill-a.vD*dt); } /* gravity */
+    }
+  }
+  stepBubbles(dt,now);
+  stepDrops(dt);
+  if(state.solved[cur]&&!sim.winStart)sim.winStart=now;
+  if(!state.solved[cur])sim.winStart=0;
+}
+function stepBubbles(dt,now){
+  const B=sim.bubbles;
+  if(!REDUCED&&now-sim.lastBub>430&&B.length<12){
+    const cand=[]; for(const a of sim.arms.values())if(a.parent==='SRC'&&a.fill>0.25)cand.push(a);
+    if(cand.length){sim.lastBub=now;const a=cand[(Math.random()*cand.length)|0];
+      B.push({k:armKey(a.r,a.c,a.d),s:0.05,ph:Math.random()*6.283,sz:1.2+Math.random()*1.8});}
+  }
+  for(let i=B.length-1;i>=0;i--){
+    const b=B[i], a=sim.arms.get(b.k);
+    if(!a||a.fill<=0.03){B.splice(i,1);continue;}
+    b.s+=dt*1.35*(0.75+0.25*Math.sin(b.ph+now/480));              /* advected with flow */
+    if(b.s>=Math.min(1,a.fill)){
+      if(a.fill>=1){
+        const ch=(sim.kids.get(b.k)||[]).filter(k=>{const x=sim.arms.get(k);return x&&x.reach;});
+        if(ch.length){b.k=ch[(Math.random()*ch.length)|0];b.s=0;}
+        else{B.splice(i,1);continue;}                             /* pops at the dead end */
+      }else{b.s=a.fill; if(Math.random()<dt*0.5){B.splice(i,1);continue;}}
+    }
+  }
+}
+function spawnSplash(r,c){
+  if(REDUCED||!sim)return;
+  const box=cellBox[r]&&cellBox[r][c]; if(!box)return;
+  const cx0=box.x+box.s/2, cy0=box.y+box.s/2;
+  for(let i=0;i<8;i++){
+    const ang=Math.random()*6.283, sp=40+Math.random()*110;
+    sim.drops.push({x:cx0,y:cy0,vx:Math.cos(ang)*sp,vy:Math.sin(ang)*sp-70,
+      life:0.55+Math.random()*0.2,r:1.5+Math.random()*1.6});
+  }
+}
+function stepDrops(dt){
+  const D=sim.drops;
+  for(let i=D.length-1;i>=0;i--){
+    const p=D[i];
+    p.vy+=900*dt;                                                 /* gravity on droplets */
+    p.x+=p.vx*dt; p.y+=p.vy*dt; p.life-=dt;
+    if(p.life<=0)D.splice(i,1);
+  }
+}
+
+/* ---- canvas renderer ---- */
+function lerpC(a,b,t){return [a[0]+(b[0]-a[0])*t|0,a[1]+(b[1]-a[1])*t|0,a[2]+(b[2]-a[2])*t|0];}
+function rgba(c,al){return 'rgba('+c[0]+','+c[1]+','+c[2]+','+al+')';}
+function armGeom(a,box){
+  const s=box.s, cx0=box.x+s/2, cy0=box.y+s/2;
+  const dx=(EP[a.d][0]-50)/50, dy=(EP[a.d][1]-50)/50, L=s/2;
+  let sx,sy,tx,ty;
+  if(a.rev){ sx=cx0+dx*L; sy=cy0+dy*L; tx=cx0+dx*L*(1-a.fill); ty=cy0+dy*L*(1-a.fill); }
+  else     { sx=cx0; sy=cy0; tx=cx0+dx*L*a.fill; ty=cy0+dy*L*a.fill; }
+  return {sx,sy,tx,ty,dx,dy,s,cx0,cy0};
+}
+function drawWater(now){
+  if(!ctx2)return;
+  ctx2.setTransform(dpr,0,0,dpr,0,0);
+  ctx2.clearRect(0,0,cvs.width,cvs.height);
+  if(!sim)return;
+  const {R,C,src}=P0();
+  const wt=sim.winStart?Math.min(1,(now-sim.winStart)/700):0;     /* blue → green */
+  const deep=lerpC(COL.deep,COL.wDeep,wt), mid=lerpC(COL.mid,COL.wMid,wt), light=lerpC(COL.light,COL.wLight,wt);
+  for(let r=0;r<R;r++)for(let c=0;c<C;c++){
+    const box=cellBox[r]&&cellBox[r][c]; if(!box)continue;
+    let any=false;
+    for(const d of DIRS){const a=sim.arms.get(armKey(r,c,d));if(a&&a.fill>0){any=true;break;}}
+    const isSrc=(r===src[0]&&c===src[1]);
+    if(!any&&!isSrc)continue;
+    ctx2.save();
+    ctx2.beginPath(); ctx2.rect(box.x,box.y,box.s,box.s); ctx2.clip();
+    const w=box.s*0.18;
+    for(const d of DIRS){
+      const a=sim.arms.get(armKey(r,c,d)); if(!a||a.fill<=0)continue;
+      const g=armGeom(a,box);
+      /* cylinder-shaded body: gradient across the tube, highlight off-center */
+      let px=-g.dy, py=g.dx;
+      if(py>0||(py===0&&px>0)){px=-px;py=-py;}                    /* light from top-left */
+      const mx=(g.sx+g.tx)/2,my=(g.sy+g.ty)/2;
+      const gr=ctx2.createLinearGradient(mx+px*w/2,my+py*w/2,mx-px*w/2,my-py*w/2);
+      gr.addColorStop(0,rgba(mid,1)); gr.addColorStop(0.28,rgba(light,1));
+      gr.addColorStop(0.62,rgba(mid,1)); gr.addColorStop(1,rgba(deep,1));
+      ctx2.strokeStyle=gr; ctx2.lineWidth=w; ctx2.lineCap='butt';
+      ctx2.beginPath(); ctx2.moveTo(g.sx,g.sy); ctx2.lineTo(g.tx,g.ty); ctx2.stroke();
+      /* meniscus — wobbling curved front while moving */
+      if(a.fill<1){
+        const wob=REDUCED?0:0.10*Math.sin(now/70+(r*3+c*5+d));
+        ctx2.beginPath(); ctx2.arc(g.tx,g.ty,(w/2)*(1+wob),0,6.283);
+        const mg=ctx2.createRadialGradient(g.tx-px*w*0.15,g.ty-py*w*0.15,0,g.tx,g.ty,w/2);
+        mg.addColorStop(0,rgba(light,1)); mg.addColorStop(1,rgba(mid,1));
+        ctx2.fillStyle=mg; ctx2.fill();
+      }
+      /* sheen */
+      ctx2.strokeStyle='rgba(255,255,255,0.32)'; ctx2.lineWidth=w*0.16; ctx2.lineCap='round';
+      const shr=0.82;
+      ctx2.beginPath();
+      ctx2.moveTo(g.sx+(g.tx-g.sx)*(1-shr)/2+px*w*0.22, g.sy+(g.ty-g.sy)*(1-shr)/2+py*w*0.22);
+      ctx2.lineTo(g.sx+(g.tx-g.sx)*(1+shr)/2+px*w*0.22, g.sy+(g.ty-g.sy)*(1+shr)/2+py*w*0.22);
+      ctx2.stroke();
+    }
+    /* joint hub once water reaches the center */
+    let centerWet=isSrc;
+    for(const d of DIRS){const a=sim.arms.get(armKey(r,c,d));
+      if(a&&a.fill>0&&(!a.rev||a.fill>=1)){centerWet=true;break;}}
+    if(centerWet){
+      const jr=box.s*0.14, jx=box.x+box.s/2, jy=box.y+box.s/2;
+      const jg=ctx2.createRadialGradient(jx-jr*0.35,jy-jr*0.4,jr*0.1,jx,jy,jr);
+      jg.addColorStop(0,rgba(light,1)); jg.addColorStop(1,rgba(deep,1));
+      ctx2.fillStyle=jg; ctx2.beginPath(); ctx2.arc(jx,jy,jr,0,6.283); ctx2.fill();
+    }
+    /* bubbles inside this cell */
+    for(const b of sim.bubbles){
+      const a=sim.arms.get(b.k); if(!a||a.r!==r||a.c!==c)continue;
+      const g=armGeom(a,box), t=Math.min(b.s,a.fill);
+      let bx,by;
+      if(a.rev){bx=g.sx+(g.cx0-g.sx)*t;by=g.sy+(g.cy0-g.sy)*t;}
+      else{bx=g.cx0+g.dx*(box.s/2)*t;by=g.cy0+g.dy*(box.s/2)*t;}
+      const off=Math.sin(now/300+b.ph)*w*0.16;
+      bx+=-g.dy*off; by+=g.dx*off;
+      ctx2.fillStyle='rgba(255,255,255,0.55)';
+      ctx2.beginPath(); ctx2.arc(bx,by,b.sz,0,6.283); ctx2.fill();
+      ctx2.fillStyle='rgba(255,255,255,0.9)';
+      ctx2.beginPath(); ctx2.arc(bx-b.sz*0.3,by-b.sz*0.3,b.sz*0.32,0,6.283); ctx2.fill();
+    }
+    ctx2.restore();
+  }
+  /* splash droplets (unclipped — they fly) */
+  for(const p of sim.drops){
+    ctx2.fillStyle=rgba(mid,Math.max(0,p.life*1.6));
+    ctx2.beginPath(); ctx2.arc(p.x,p.y,p.r,0,6.283); ctx2.fill();
+  }
+  /* pulsing source marker on top */
+  const sb=cellBox[src[0]]&&cellBox[src[0]][src[1]];
+  if(sb){
+    const sx=sb.x+sb.s/2, sy=sb.y+sb.s/2, k=sb.s/100;
+    const ph=REDUCED?0.5:0.5+0.5*Math.sin(now/540);
+    ctx2.strokeStyle='rgba(242,160,61,'+(0.25+0.45*ph)+')'; ctx2.lineWidth=3*k;
+    ctx2.beginPath(); ctx2.arc(sx,sy,(16+3*ph)*k,0,6.283); ctx2.stroke();
+    ctx2.fillStyle='#fff'; ctx2.beginPath(); ctx2.arc(sx,sy,12*k,0,6.283); ctx2.fill();
+    ctx2.fillStyle='#F2A03D'; ctx2.beginPath(); ctx2.arc(sx,sy,8.5*k,0,6.283); ctx2.fill();
+  }
+  /* completion: bright pressure ring expanding from the source */
+  if(sim.winStart&&now-sim.winStart<900&&sb){
+    const t=(now-sim.winStart)/900;
+    ctx2.strokeStyle='rgba(255,255,255,'+(0.5*(1-t))+')'; ctx2.lineWidth=8*(1-t)+2;
+    ctx2.beginPath();
+    ctx2.arc(sb.x+sb.s/2,sb.y+sb.s/2,t*Math.hypot(cvs.width,cvs.height)/dpr,0,6.283);
+    ctx2.stroke();
+  }
+}
+
+/* cell tint classes follow the simulation (casing + background) */
+function syncClasses(now){
+  if(!sim)return;
+  const {R,C,src}=P0(); const done=state.solved[cur];
+  for(let r=0;r<R;r++)for(let c=0;c<C;c++){
+    const el=cellEl(r,c); if(!el)continue;
+    const isSrc=(r===src[0]&&c===src[1]);
+    const wet=isSrc||cellWet(r,c);
+    const green=done&&wet&&(!sim.winStart||now>=sim.winStart+(sim.dist[r][c]<0?0:sim.dist[r][c])*45);
+    const cls='cell'+(isSrc?' src':'')+(wet?(green?' win':' lit'):'')
+      +(el.classList.contains('hintcell')?' hintcell':'');
+    if(el.className!==cls)el.className=cls;
+  }
+}
+
+/* paintFill keeps its old name/contract: retopologize + return the reachable set */
+function paintFill(){
+  const seen=filledSet();
+  buildSim();
+  return seen;
+}
+
+/* ---- main loop ---- */
+function tick(now){
+  requestAnimationFrame(tick);
+  if(document.hidden)return;
+  const dt=Math.min(0.05,(now-(lastT||now))/1000); lastT=now;
+  stepSim(dt,now); syncClasses(now); drawWater(now);
+}
+requestAnimationFrame(tick);
+window.addEventListener('resize',sizeCanvas);
+function renderActions(){
+  const isLast=cur===P.length-1;
+  document.getElementById('btnPrev').disabled=(cur===0);
+  document.getElementById('btnNext').disabled=!(state.solved[cur]&&!isLast);
+}
+function renderAll(){renderProgress();renderHead();buildBoard();paintFill();renderActions();setSoundIcon();clearStatus();}
+
+/* ---- status ---- */
+let stTimer;
+function status(type,msg,sticky){const s=document.getElementById('status');s.className='status show '+type;s.textContent=msg;clearTimeout(stTimer);if(!sticky)stTimer=setTimeout(clearStatus,2300);}
+function clearStatus(){document.getElementById('status').className='status';}
+
+/* ---- interaction ---- */
+function tapCell(r,c){
+  if(state.solved[cur])return;
+  const before=filledCount(filledSet());
+  const wasWet=cellWet(r,c);
+  spin[r][c]+=90;
+  rotsCur()[r][c]=(rotsCur()[r][c]+1)%4;
+  state.taps[cur]++;
+  const pipe=cellEl(r,c).querySelector('.pipe');
+  pipe.style.transform='rotate('+spin[r][c]+'deg)';
+  save(state);
+  if(wasWet)spawnSplash(r,c);                      /* turning a wet pipe spills droplets */
+  const seen=paintFill();
+  /* water waits while the pipe seats into its new orientation; its old water spilled */
+  rotLock[r][c]=performance.now()+300;
+  for(const d of DIRS){const a=sim.arms.get(armKey(r,c,d));if(a)a.fill=0;}
+  const after=filledCount(seen);
+  if(after>before && soundOn) playCorrect();   /* connecting a segment */
+  checkDone();
+}
+
+/* ---- hint: set one blocking cell to its solved orientation ---- */
+function useHint(){
+  if(state.solved[cur]){status('hint','આ કોયડો પહેલેથી પૂર્ણ છે.');return;}
+  const {R,C}=P0();
+  const seen=filledSet();
+  /* candidates: cells not in solved orientation (current mask != base mask) */
+  const cand=[];
+  for(let r=0;r<R;r++)for(let c=0;c<C;c++){
+    if(cmAt(r,c)!==P0().base[r][c]) cand.push([r,c]);
+  }
+  if(!cand.length){status('hint','બધી પાઈપ પહેલેથી બરાબર છે.');return;}
+  /* prefer a cell touching the already-filled network for a satisfying extend */
+  let pick=cand.find(([r,c])=>{
+    for(const d of DIRS){const nr=r+DR[d],nc=c+DC[d];if(inB(nr,nc)&&seen[nr][nc])return true;}
+    return false;
+  })||cand[Math.floor(Math.random()*cand.length)];
+  const [r,c]=pick;
+  /* minimal CW turns to reach solved orientation */
+  let t=0,m=cmAt(r,c);
+  while(m!==P0().base[r][c] && t<4){m=rotCW(m);t++;}
+  const wasWet=cellWet(r,c);
+  spin[r][c]+=t*90;
+  rotsCur()[r][c]=(rotsCur()[r][c]+t)%4;
+  const el=cellEl(r,c);
+  el.querySelector('.pipe').style.transform='rotate('+spin[r][c]+'deg)';
+  el.classList.add('hintcell');
+  setTimeout(()=>el.classList.remove('hintcell'),900);
+  save(state);
+  if(wasWet)spawnSplash(r,c);
+  paintFill();
+  rotLock[r][c]=performance.now()+300;
+  for(const d of DIRS){const a=sim.arms.get(armKey(r,c,d));if(a)a.fill=0;}
+  if(soundOn)playHint();
+  status('hint','💡 એક પાઈપ ગોઠવી આપી.');
+  checkDone();
+}
+
+/* ---- win ---- */
+function checkDone(){
+  if(state.solved[cur])return;
+  if(!isSolved())return;
+  state.solved[cur]=true;
+  save(state);
+  paintFill();
+  renderActions();
+  const all=state.solved.every(Boolean);
+  if(all){
+    status('done','બધા કોયડા પૂર્ણ. ખૂબ સરસ! 🌸',true);
+    if(soundOn)playWin();
+    if(!state.celebrated){state.celebrated=true;save(state);showCelebrate();}
+    markDone();
+  }else{
+    status('done','આ કોયડો પૂર્ણ. તૈયાર હો ત્યારે આગળ વધો.',true);
+    if(soundOn)playLevel();
+  }
+}
+
+/* ---- navigation ---- */
+function nextPuzzle(){if(cur<P.length-1&&state.solved[cur]){cur++;state.tab=cur;save(state);renderAll();window.scrollTo({top:0,behavior:'smooth'});}}
+function prevPuzzle(){if(cur>0){cur--;state.tab=cur;save(state);renderAll();window.scrollTo({top:0,behavior:'smooth'});}}
+
+/* ---- help sheet ---- */
+function openHelp(){document.getElementById('scrim').classList.add('open');document.getElementById('sheet').classList.add('open');}
+function closeHelp(){document.getElementById('scrim').classList.remove('open');document.getElementById('sheet').classList.remove('open');}
+
+/* ---- celebration ---- */
+function showCelebrate(){const c=document.getElementById('celebrate');c.classList.add('show');const ems=['🌸','🌼','✨','🍃','💜'];for(let i=0;i<16;i++){const p=document.createElement('div');p.className='petal';p.textContent=ems[i%ems.length];p.style.left=(Math.random()*100)+'%';p.style.animationDuration=(2.4+Math.random()*1.6)+'s';p.style.animationDelay=(Math.random()*.6)+'s';document.body.appendChild(p);setTimeout(()=>p.remove(),4600);}}
+function closeCelebrate(){document.getElementById('celebrate').classList.remove('show');postToApp({type:'GO_BACK'});}
+
+/* ---- init ---- */
+preloadSounds();
+renderAll();
+if(state.solved.every(Boolean)){
+  status('done','બધા કોયડા પૂર્ણ. ખૂબ સરસ! 🌸',true);
+  _completed=true;
+  pushProgress();
+}else if(state.solved[cur]){
+  status('done','આ કોયડો પૂર્ણ. તૈયાર હો ત્યારે આગળ વધો.',true);
+}
+</script>
+</body>
+</html>

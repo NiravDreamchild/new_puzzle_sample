@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#FBF9FC">
+<title>Dreamchild · Maze</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Vadodara:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FBF9FC;
+  --surface:#FFFFFF;
+  --ink:#2E2A32;
+  --muted:#8C8794;
+  --line:#ECE7F0;
+  --brand:#752886;
+  --brand-deep:#561F69;
+  --brand-soft:#F3E9F8;
+  --accent:#F2A03D;
+  --accent-soft:#FCEFDC;
+  --mint:#2F9B63;
+  --mint-soft:#E5F4EC;
+  --rose:#C75C72;
+  --rose-soft:#FAEAEE;
+  --wall:#A57DBE;
+  --corridor:#FBF8FD;
+  --shadow:0 10px 30px -12px rgba(78,33,95,.18);
+  --shadow-sm:0 4px 14px -8px rgba(78,33,95,.20);
+  --r-lg:22px; --r-md:16px; --r-sm:12px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg);color:var(--ink);
+  font-family:'Hind Vadodara',sans-serif;
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+  background-image:radial-gradient(120% 60% at 50% -10%, var(--brand-soft) 0%, rgba(243,233,248,0) 60%);
+}
+.wrap{max-width:460px;margin:0 auto;padding:16px 16px 28px;position:relative;z-index:1;}
+
+/* ---- header ---- */
+.phead{background:var(--surface);border:1px solid var(--line);border-radius:18px;
+  box-shadow:0 6px 20px -12px rgba(78,33,95,.16);padding:15px 16px;margin-bottom:14px;}
+.hrow1{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.ptitle{font-weight:700;font-size:23px;line-height:1.05;color:var(--brand);margin:0;letter-spacing:-.01em;}
+.hctrls{display:flex;align-items:center;gap:8px;flex:none;}
+.rpill{display:flex;align-items:center;justify-content:center;min-width:50px;height:38px;padding:0 12px;
+  border:1px solid var(--line);border-radius:11px;background:var(--surface);
+  font-family:'Hind Vadodara',sans-serif;font-weight:600;font-size:16px;color:var(--ink);letter-spacing:.01em;}
+.hbtn{width:40px;height:38px;border:1px solid var(--line);border-radius:11px;background:var(--surface);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-appearance:none;padding:0;
+  transition:background .15s ease;}
+.hbtn:active{background:var(--brand-soft);}
+.hbtn svg{width:20px;height:20px;fill:none;stroke:var(--muted);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.hbtn.info{width:38px;background:var(--brand-soft);border-color:transparent;}
+.hbtn.info svg{stroke:var(--brand);}
+.hsub{text-align:center;font-weight:600;font-size:15px;line-height:1.5;color:var(--ink);margin:13px 0 1px;}
+
+/* ---- stage card (maze) ---- */
+.stage{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
+  box-shadow:0 8px 28px -10px rgba(78,33,95,.16), 0 2px 8px -3px rgba(78,33,95,.08);padding:14px;margin-bottom:14px;}
+
+.maze{position:relative;width:100%;aspect-ratio:var(--cols)/var(--rows);border:3px solid var(--brand);
+  border-radius:14px;overflow:hidden;background:var(--corridor);
+  touch-action:none;user-select:none;-webkit-user-select:none;
+  box-shadow:inset 0 0 0 1px rgba(117,40,134,.08);}
+.mgrid{position:absolute;inset:0;display:grid;}
+.mcell{position:relative;background:var(--corridor);}
+.mcell .marker{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-size:clamp(11px,3.3vw,16px);line-height:1;z-index:4;}
+.mcell.start{background:radial-gradient(circle at 50% 50%,var(--mint-soft),var(--corridor) 72%);}
+.mcell.end{background:radial-gradient(circle at 50% 50%,var(--accent-soft),var(--corridor) 72%);}
+.mtrail{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2;}
+.thead{animation:headpulse 1.15s ease-in-out infinite;}
+@keyframes headpulse{0%,100%{r:.26}50%{r:.33}}
+.mcell.hint::after{content:"";position:absolute;inset:16%;border-radius:5px;
+  box-shadow:0 0 0 3px var(--accent);animation:hintpulse 1s ease infinite;z-index:5;}
+@keyframes hintpulse{0%,100%{opacity:.45}50%{opacity:1}}
+
+/* reset control inside stage */
+.mtools{display:flex;justify-content:center;margin-top:12px;}
+.mreset{border:1px solid var(--line);border-radius:12px;background:var(--surface);cursor:pointer;
+  -webkit-appearance:none;font-family:'Hind Vadodara',sans-serif;font-weight:600;font-size:13px;color:var(--muted);
+  min-height:38px;padding:0 18px;display:flex;align-items:center;gap:7px;box-shadow:var(--shadow-sm);
+  transition:transform .1s ease,background .15s ease;}
+.mreset:active{transform:scale(.97);background:var(--brand-soft);}
+.mreset svg{width:16px;height:16px;fill:none;stroke:var(--brand);stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;}
+
+/* ---- status ---- */
+.status{min-height:24px;text-align:center;font-size:14px;line-height:1.4;font-weight:500;
+  color:var(--muted);padding:2px 8px;margin:6px 0;opacity:0;transition:opacity .25s ease;}
+.status.show{opacity:1;}
+.status.ok{color:var(--mint);}
+.status.bad{color:var(--rose);}
+.status.hint{color:#B5781E;}
+.status.done{color:var(--brand);font-weight:600;}
+
+/* ---- action bar ---- */
+.actionbar{margin-top:14px;}
+.actionbar .inner{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.cbtn{font-family:'Hind Vadodara',sans-serif;cursor:pointer;-webkit-appearance:none;
+  display:flex;align-items:center;justify-content:center;gap:5px;
+  transition:transform .12s ease,opacity .2s ease,background .2s ease,box-shadow .2s ease;}
+.cbtn:active{transform:scale(.97);}
+.cbtn svg{width:16px;height:16px;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;}
+.cbtn.hint{min-height:36px;border-radius:12px;padding:0 22px;background:var(--surface);border:1px solid var(--line);
+  color:var(--ink);font-weight:600;font-size:13px;box-shadow:var(--shadow-sm);}
+.cbtn.hint svg{stroke:var(--brand);}
+.cbtn.prev,.cbtn.next{min-height:36px;border-radius:12px;padding:0 20px;background:var(--brand);border:none;color:#fff;
+  font-weight:700;font-size:13.5px;box-shadow:0 8px 20px -8px rgba(110,42,133,.5);}
+.cbtn.prev svg,.cbtn.next svg{stroke:#fff;}
+.cbtn:disabled{cursor:default;}
+.cbtn.prev:disabled,.cbtn.next:disabled{background:var(--surface);border:1px solid var(--line);color:var(--muted);box-shadow:none;font-weight:600;}
+.cbtn.prev:disabled svg,.cbtn.next:disabled svg{stroke:var(--muted);}
+
+/* ---- footer ---- */
+.foot{text-align:center;font-size:11px;color:var(--muted);letter-spacing:.03em;margin-top:18px;}
+.foot b{font-weight:600;color:#a79bb0;}
+
+/* ---- help sheet ---- */
+.scrim{position:fixed;inset:0;background:rgba(46,42,50,.42);backdrop-filter:blur(2px);z-index:40;
+  opacity:0;pointer-events:none;transition:opacity .28s ease;}
+.scrim.open{opacity:1;pointer-events:auto;}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:41;background:var(--surface);
+  border-radius:26px 26px 0 0;box-shadow:0 -16px 40px -16px rgba(46,42,50,.3);
+  max-width:460px;margin:0 auto;padding:10px 22px calc(26px + env(safe-area-inset-bottom));
+  transform:translateY(110%);transition:transform .34s cubic-bezier(.22,1,.36,1);}
+.sheet.open{transform:translateY(0);}
+.grab{width:42px;height:5px;border-radius:999px;background:var(--line);margin:6px auto 16px;}
+.sheet h3{font-weight:700;font-size:20px;margin:0 0 4px;}
+.sheet .lead{font-size:14px;color:var(--muted);margin:0 0 18px;line-height:1.5;}
+.step{display:flex;gap:14px;align-items:flex-start;margin-bottom:16px;}
+.step .ic{flex:none;width:46px;height:46px;border-radius:14px;background:var(--brand-soft);
+  display:flex;align-items:center;justify-content:center;}
+.step .ic svg{width:26px;height:26px;stroke:var(--brand);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
+.step .tx b{display:block;font-weight:600;font-size:15px;color:var(--ink);margin-bottom:2px;}
+.step .tx p{margin:0;font-size:13.5px;color:var(--muted);line-height:1.5;}
+.sheet .got{width:100%;margin-top:6px;background:var(--brand);color:#fff;border:none;cursor:pointer;
+  font-family:'Hind Vadodara',sans-serif;border-radius:14px;min-height:48px;font-weight:700;font-size:15px;}
+
+/* ---- celebration ---- */
+.celebrate{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;
+  background:rgba(251,249,252,.86);backdrop-filter:blur(3px);text-align:center;padding:30px;}
+.celebrate.show{display:flex;flex-direction:column;}
+.celebrate .em{font-size:54px;margin-bottom:6px;animation:rise .6s cubic-bezier(.22,1,.36,1);}
+.celebrate h2{font-weight:700;font-size:24px;color:var(--brand);margin:0 0 8px;}
+.celebrate p{font-size:15px;color:var(--ink);font-weight:500;margin:0 0 22px;max-width:280px;line-height:1.5;}
+.celebrate .btn{min-width:200px;background:var(--brand);color:#fff;border:none;cursor:pointer;
+  font-family:'Hind Vadodara',sans-serif;border-radius:14px;min-height:55px;font-weight:700;font-size:18px;}
+@keyframes rise{from{transform:translateY(16px) scale(.8);opacity:0}to{transform:none;opacity:1}}
+.petal{position:fixed;top:-24px;z-index:49;font-size:18px;animation:drift linear forwards;pointer-events:none;}
+@keyframes drift{to{transform:translateY(106vh) rotate(360deg);opacity:0}}
+
+/* ---- ambient background ---- */
+.bg{position:fixed;top:0;left:0;right:0;height:100vh;height:100lvh;overflow:hidden;pointer-events:none;z-index:0;}
+.piece{position:absolute;transform:rotate(var(--rot,0deg));opacity:.3;}
+.piece svg{display:block;width:100%;height:auto;fill:currentColor;}
+.piece.f1{top:-30px;left:-46px;width:150px;color:#fa7068;--rot:-14deg;}
+.piece.f2{top:78px;right:-52px;width:150px;color:#fbca5f;--rot:18deg;}
+.piece.f3{top:46%;right:-58px;width:110px;color:#a0c95d;--rot:26deg;}
+.piece.f4{bottom:-40px;right:-30px;width:170px;color:#9ddbe6;--rot:-18deg;}
+.piece.f5{bottom:46px;left:-56px;width:150px;color:#f3adc9;--rot:8deg;}
+.piece.f6{top:36%;left:-70px;width:100px;color:#d4ab99;--rot:30deg;}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001ms !important;transition-duration:.05ms !important;}
+}
+:focus-visible{outline:2.5px solid var(--brand);outline-offset:2px;border-radius:6px;}
+</style>
+</head>
+<body>
+<div class="bg" aria-hidden="true">
+  <div class="piece f1"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece f2"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece f3"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece f4"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece f5"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece f6"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+</div>
+
+<div class="wrap">
+  <!-- header -->
+  <header class="phead">
+    <div class="hrow1">
+      <h1 class="ptitle">મહા ભુલભુલૈયા</h1>
+      <div class="hctrls">
+        <span class="rpill" id="round"></span>
+        <button class="hbtn" id="soundBtn" onclick="toggleSound()" aria-label="Sound"></button>
+        <button class="hbtn info" onclick="openHelp()" aria-label="How to play">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><circle cx="12" cy="8" r="0.6" fill="currentColor" stroke="none"/></svg>
+        </button>
+      </div>
+    </div>
+    <p class="hsub" id="hsub"></p>
+  </header>
+
+  <!-- stage: the maze -->
+  <div class="stage">
+    <div class="maze" id="maze" style="--cols:9;--rows:15;">
+      <div class="mgrid" id="mgrid"></div>
+      <svg class="mtrail" id="mtrail" viewBox="0 0 9 15" preserveAspectRatio="none" aria-hidden="true"></svg>
+    </div>
+    <div class="mtools">
+      <button class="mreset" onclick="resetPuzzle()">
+        <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+        ફરી શરૂ / Reset
+      </button>
+    </div>
+  </div>
+
+  <!-- status -->
+  <div class="status" id="status"></div>
+
+  <!-- actions -->
+  <div class="actionbar">
+    <div class="inner">
+      <button class="cbtn prev" id="btnPrev" onclick="prevPuzzle()"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>Back</button>
+      <button class="cbtn hint" onclick="useHint()"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 1 4 10.5c-.7.6-1 1.2-1 2v.5H9v-.5c0-.8-.3-1.4-1-2A6 6 0 0 1 12 3z"/></svg>Hint</button>
+      <button class="cbtn next" id="btnNext" onclick="nextPuzzle()">Next<svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+    </div>
+  </div>
+
+  <div class="foot">© <b>Dreamchild Garbhsanskar</b></div>
+</div>
+
+<!-- help sheet -->
+<div class="scrim" id="scrim" onclick="closeHelp()"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="How to play">
+  <div class="grab"></div>
+  <h3>કેવી રીતે રમવું</h3>
+  <p class="lead">🟢 શરૂથી 🎯 અંત સુધી રસ્તો શોધો. ઘણા રસ્તા સાચા લાગશે — પણ સાચો એક જ છે!</p>
+
+  <div class="step">
+    <div class="ic"><svg viewBox="0 0 24 24"><path d="M5 12h9"/><path d="M12 7l5 5-5 5"/></svg></div>
+    <div class="tx"><b>આંગળી ફેરવો</b><p>🟢 લીલા ટપકાંથી આંગળી ફેરવી રસ્તો દોરો — અથવા પડોશી ખાના પર ટેપ કરો.</p></div>
+  </div>
+
+  <div class="step">
+    <div class="ic"><svg viewBox="0 0 24 24"><path d="M4 4v16M4 4h16M4 20h16M9 4v16M4 9h5M14 9h6M14 15h6"/></svg></div>
+    <div class="tx"><b>દિવાલ ઓળંગાય નહીં</b><p>ફક્ત ખુલ્લા રસ્તે જ આગળ વધાય. કેટલાક રસ્તા લાંબે જઈને બંધ થાય છે — સાવધાન!</p></div>
+  </div>
+
+  <div class="step">
+    <div class="ic"><svg viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h11a6 6 0 0 1 0 12h-4"/></svg></div>
+    <div class="tx"><b>પાછળ જાઓ</b><p>ખોટા ફાંટે ફસાઓ તો તમારી લાઇન પરના પાછલા ખાના પર ટેપ કરી પાછળ વળો.</p></div>
+  </div>
+
+  <div class="step">
+    <div class="ic"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></div>
+    <div class="tx"><b>અંત સુધી પહોંચો</b><p>🎯 નિશાન સુધી પહોંચતાં જ કોયડો પૂર્ણ થાય છે.</p></div>
+  </div>
+
+  <button class="got" onclick="closeHelp()">Close</button>
+</div>
+
+<!-- celebration -->
+<div class="celebrate" id="celebrate">
+  <div class="em">🎯</div>
+  <h2>ભુલભુલૈયા પાર!</h2>
+  <p>ખૂબ સરસ! તમારી એકાગ્રતા કમાલની છે.</p>
+  <button class="btn" onclick="closeCelebrate()">Congratulations</button>
+</div>
+
+<script>
+/* =========================================================================
+   મહા ભુલભુલૈયા — hard deceptive labyrinth (mobile-friendly tall layout)
+   Perfect mazes (unique solution → only ONE way is ever right; every other
+   opening is a trap that dead-ends). Built with the growing-tree algorithm
+   (standard, public-domain), tuned with BIAS=0.40 so the maze is full of
+   junctions: you repeatedly arrive at a cell with 2 or 3 openings and must
+   pick the single correct one. The grid is 9 wide × 15 tall — fewer columns
+   means wide, finger-friendly cells; more rows keeps the route long and hard.
+   All three verified solvable & walkable under the player's own move rules.
+     L1 seed 1687 · L2 seed 78 · L3 seed 2300   (9×15, 3-4 three-way forks each)
+   ========================================================================= */
+const COLS = 9, ROWS = 15;
+const BIAS = 0.40;                 // growing-tree selection: newest vs random
+const SEEDS = [1687, 78, 2300];
+const SUBS = [
+  '🟢 શરૂથી 🎯 અંત સુધી રસ્તો શોધો — ઘણા ખોટા ફાંટા છે!',
+  '🟢 શરૂથી 🎯 અંત સુધી — વળાંક વધ્યા, ધ્યાનથી પસંદ કરો!',
+  '🟢 શરૂથી 🎯 અંત સુધી — સૌથી અઘરો ભુલભુલૈયો, છેતરાશો નહીં!'
+];
+
+/* seeded RNG */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+/* open bits: N=1 E=2 S=4 W=8
+   Growing-tree carve: pick the NEWEST active cell with probability BIAS
+   (long corridors) else a RANDOM active cell (bushy junctions). The blend
+   gives many forks while keeping some long tempting dead-ends. */
+function genMaze(rows,cols,seed){
+  const rng=mulberry32(seed);
+  const open=Array.from({length:rows},()=>new Array(cols).fill(0));
+  const vis=Array.from({length:rows},()=>new Array(cols).fill(false));
+  const D=[[-1,0,1,4],[0,1,2,8],[1,0,4,1],[0,-1,8,2]];
+  let active=[[0,0]];vis[0][0]=true;
+  while(active.length){
+    const idx=(rng()<BIAS)?active.length-1:Math.floor(rng()*active.length);
+    const [r,c]=active[idx];const nb=[];
+    for(const [dr,dc,b,ob] of D){const nr=r+dr,nc=c+dc;
+      if(nr>=0&&nr<rows&&nc>=0&&nc<cols&&!vis[nr][nc])nb.push([nr,nc,b,ob]);}
+    if(nb.length){const [nr,nc,b,ob]=nb[Math.floor(rng()*nb.length)];
+      open[r][c]|=b;open[nr][nc]|=ob;vis[nr][nc]=true;active.push([nr,nc]);}
+    else active.splice(idx,1);
+  }
+  return open;
+}
+function solveMaze(open,rows,cols){
+  const prev=Array.from({length:rows},()=>new Array(cols).fill(null));
+  const seen=Array.from({length:rows},()=>new Array(cols).fill(false));
+  const D=[[-1,0,1],[0,1,2],[1,0,4],[0,-1,8]];
+  const q=[[0,0]];seen[0][0]=true;
+  while(q.length){const [r,c]=q.shift();
+    if(r===rows-1&&c===cols-1)break;
+    for(const [dr,dc,b] of D){if(open[r][c]&b){const nr=r+dr,nc=c+dc;
+      if(nr>=0&&nr<rows&&nc>=0&&nc<cols&&!seen[nr][nc]){seen[nr][nc]=true;prev[nr][nc]=[r,c];q.push([nr,nc]);}}}}
+  const path=[];let cur=[rows-1,cols-1];
+  while(cur){path.push(cur);cur=prev[cur[0]][cur[1]];}
+  path.reverse();return path;
+}
+const MAZES = SEEDS.map(s=>genMaze(ROWS,COLS,s));
+const SOLS  = MAZES.map(m=>solveMaze(m,ROWS,COLS));
+const NP = MAZES.length;
+
+const KEY='dcgs_maze_v1';
+function save(d){try{localStorage.setItem(KEY,JSON.stringify(d))}catch(e){}}
+function load(){try{return JSON.parse(localStorage.getItem(KEY))}catch(e){return null}}
+
+/* ---- app bridge (RN WebView) ---- */
+function postToApp(m){try{window.ReactNativeWebView&&window.ReactNativeWebView.postMessage(JSON.stringify(m));}catch(e){}}
+function activityDone(){postToApp({type:'ACTIVITY_DONE'});}
+let _active=0,_since=Date.now(),_completed=false;
+document.addEventListener('visibilitychange',function(){
+  if(document.hidden){_active+=Date.now()-_since;}else{_since=Date.now();}
+  pushProgress();
+});
+function timeSpentSec(){return Math.round((_active+(document.hidden?0:Date.now()-_since))/1000);}
+function pushProgress(){postToApp({type:'PROGRESS',time_spent_sec:timeSpentSec(),completed:_completed});}
+setInterval(pushProgress,3000);
+pushProgress();
+function markDone(){ _completed=true; activityDone(); pushProgress(); }
+window.addEventListener('pagehide',pushProgress);
+
+/* ---- state ---- */
+let state=load()||{tab:0,sound:false,celebrated:false,solved:[false,false,false],paths:[[],[],[]]};
+if(!state.solved)state.solved=[false,false,false];
+if(!state.paths)state.paths=[[],[],[]];
+let soundOn=!!state.sound, cur=state.tab||0;
+let path=[];
+
+/* ---- sound ---- */
+const SND={
+  correct:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Right.mp3',
+  wrong:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Wrong.mp3',
+  level:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Level.mp3',
+  win:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Complete.mp3',
+  hint:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Hint.mp3'
+};
+const _audio={};
+function preloadSounds(){for(const k in SND){try{const a=new Audio(SND[k]);a.preload='auto';_audio[k]=a;}catch(e){}}}
+function playSound(k){if(!soundOn)return;const a=_audio[k];if(!a)return;try{a.pause();a.currentTime=0;a.play().catch(function(){});}catch(e){}}
+function playCorrect(){playSound('correct');}
+function playWrong(){playSound('wrong');}
+function playLevel(){playSound('level');}
+function playWin(){playSound('win');}
+function playHint(){playSound('hint');}
+function setSoundIcon(){const b=document.getElementById('soundBtn');b.innerHTML=soundOn
+  ?'<svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M16 9a3.5 3.5 0 0 1 0 6"/><path d="M19 7a7 7 0 0 1 0 10"/></svg>'
+  :'<svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M22 9l-5 6M17 9l5 6"/></svg>';}
+function toggleSound(){soundOn=!soundOn;state.sound=soundOn;setSoundIcon();save(state);}
+
+/* ---- helpers ---- */
+function isStart(r,c){return r===0&&c===0;}
+function isEnd(r,c){return r===ROWS-1&&c===COLS-1;}
+function idxOnPath(r,c){for(let i=0;i<path.length;i++)if(path[i][0]===r&&path[i][1]===c)return i;return -1;}
+function canMove(r,c,nr,nc){const o=MAZES[cur][r][c];
+  if(nr===r-1&&nc===c)return !!(o&1);
+  if(nr===r&&nc===c+1)return !!(o&2);
+  if(nr===r+1&&nc===c)return !!(o&4);
+  if(nr===r&&nc===c-1)return !!(o&8);
+  return false;}
+function cellEl(r,c){return document.querySelector('.mcell[data-r="'+r+'"][data-c="'+c+'"]');}
+
+/* ---- render ---- */
+function renderProgress(){document.getElementById('round').textContent=(cur+1)+'/'+NP;}
+function renderHead(){document.getElementById('hsub').textContent=SUBS[cur];}
+
+function wallShadow(o){
+  const col='var(--wall)',p='2px',t=[];
+  if(!(o&1))t.push('inset 0 '+p+' 0 0 '+col);
+  if(!(o&2))t.push('inset -'+p+' 0 0 0 '+col);
+  if(!(o&4))t.push('inset 0 -'+p+' 0 0 '+col);
+  if(!(o&8))t.push('inset '+p+' 0 0 0 '+col);
+  return t.join(',');
+}
+function buildMaze(){
+  const g=document.getElementById('mgrid');
+  g.style.gridTemplateColumns='repeat('+COLS+',1fr)';
+  g.style.gridTemplateRows='repeat('+ROWS+',1fr)';
+  g.innerHTML='';
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
+    const d=document.createElement('div');
+    let cls='mcell';
+    if(isStart(r,c))cls+=' start';
+    if(isEnd(r,c))cls+=' end';
+    d.className=cls;d.dataset.r=r;d.dataset.c=c;
+    d.style.boxShadow=wallShadow(MAZES[cur][r][c]);
+    if(isStart(r,c))d.innerHTML='<span class="marker">🟢</span>';
+    else if(isEnd(r,c))d.innerHTML='<span class="marker">🎯</span>';
+    g.appendChild(d);
+  }
+  const mz=document.getElementById('maze');
+  mz.style.setProperty('--cols',COLS);
+  mz.style.setProperty('--rows',ROWS);
+  document.getElementById('mtrail').setAttribute('viewBox','0 0 '+COLS+' '+ROWS);
+}
+
+function repaintTrail(){
+  const svg=document.getElementById('mtrail');
+  if(path.length===0){svg.innerHTML='';return;}
+  const pts=path.map(([r,c])=>(c+0.5).toFixed(2)+','+(r+0.5).toFixed(2)).join(' ');
+  const solved=state.solved[cur];
+  const main = solved ? '#2F9B63' : '#752886';
+  let s='';
+  // soft glow underlay
+  s+='<polyline points="'+pts+'" fill="none" stroke="'+main+'" stroke-opacity="0.18" stroke-width="0.74" stroke-linecap="round" stroke-linejoin="round"/>';
+  // main trail
+  s+='<polyline points="'+pts+'" fill="none" stroke="'+main+'" stroke-width="0.4" stroke-linecap="round" stroke-linejoin="round"/>';
+  // moving head
+  if(!solved){
+    const [hr,hc]=path[path.length-1];
+    s+='<circle class="thead" cx="'+(hc+0.5)+'" cy="'+(hr+0.5)+'" r="0.28" fill="#F2A03D"/>';
+  }
+  svg.innerHTML=s;
+}
+
+function renderActions(){
+  const isLast=cur===NP-1;
+  document.getElementById('btnPrev').disabled=(cur===0);
+  document.getElementById('btnNext').disabled=!(state.solved[cur]&&!isLast);
+}
+function renderAll(){
+  path=(state.paths[cur]||[]).map(p=>[p[0],p[1]]);
+  renderProgress();renderHead();buildMaze();repaintTrail();renderActions();setSoundIcon();clearStatus();
+  if(state.solved[cur])status('done','આ ભુલભુલૈયો પાર. તૈયાર હો ત્યારે આગળ વધો.',true);
+}
+
+/* ---- status ---- */
+let stTimer;
+function status(type,msg,sticky){const s=document.getElementById('status');s.className='status show '+type;s.textContent=msg;clearTimeout(stTimer);if(!sticky)stTimer=setTimeout(clearStatus,2300);}
+function clearStatus(){document.getElementById('status').className='status';}
+
+/* ---- interaction: draw / tap / backtrack ---- */
+let drawing=false;
+function cellFromPoint(x,y){
+  const el=document.elementFromPoint(x,y);
+  const c=el&&el.closest?el.closest('.mcell'):null;
+  if(!c)return null;
+  return [parseInt(c.dataset.r),parseInt(c.dataset.c)];
+}
+function touchCell(r,c){
+  if(state.solved[cur])return;
+  if(path.length===0){
+    if(isStart(r,c)){path=[[0,0]];commit();status('hint','શરૂઆત થઈ! રસ્તો દોરો.');}
+    return;
+  }
+  const head=path[path.length-1];
+  if(r===head[0]&&c===head[1])return;
+  const idx=idxOnPath(r,c);
+  if(idx>=0){ if(idx<path.length-1){path=path.slice(0,idx+1);commit();} return; }
+  const dist=Math.abs(r-head[0])+Math.abs(c-head[1]);
+  if(dist===1 && canMove(head[0],head[1],r,c)){
+    path.push([r,c]);commit();
+    if(isEnd(r,c)){onSolved();return;}
+    playCorrect();
+  }else if(dist===1){
+    status('bad','અહીં દિવાલ છે — બીજો રસ્તો જુઓ.');playWrong();
+  }
+}
+function commit(){state.paths[cur]=path.map(p=>[p[0],p[1]]);save(state);repaintTrail();}
+
+function onDown(x,y){const cp=cellFromPoint(x,y);if(!cp)return;drawing=true;touchCell(cp[0],cp[1]);}
+function onMove(x,y){if(!drawing)return;const cp=cellFromPoint(x,y);if(cp)touchCell(cp[0],cp[1]);}
+function onUp(){drawing=false;}
+
+const mazeEl=document.getElementById('maze');
+mazeEl.addEventListener('touchstart',e=>{e.preventDefault();const t=e.touches[0];onDown(t.clientX,t.clientY);},{passive:false});
+mazeEl.addEventListener('touchmove',e=>{e.preventDefault();const t=e.touches[0];onMove(t.clientX,t.clientY);},{passive:false});
+mazeEl.addEventListener('touchend',e=>{e.preventDefault();onUp();},{passive:false});
+mazeEl.addEventListener('mousedown',e=>{onDown(e.clientX,e.clientY);});
+mazeEl.addEventListener('mousemove',e=>{if(drawing)onMove(e.clientX,e.clientY);});
+window.addEventListener('mouseup',onUp);
+
+/* ---- win ---- */
+function onSolved(){
+  state.solved[cur]=true;save(state);renderActions();repaintTrail();
+  const all=state.solved.every(Boolean);
+  if(all){
+    status('done','બધા ભુલભુલૈયા પાર! ખૂબ સરસ! 🎯',true);
+    if(soundOn)playWin();
+    if(!state.celebrated){state.celebrated=true;save(state);showCelebrate();}
+    markDone();
+  }else{
+    status('done','આ ભુલભુલૈયો પાર! આગળ વધો.',true);
+    if(soundOn)playLevel();
+  }
+}
+
+/* ---- hint: reveal the next correct cell from the current head ---- */
+function useHint(){
+  if(state.solved[cur]){status('hint','આ કોયડો પહેલેથી પૂર્ણ છે.');return;}
+  const sol=SOLS[cur];
+  let target,offPath=false;
+  if(path.length===0){ target=sol[0]; }
+  else{
+    let ok=path.length<=sol.length;
+    for(let i=0;i<path.length&&ok;i++){if(path[i][0]!==sol[i][0]||path[i][1]!==sol[i][1])ok=false;}
+    if(ok && path.length<sol.length){ target=sol[path.length]; }
+    else { target=sol[0]; offPath=true; }
+  }
+  if(soundOn)playHint();
+  const el=cellEl(target[0],target[1]);
+  if(el){el.classList.add('hint');setTimeout(()=>el.classList.remove('hint'),1600);}
+  status('hint', offPath ? '💡 ખોટા ફાંટે છો — પાછળ વળી આ ખાનેથી જાઓ.' : '💡 આ ખાના તરફ આગળ વધો.');
+}
+
+/* ---- reset (current puzzle only) ---- */
+function resetPuzzle(){
+  path=[];state.paths[cur]=[];state.solved[cur]=false;save(state);
+  repaintTrail();renderActions();status('hint','ભુલભુલૈયો ફરી શરૂ.');
+}
+
+/* ---- nav ---- */
+function nextPuzzle(){if(cur<NP-1&&state.solved[cur]){cur++;state.tab=cur;save(state);renderAll();window.scrollTo({top:0,behavior:'smooth'});}}
+function prevPuzzle(){if(cur>0){cur--;state.tab=cur;save(state);renderAll();window.scrollTo({top:0,behavior:'smooth'});}}
+
+/* ---- help ---- */
+function openHelp(){document.getElementById('scrim').classList.add('open');document.getElementById('sheet').classList.add('open');}
+function closeHelp(){document.getElementById('scrim').classList.remove('open');document.getElementById('sheet').classList.remove('open');}
+
+/* ---- celebration ---- */
+function showCelebrate(){const c=document.getElementById('celebrate');c.classList.add('show');const ems=['🎯','🌸','✨','🍃','💜'];for(let i=0;i<16;i++){const p=document.createElement('div');p.className='petal';p.textContent=ems[i%ems.length];p.style.left=(Math.random()*100)+'%';p.style.animationDuration=(2.4+Math.random()*1.6)+'s';p.style.animationDelay=(Math.random()*.6)+'s';document.body.appendChild(p);setTimeout(()=>p.remove(),4600);}}
+function closeCelebrate(){document.getElementById('celebrate').classList.remove('show');postToApp({type:'GO_BACK'});}
+
+/* ---- init ---- */
+preloadSounds();
+renderAll();
+if(state.solved.every(Boolean)){
+  status('done','બધા ભુલભુલૈયા પાર! ખૂબ સરસ! 🎯',true);
+  _completed=true;
+  pushProgress();
+}
+</script>
+</body>
+</html>

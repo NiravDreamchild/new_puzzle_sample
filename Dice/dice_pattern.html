@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#FBF9FC">
+<title>Dreamchild · Dice Pattern</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Vadodara:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FBF9FC;
+  --surface:#FFFFFF;
+  --ink:#2E2A32;
+  --muted:#8C8794;
+  --line:#ECE7F0;
+  --brand:#752886;
+  --brand-deep:#561F69;
+  --brand-soft:#F3E9F8;
+  --accent:#F2A03D;
+  --accent-soft:#FCEFDC;
+  --mint:#2F9B63;
+  --mint-soft:#E5F4EC;
+  --rose:#C75C72;
+  --rose-soft:#FAEAEE;
+  --shadow:0 10px 30px -12px rgba(78,33,95,.18);
+  --shadow-sm:0 4px 14px -8px rgba(78,33,95,.20);
+  --r-lg:22px; --r-md:16px; --r-sm:12px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg);color:var(--ink);
+  font-family:'Hind Vadodara',sans-serif;
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+  background-image:radial-gradient(120% 60% at 50% -10%, var(--brand-soft) 0%, rgba(243,233,248,0) 60%);
+}
+.wrap{max-width:460px;margin:0 auto;padding:16px 16px 28px;position:relative;z-index:1;}
+
+/* ---- header ---- */
+.phead{background:var(--surface);border:1px solid var(--line);border-radius:18px;
+  box-shadow:0 6px 20px -12px rgba(78,33,95,.16);padding:15px 16px;margin-bottom:14px;}
+.hrow1{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.ptitle{font-weight:700;font-size:23px;line-height:1.05;color:var(--brand);margin:0;letter-spacing:-.01em;}
+.hctrls{display:flex;align-items:center;gap:8px;flex:none;}
+.rpill{display:flex;align-items:center;justify-content:center;min-width:50px;height:38px;padding:0 12px;
+  border:1px solid var(--line);border-radius:11px;background:var(--surface);
+  font-family:'Hind Vadodara',sans-serif;font-weight:600;font-size:16px;color:var(--ink);letter-spacing:.01em;}
+.hbtn{width:40px;height:38px;border:1px solid var(--line);border-radius:11px;background:var(--surface);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-appearance:none;padding:0;
+  transition:background .15s ease;}
+.hbtn:active{background:var(--brand-soft);}
+.hbtn svg{width:20px;height:20px;fill:none;stroke:var(--muted);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.hbtn.info{width:38px;background:var(--brand-soft);border-color:transparent;}
+.hbtn.info svg{stroke:var(--brand);}
+.hsub{text-align:center;font-weight:600;font-size:15px;line-height:1.5;color:var(--ink);margin:13px 0 1px;}
+
+/* ---- stage ---- */
+.stage{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
+  box-shadow:0 8px 28px -10px rgba(78,33,95,.16), 0 2px 8px -3px rgba(78,33,95,.08);padding:14px;margin-bottom:14px;}
+
+/* one row per sequence */
+.seqs{display:flex;flex-direction:column;gap:11px;}
+.seqrow{padding:10px 9px;border-radius:15px;background:#FAF7FB;border:1px solid transparent;
+  transition:background .22s ease,border-color .22s ease;}
+.seqrow.solved{background:var(--mint-soft);border-color:rgba(47,155,99,.22);}
+.dice{display:flex;align-items:center;justify-content:center;gap:5px;}
+.dtile{flex:1 1 0;min-width:0;max-width:50px;aspect-ratio:1/1;border-radius:10px;
+  background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow-sm);
+  display:flex;align-items:center;justify-content:center;}
+.dtile svg{width:76%;height:76%;display:block;}
+.dtile .pip{fill:var(--brand);}
+/* the blank the player fills */
+.dtile.gap{background:var(--brand-soft);border:2px dashed #D9C7E2;box-shadow:none;
+  cursor:pointer;font-weight:700;color:var(--brand);
+  font-size:clamp(16px,5vw,21px);
+  transition:background .16s ease,border-color .16s ease,transform .12s ease;}
+.dtile.gap.sel{border-style:solid;border-color:var(--brand);background:#fff;
+  box-shadow:0 0 0 3px rgba(117,40,134,.14);}
+.dtile.gap.drop{background:var(--accent-soft);border-color:var(--accent);border-style:solid;transform:scale(1.06);}
+.dtile.gap.filled{background:linear-gradient(140deg,var(--brand),var(--brand-deep));
+  border-color:transparent;border-style:solid;}
+.dtile.gap.filled .pip{fill:#fff;}
+.dtile.gap.wrong{background:var(--rose-soft);border-color:var(--rose);border-style:solid;}
+.dtile.gap.wrong .pip{fill:var(--rose);}
+.dtile.gap.peek{background:var(--accent);border-color:var(--accent);border-style:solid;}
+.dtile.gap.peek .pip{fill:#fff;}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.dtile.shake{animation:shake .3s ease;}
+@keyframes blink{0%,100%{box-shadow:0 0 0 0 rgba(242,160,61,0)}50%{box-shadow:0 0 0 4px rgba(242,160,61,.6)}}
+.dtile.blink{animation:blink .5s ease 3;}
+/* the pattern explanation, revealed once solved */
+.why{margin-top:7px;text-align:center;font-size:12px;font-weight:600;color:#1F6E45;
+  opacity:0;height:0;overflow:hidden;transition:opacity .3s ease;}
+.seqrow.solved .why{opacity:1;height:auto;}
+
+/* ---- answer pad: six dice to drag ---- */
+.padhead{display:flex;align-items:center;justify-content:space-between;margin:14px 2px 8px;}
+.padhead .t{font-weight:600;font-size:13.5px;color:var(--ink);}
+.padhead .n{font-weight:600;font-size:12.5px;color:var(--muted);}
+.pad{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:7px;}
+.pnum{position:relative;aspect-ratio:1/1;border:1px solid var(--line);border-radius:12px;background:var(--surface);
+  display:flex;align-items:center;justify-content:center;cursor:grab;-webkit-appearance:none;padding:0;
+  touch-action:none;-webkit-user-select:none;user-select:none;
+  box-shadow:var(--shadow-sm);transition:transform .1s ease,background .15s ease,opacity .2s ease;}
+.pnum svg{width:72%;height:72%;display:block;pointer-events:none;}
+.pnum .pip{fill:var(--brand);}
+.pnum:active{cursor:grabbing;}
+.pnum.grabbing{transform:scale(.9);background:var(--brand-soft);opacity:.55;}
+.pnum.hintpad{box-shadow:0 0 0 3px var(--accent);}
+
+.ghost{position:fixed;left:0;top:0;z-index:60;pointer-events:none;
+  width:clamp(42px,12vw,52px);height:clamp(42px,12vw,52px);border-radius:12px;
+  transform:translate(-50%,-60%) scale(1.08) rotate(-2deg);
+  background:linear-gradient(140deg,var(--brand),var(--brand-deep));
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 16px 30px -10px rgba(78,33,95,.55);}
+.ghost svg{width:72%;height:72%;display:block;}
+.ghost .pip{fill:#fff;}
+
+.rowhint{text-align:center;font-size:12.5px;color:var(--muted);font-weight:500;margin-top:12px;line-height:1.5;}
+.rowhint b{color:var(--brand);font-weight:600;}
+
+.mrow{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:11px;}
+.ubtn{min-height:42px;padding:0 15px;border:1px solid var(--line);border-radius:13px;background:var(--surface);
+  display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;-webkit-appearance:none;
+  font-family:'Hind Vadodara',sans-serif;font-weight:600;font-size:13.5px;color:var(--ink);
+  box-shadow:var(--shadow-sm);transition:transform .1s ease,background .15s ease,opacity .2s ease;}
+.ubtn:active{transform:scale(.97);background:var(--brand-soft);}
+.ubtn svg{width:17px;height:17px;fill:none;stroke:var(--brand);stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;}
+.ubtn:disabled{opacity:.35;box-shadow:none;cursor:default;}
+.ubtn:disabled svg{stroke:var(--muted);}
+
+/* ---- status ---- */
+.status{min-height:24px;text-align:center;font-size:14px;line-height:1.4;font-weight:500;
+  color:var(--muted);padding:2px 8px;margin:6px 0;opacity:0;transition:opacity .25s ease;}
+.status.show{opacity:1;}
+.status.ok{color:var(--mint);}
+.status.bad{color:var(--rose);}
+.status.hint{color:#B5781E;}
+.status.done{color:var(--brand);font-weight:600;}
+
+/* ---- action bar ---- */
+.actionbar{margin-top:14px;}
+.actionbar .inner{display:flex;flex-direction:row;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:12px;row-gap:8px;}
+.cmid{display:flex;align-items:center;gap:6px;}
+.cbtn{font-family:'Hind Vadodara',sans-serif;cursor:pointer;-webkit-appearance:none;
+  display:flex;align-items:center;justify-content:center;gap:5px;
+  transition:transform .12s ease,opacity .2s ease,background .2s ease,box-shadow .2s ease;}
+.cbtn:active{transform:scale(.97);}
+.cbtn svg{width:16px;height:16px;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;}
+.cbtn.hint{min-height:36px;border-radius:12px;padding:0 22px;background:var(--surface);border:1px solid var(--line);
+  color:var(--ink);font-weight:600;font-size:13px;box-shadow:var(--shadow-sm);}
+.cbtn.hint svg{stroke:var(--brand);}
+.cbtn.prev,.cbtn.next{min-height:36px;border-radius:12px;padding:0 20px;background:var(--brand);border:none;color:#fff;
+  font-weight:700;font-size:13.5px;box-shadow:0 8px 20px -8px rgba(110,42,133,.5);}
+.cbtn.prev svg,.cbtn.next svg{stroke:#fff;}
+.cbtn:disabled{cursor:default;}
+.cbtn.prev:disabled,.cbtn.next:disabled{background:var(--surface);border:1px solid var(--line);color:var(--muted);box-shadow:none;font-weight:600;}
+.cbtn.prev:disabled svg,.cbtn.next:disabled svg{stroke:var(--muted);}
+
+/* ---- footer ---- */
+.foot{text-align:center;font-size:11px;color:var(--muted);letter-spacing:.03em;margin-top:18px;}
+.foot b{font-weight:600;color:#a79bb0;}
+
+/* ---- help sheet ---- */
+.scrim{position:fixed;inset:0;background:rgba(46,42,50,.42);backdrop-filter:blur(2px);z-index:40;
+  opacity:0;pointer-events:none;transition:opacity .28s ease;}
+.scrim.open{opacity:1;pointer-events:auto;}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:41;background:var(--surface);
+  border-radius:26px 26px 0 0;box-shadow:0 -16px 40px -16px rgba(46,42,50,.3);
+  max-width:460px;margin:0 auto;padding:10px 22px calc(26px + env(safe-area-inset-bottom));
+  transform:translateY(110%);transition:transform .34s cubic-bezier(.22,1,.36,1);
+  max-height:88vh;overflow-y:auto;}
+.sheet.open{transform:translateY(0);}
+.grab{width:42px;height:5px;border-radius:999px;background:var(--line);margin:6px auto 16px;}
+.sheet h3{font-weight:700;font-size:20px;margin:0 0 4px;}
+.sheet .lead{font-size:14px;color:var(--muted);margin:0 0 18px;line-height:1.5;}
+.step{display:flex;gap:14px;align-items:flex-start;margin-bottom:16px;}
+.step .ic{flex:none;width:46px;height:46px;border-radius:14px;background:var(--brand-soft);
+  display:flex;align-items:center;justify-content:center;}
+.step .ic svg{width:26px;height:26px;stroke:var(--brand);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
+.step .tx b{display:block;font-weight:600;font-size:15px;color:var(--ink);margin-bottom:2px;}
+.step .tx p{margin:0;font-size:13.5px;color:var(--muted);line-height:1.5;}
+.sheet .got{width:100%;margin-top:6px;background:var(--brand);color:#fff;border:none;cursor:pointer;
+  font-family:'Hind Vadodara',sans-serif;border-radius:14px;min-height:48px;font-weight:700;font-size:15px;}
+/* worked example inside the help sheet */
+.exrow{display:flex;align-items:center;justify-content:center;gap:5px;margin:4px 0 14px;}
+.exrow .e{width:34px;height:34px;border-radius:8px;background:#FAF7FB;border:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;}
+.exrow .e.q{background:var(--brand-soft);border:2px dashed #D9C7E2;font-weight:700;color:var(--brand);font-size:15px;}
+.exrow .e.a{background:linear-gradient(140deg,var(--brand),var(--brand-deep));border-color:transparent;}
+.exrow .e svg{width:76%;height:76%;display:block;}
+.exrow .e .pip{fill:var(--brand);}
+.exrow .e.a .pip{fill:#fff;}
+.exnote{text-align:center;font-size:12.5px;color:var(--muted);margin:0 0 16px;}
+
+/* ---- celebration ---- */
+.celebrate{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;
+  background:rgba(251,249,252,.86);backdrop-filter:blur(3px);text-align:center;padding:30px;}
+.celebrate.show{display:flex;flex-direction:column;}
+.celebrate .em{font-size:54px;margin-bottom:6px;animation:rise .6s cubic-bezier(.22,1,.36,1);}
+.celebrate h2{font-weight:700;font-size:24px;color:var(--brand);margin:0 0 8px;}
+.celebrate p{font-size:15px;color:var(--ink);font-weight:500;margin:0 0 22px;max-width:280px;line-height:1.5;}
+.celebrate .btn{min-width:200px;background:var(--brand);color:#fff;border:none;cursor:pointer;
+  font-family:'Hind Vadodara',sans-serif;border-radius:14px;min-height:55px;font-weight:700;font-size:18px;}
+@keyframes rise{from{transform:translateY(16px) scale(.8);opacity:0}to{transform:none;opacity:1}}
+.petal{position:fixed;top:-24px;z-index:49;font-size:18px;animation:drift linear forwards;pointer-events:none;}
+@keyframes drift{to{transform:translateY(106vh) rotate(360deg);opacity:0}}
+
+/* ---- ambient puzzle-piece background ---- */
+.bg{position:fixed;top:0;left:0;right:0;height:100vh;height:100lvh;overflow:hidden;pointer-events:none;z-index:0;}
+.piece{position:absolute;transform:rotate(var(--rot,0deg));opacity:.2;}
+.piece svg{display:block;width:100%;height:auto;fill:currentColor;}
+.piece.f1{top:-30px;left:-46px;width:150px;color:#fa7068;--rot:-14deg;}
+.piece.f2{top:78px;right:-52px;width:150px;color:#fbca5f;--rot:18deg;}
+.piece.f3{top:46%;right:-58px;width:110px;color:#a0c95d;--rot:26deg;}
+.piece.f4{bottom:-40px;right:-30px;width:170px;color:#9ddbe6;--rot:-18deg;}
+.piece.f5{bottom:46px;left:-56px;width:150px;color:#f3adc9;--rot:8deg;}
+.piece.f6{top:36%;left:-70px;width:100px;color:#d4ab99;--rot:30deg;}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001ms !important;transition-duration:.05ms !important;}
+}
+:focus-visible{outline:2.5px solid var(--brand);outline-offset:2px;border-radius:6px;}
+</style>
+</head>
+<body>
+<div class="bg" aria-hidden="true">
+  <div class="piece f1"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece f2"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece f3"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece f4"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece f5"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece f6"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+</div>
+
+<div class="wrap">
+  <!-- header -->
+  <header class="phead">
+    <div class="hrow1">
+      <h1 class="ptitle">પાસાની ભાત</h1>
+      <div class="hctrls">
+        <span class="rpill" id="round"></span>
+        <button class="hbtn" id="soundBtn" onclick="toggleSound()" aria-label="Sound"></button>
+        <button class="hbtn info" onclick="openHelp()" aria-label="How to play">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><circle cx="12" cy="8" r="0.6" fill="currentColor" stroke="none"/></svg>
+        </button>
+      </div>
+    </div>
+    <p class="hsub" id="hsub"></p>
+  </header>
+
+  <!-- stage -->
+  <div class="stage">
+    <div class="seqs" id="seqs"></div>
+
+    <div class="padhead">
+      <span class="t">પાસો પસંદ કરો</span>
+      <span class="n" id="padn"></span>
+    </div>
+    <div class="pad" id="pad"></div>
+
+    <p class="rowhint">પાસાને <b>ખેંચીને</b> ખાલી જગ્યામાં મૂકો</p>
+
+    <div class="mrow">
+      <button class="ubtn" id="undoBtn" onclick="undo()">
+        <svg viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h11a6 6 0 0 1 0 12h-4"/></svg>
+        Undo
+      </button>
+      <button class="ubtn" id="resetBtn" onclick="resetPuzzle()">
+        <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+        Reset
+      </button>
+    </div>
+  </div>
+
+  <!-- status -->
+  <div class="status" id="status"></div>
+
+  <!-- action bar -->
+  <div class="actionbar">
+    <div class="inner">
+      <button class="cbtn prev" id="btnPrev" onclick="prevPuzzle()"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>Back</button>
+      <div class="cmid">
+        <button class="cbtn hint" onclick="useHint()"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 1 4 10.5c-.7.6-1 1.2-1 2v.5H9v-.5c0-.8-.3-1.4-1-2A6 6 0 0 1 12 3z"/></svg>Hint</button>
+      </div>
+      <button class="cbtn next" id="btnNext" onclick="nextPuzzle()">Next<svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+    </div>
+  </div>
+
+  <div class="foot">© <b>Dreamchild Garbhsanskar</b></div>
+</div>
+
+<!-- help sheet -->
+<div class="scrim" id="scrim" onclick="closeHelp()"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="How to play">
+  <div class="grab"></div>
+  <h3>કેવી રીતે રમવું</h3>
+  <p class="lead">દરેક હરોળમાં પાસા એક ક્રમમાં ગોઠવાયા છે. વચ્ચે એક પાસો ખૂટે છે — તે શોધો.</p>
+
+  <div class="exrow" id="exrow"></div>
+  <p class="exnote">અહીં દરેક પાસો એક-એક વધે છે, એટલે ખાલી જગ્યામાં <b>4</b> આવે.</p>
+
+  <div class="step">
+    <div class="ic"><svg viewBox="0 0 24 24"><path d="M4 12h16M14 6l6 6-6 6"/></svg></div>
+    <div class="tx"><b>ક્રમ ઓળખો</b><p>પાસા વધે છે, ઘટે છે, વારાફરતી આવે છે કે ફરી શરૂ થાય છે — ધ્યાનથી જુઓ.</p></div>
+  </div>
+
+  <div class="step">
+    <div class="ic"><svg viewBox="0 0 24 24"><path d="M5 9L2 12l3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3"/><path d="M2 12h20M12 2v20"/></svg></div>
+    <div class="tx"><b>ખેંચીને મૂકો</b><p>નીચેની પટ્ટીમાંથી સાચા પાસાને ખેંચીને ખાલી જગ્યામાં મૂકો.</p></div>
+  </div>
+
+  <div class="step">
+    <div class="ic"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></div>
+    <div class="tx"><b>પૂરું કરો</b><p>ચારેય હરોળ સાચી થાય ત્યારે કોયડો પૂર્ણ. ખોટો પાસો લાલ દેખાશે — ફરી પ્રયત્ન કરો.</p></div>
+  </div>
+
+  <button class="got" onclick="closeHelp()">Close</button>
+</div>
+
+<!-- celebration -->
+<div class="celebrate" id="celebrate">
+  <div class="em">🌸</div>
+  <h2>બધા કોયડા પૂર્ણ</h2>
+  <p>ખૂબ સરસ! તમારી એકાગ્રતા કમાલની છે.</p>
+  <button class="btn" onclick="closeCelebrate()">Congratulations</button>
+</div>
+
+<script>
+/* ---- puzzle data ----
+   Each sequence has exactly ONE blank. Every sequence was checked against a
+   library of simple rules (arithmetic step, cyclic wrap, alternation, period-3
+   repeat, mirror, pairs-summing-to-7): every rule that fits the visible dice
+   yields the SAME answer, so there is no ambiguity. */
+const PUZZLES=[{"id":"r1","sub_gu":"ખૂટતો પાસો શોધો.","seqs":[{"seq":[1,2,3,4,5,6],"blank":3,"ans":4,"why":"એક-એક વધે છે"},{"seq":[6,5,4,3,2,1],"blank":2,"ans":4,"why":"એક-એક ઘટે છે"},{"seq":[2,3,4,5,6],"blank":1,"ans":3,"why":"એક-એક વધે છે"},{"seq":[6,4,2,6,4,2],"blank":1,"ans":4,"why":"બે-બે ઘટીને ફરી શરૂ"}]},{"id":"r2","sub_gu":"ક્રમ ધ્યાનથી જુઓ.","seqs":[{"seq":[2,4,6,2,4,6],"blank":4,"ans":4,"why":"બે-બે વધીને ફરી શરૂ"},{"seq":[3,4,3,4,3,4],"blank":3,"ans":4,"why":"બે અંક વારાફરતી"},{"seq":[1,3,5,1,3,5],"blank":2,"ans":5,"why":"બે-બે વધીને ફરી શરૂ"},{"seq":[5,2,5,2,5,2],"blank":4,"ans":5,"why":"બે અંક વારાફરતી"}]},{"id":"r3","sub_gu":"છેલ્લો કોયડો — થોડો અઘરો.","seqs":[{"seq":[1,3,5,5,3,1],"blank":2,"ans":5,"why":"આગળ-પાછળ સરખું"},{"seq":[1,6,2,5,3,4],"blank":3,"ans":5,"why":"જોડીનો સરવાળો 7"},{"seq":[2,4,6,6,4,2],"blank":4,"ans":4,"why":"આગળ-પાછળ સરખું"},{"seq":[6,1,5,2,4,3],"blank":5,"ans":3,"why":"જોડીનો સરવાળો 7"}]}];
+const KEY='dcgs_dicepattern_v1';
+
+function save(d){try{localStorage.setItem(KEY,JSON.stringify(d))}catch(e){}}
+function load(){try{return JSON.parse(localStorage.getItem(KEY))}catch(e){return null}}
+
+/* ---- app bridge (RN WebView) ---- */
+function postToApp(m){try{window.ReactNativeWebView&&window.ReactNativeWebView.postMessage(JSON.stringify(m));}catch(e){}}
+function activityDone(){postToApp({type:'ACTIVITY_DONE'});}   /* -> onWebActivityComplete in the app */
+
+/* active time only (pauses while the app is backgrounded) */
+let _active=0,_since=Date.now(),_completed=false;
+document.addEventListener('visibilitychange',function(){
+  if(document.hidden){_active+=Date.now()-_since;}else{_since=Date.now();}
+  pushProgress();
+});
+function timeSpentSec(){return Math.round((_active+(document.hidden?0:Date.now()-_since))/1000);}
+
+/* heartbeat: keep native updated so it can fire puzzle_exited on unmount (back press) */
+function pushProgress(){postToApp({type:'PROGRESS',time_spent_sec:timeSpentSec(),completed:_completed});}
+setInterval(pushProgress,3000);
+pushProgress();
+
+function markDone(){ _completed=true; activityDone(); pushProgress(); }   /* whole set solved */
+window.addEventListener('pagehide',pushProgress);
+
+let state=load()||{tab:0,sound:false,celebrated:false,entries:[{},{},{}]};
+if(!state.entries)state.entries=[{},{},{}];
+let soundOn=!!state.sound, cur=state.tab||0, selected=-1;
+let history=[];
+
+/* ---- sound ---- */
+const SND={
+  correct:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Right.mp3',
+  wrong:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Wrong.mp3',
+  level:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Level.mp3',
+  win:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Complete.mp3',
+  hint:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Hint.mp3'
+};
+const _audio={};
+function preloadSounds(){for(const k in SND){try{const a=new Audio(SND[k]);a.preload='auto';_audio[k]=a;}catch(e){}}}
+function playSound(k){
+  if(!soundOn)return;
+  const a=_audio[k]; if(!a)return;
+  try{a.pause();a.currentTime=0;a.play().catch(function(){});}catch(e){}
+}
+function playCorrect(){playSound('correct');}
+function playWrong(){playSound('wrong');}
+function playLevel(){playSound('level');}
+function playWin(){playSound('win');}
+function playHint(){playSound('hint');}
+function setSoundIcon(){const b=document.getElementById('soundBtn');b.innerHTML=soundOn
+  ?'<svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M16 9a3.5 3.5 0 0 1 0 6"/><path d="M19 7a7 7 0 0 1 0 10"/></svg>'
+  :'<svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M22 9l-5 6M17 9l5 6"/></svg>';}
+function toggleSound(){soundOn=!soundOn;state.sound=soundOn;setSoundIcon();save(state);}
+
+/* ---- pips ---- */
+const PIPS={1:[[50,50]],2:[[28,28],[72,72]],3:[[28,28],[50,50],[72,72]],
+  4:[[28,28],[72,28],[28,72],[72,72]],5:[[28,28],[72,28],[50,50],[28,72],[72,72]],
+  6:[[28,26],[72,26],[28,50],[72,50],[28,74],[72,74]]};
+function dieSVG(n){
+  let s='<svg viewBox="0 0 100 100" aria-hidden="true">';
+  (PIPS[n]||[]).forEach(p=>{s+='<circle class="pip" cx="'+p[0]+'" cy="'+p[1]+'" r="10"/>';});
+  return s+'</svg>';
+}
+
+function P(){return PUZZLES[cur];}
+function entries(){return state.entries[cur]||(state.entries[cur]={});}
+function entry(i){const v=entries()[i];return v?v:0;}
+function rowOk(i){return entry(i)===P().seqs[i].ans;}
+function isSolved(){for(let i=0;i<P().seqs.length;i++){if(!rowOk(i))return false;}return true;}
+function allSolved(){
+  return PUZZLES.every((p,pi)=>{
+    const e=state.entries[pi]||{};
+    return p.seqs.every((s,si)=>e[si]===s.ans);
+  });
+}
+
+/* ---- render ---- */
+function renderProgress(){document.getElementById('round').textContent=(cur+1)+'/'+PUZZLES.length;}
+function renderHead(){document.getElementById('hsub').textContent=P().sub_gu;}
+
+function renderSeqs(){
+  const host=document.getElementById('seqs');host.innerHTML='';
+  P().seqs.forEach((s,si)=>{
+    const row=document.createElement('div');
+    row.className='seqrow'+(rowOk(si)?' solved':'');
+    let inner='<div class="dice">';
+    s.seq.forEach((v,i)=>{
+      if(i===s.blank){
+        const e=entry(si);
+        let cls='dtile gap';
+        if(e) cls+= rowOk(si)?' filled':' wrong';
+        if(selected===si && !rowOk(si)) cls+=' sel';
+        inner+='<div class="'+cls+'" data-s="'+si+'">'+(e?dieSVG(e):'?')+'</div>';
+      }else{
+        inner+='<div class="dtile">'+dieSVG(v)+'</div>';
+      }
+    });
+    inner+='</div>';
+    inner+='<div class="why">✓ '+s.why+'</div>';
+    row.innerHTML=inner;
+    const g=row.querySelector('.gap');
+    if(g) g.addEventListener('click',()=>selectRow(si));
+    host.appendChild(row);
+  });
+}
+function renderPad(){
+  const pad=document.getElementById('pad');pad.innerHTML='';
+  for(let n=1;n<=6;n++){
+    const b=document.createElement('button');
+    b.className='pnum';b.dataset.n=n;b.setAttribute('aria-label','પાસો '+n);
+    b.innerHTML=dieSVG(n);
+    b.addEventListener('pointerdown',e=>startDrag(n,b,e));
+    pad.appendChild(b);
+  }
+  const left=P().seqs.filter((s,i)=>!rowOk(i)).length;
+  document.getElementById('padn').textContent=left+' બાકી';
+}
+function renderMeta(){
+  document.getElementById('undoBtn').disabled=history.length===0||isSolved();
+  document.getElementById('resetBtn').disabled=Object.keys(entries()).length===0||isSolved();
+}
+function renderActions(){
+  const isLast=cur===PUZZLES.length-1;
+  document.getElementById('btnPrev').disabled=(cur===0);
+  document.getElementById('btnNext').disabled=!(isSolved()&&!isLast);
+}
+function renderAll(){renderProgress();renderHead();renderSeqs();renderPad();renderMeta();renderActions();setSoundIcon();}
+
+/* ---- status ---- */
+let stTimer;
+function status(type,msg,sticky){const s=document.getElementById('status');s.className='status show '+type;s.textContent=msg;clearTimeout(stTimer);if(!sticky)stTimer=setTimeout(clearStatus,2300);}
+function clearStatus(){document.getElementById('status').className='status';}
+
+/* ---- interaction ---- */
+function selectRow(si){if(rowOk(si))return;selected=si;renderSeqs();}
+function gapEl(si){return document.querySelector('.gap[data-s="'+si+'"]');}
+
+function placeAt(si,n){
+  if(rowOk(si))return;
+  history.push(JSON.stringify(entries()));
+  entries()[si]=n;
+  selected=si;
+  save(state);renderAll();
+  if(rowOk(si)){
+    if(soundOn)playCorrect();
+  }else{
+    if(soundOn)playWrong();
+    const g=gapEl(si);
+    if(g){g.classList.remove('shake');void g.offsetWidth;g.classList.add('shake');}
+    status('bad','આ પાસો ક્રમમાં બંધબેસતો નથી.');
+  }
+  checkDone();
+}
+function undo(){
+  if(!history.length||isSolved())return;
+  state.entries[cur]=JSON.parse(history.pop());
+  save(state);renderAll();clearStatus();
+}
+function resetPuzzle(){
+  if(isSolved()){status('hint','આ કોયડો પહેલેથી પૂર્ણ છે.');return;}
+  history.push(JSON.stringify(entries()));
+  state.entries[cur]={};
+  save(state);renderAll();status('hint','આ કોયડો ફરી શરૂ.');
+}
+
+/* ---- drag & drop ---- */
+let drag=null;
+function rowAtPoint(x,y){
+  const el=document.elementFromPoint(x,y);
+  const g=el&&el.closest?el.closest('.gap'):null;
+  return g?parseInt(g.dataset.s):-1;
+}
+function clearDrop(){document.querySelectorAll('.gap.drop').forEach(e=>e.classList.remove('drop'));}
+function startDrag(n,btn,e){
+  if(e.button!==undefined&&e.button!==0)return;
+  if(isSolved())return;
+  e.preventDefault();
+  const g=document.createElement('div');
+  g.className='ghost';g.innerHTML=dieSVG(n);
+  document.body.appendChild(g);
+  btn.classList.add('grabbing');
+  drag={n,ghost:g,btn,startX:e.clientX,startY:e.clientY,moved:false,over:-1};
+  moveGhost(e.clientX,e.clientY);
+  try{btn.setPointerCapture(e.pointerId);}catch(_){}
+}
+function moveGhost(x,y){if(drag){drag.ghost.style.left=x+'px';drag.ghost.style.top=y+'px';}}
+function onDragMove(e){
+  if(!drag)return;
+  e.preventDefault();
+  if(Math.abs(e.clientX-drag.startX)>5||Math.abs(e.clientY-drag.startY)>5)drag.moved=true;
+  moveGhost(e.clientX,e.clientY);
+  const si=rowAtPoint(e.clientX,e.clientY);
+  if(si!==drag.over){
+    clearDrop();drag.over=si;
+    if(si>=0&&!rowOk(si)){const g=gapEl(si);if(g)g.classList.add('drop');}
+  }
+}
+function onDragEnd(e){
+  if(!drag)return;
+  const d=drag;drag=null;
+  if(e)e.preventDefault();
+  d.ghost.remove();d.btn.classList.remove('grabbing');clearDrop();
+  if(d.over>=0){
+    if(rowOk(d.over))status('hint','આ હરોળ પહેલેથી સાચી છે.');
+    else placeAt(d.over,d.n);
+  }else if(!d.moved){
+    /* a tap: drop into the selected row, or the first unsolved one */
+    let si=selected;
+    if(si<0||rowOk(si)){si=-1;P().seqs.forEach((s,i)=>{if(si<0&&!rowOk(i))si=i;});}
+    if(si>=0) placeAt(si,d.n);
+    else status('hint','પહેલાં કોઈ ખાલી જગ્યા પસંદ કરો.');
+  }
+}
+window.addEventListener('pointermove',onDragMove,{passive:false});
+window.addEventListener('pointerup',onDragEnd);
+window.addEventListener('pointercancel',onDragEnd);
+
+/* ---- hint ---- */
+function useHint(){
+  if(isSolved()){status('hint','આ કોયડો પહેલેથી પૂર્ણ છે.');return;}
+  let si=(selected>=0&&!rowOk(selected))?selected:-1;
+  if(si<0) P().seqs.forEach((s,i)=>{if(si<0&&!rowOk(i))si=i;});
+  if(si<0)return;
+  selected=si;renderSeqs();
+  const s=P().seqs[si];
+  const g=gapEl(si);
+  if(g){
+    g.innerHTML=dieSVG(s.ans);
+    g.classList.add('peek');
+    g.classList.remove('blink');void g.offsetWidth;g.classList.add('blink');
+    setTimeout(()=>{renderSeqs();},1400);
+  }
+  const pb=document.querySelector('.pnum[data-n="'+s.ans+'"]');
+  if(pb){pb.classList.add('hintpad');setTimeout(()=>pb.classList.remove('hintpad'),1400);}
+  if(soundOn)playHint();
+  status('hint',s.why+' — તેથી આ પાસો આવશે.');
+}
+
+/* ---- done ---- */
+function checkDone(){
+  if(!isSolved())return;
+  renderAll();
+  if(allSolved()){
+    status('done','બધા કોયડા પૂર્ણ. ખૂબ સરસ! 🌸',true);
+    if(soundOn)playWin();
+    if(!state.celebrated){state.celebrated=true;save(state);showCelebrate();}
+    markDone();
+  }else{
+    status('done','આ કોયડો પૂર્ણ. તૈયાર હો ત્યારે આગળ વધો.',true);
+    if(soundOn)playLevel();
+  }
+}
+
+/* ---- navigation ---- */
+function nextPuzzle(){
+  if(cur<PUZZLES.length-1&&isSolved()){
+    cur++;state.tab=cur;selected=-1;history=[];save(state);
+    renderAll();clearStatus();window.scrollTo({top:0,behavior:'smooth'});
+  }
+}
+function prevPuzzle(){
+  if(cur>0){
+    cur--;state.tab=cur;selected=-1;history=[];save(state);
+    renderAll();clearStatus();window.scrollTo({top:0,behavior:'smooth'});
+  }
+}
+
+/* ---- help sheet ---- */
+function renderExample(){
+  const ex=document.getElementById('exrow');
+  const seq=[1,2,3,0,5,6];
+  ex.innerHTML=seq.map((v,i)=>{
+    if(i===3) return '<span class="e a">'+dieSVG(4)+'</span>';
+    return '<span class="e">'+dieSVG(v)+'</span>';
+  }).join('');
+}
+function openHelp(){document.getElementById('scrim').classList.add('open');document.getElementById('sheet').classList.add('open');}
+function closeHelp(){document.getElementById('scrim').classList.remove('open');document.getElementById('sheet').classList.remove('open');}
+
+/* ---- celebration ---- */
+function showCelebrate(){const c=document.getElementById('celebrate');c.classList.add('show');const ems=['🌸','🌼','✨','🍃','💜'];for(let i=0;i<16;i++){const p=document.createElement('div');p.className='petal';p.textContent=ems[i%ems.length];p.style.left=(Math.random()*100)+'%';p.style.animationDuration=(2.4+Math.random()*1.6)+'s';p.style.animationDelay=(Math.random()*.6)+'s';document.body.appendChild(p);setTimeout(()=>p.remove(),4600);}}
+function closeCelebrate(){
+  document.getElementById('celebrate').classList.remove('show');
+  postToApp({type:'GO_BACK'});
+}
+
+/* ---- keyboard ---- */
+window.addEventListener('keydown',e=>{
+  if(e.key>='1'&&e.key<='6'){
+    let si=selected;
+    if(si<0||rowOk(si)){si=-1;P().seqs.forEach((s,i)=>{if(si<0&&!rowOk(i))si=i;});}
+    if(si>=0)placeAt(si,parseInt(e.key));
+  }
+  else if(e.key==='Backspace'){e.preventDefault();undo();}
+});
+
+/* ---- init ---- */
+preloadSounds();
+renderExample();
+renderAll();
+if(allSolved()){
+  status('done','બધા કોયડા પૂર્ણ. ખૂબ સરસ! 🌸',true);
+  _completed=true;
+  pushProgress();
+}else if(isSolved()){
+  status('done','આ કોયડો પૂર્ણ. તૈયાર હો ત્યારે આગળ વધો.',true);
+}
+</script>
+</body>
+</html>
