@@ -406,6 +406,7 @@ function renderGoal(){document.getElementById('goalimg').style.backgroundImage="
 
 function renderBoard(){
   const b=document.getElementById('board'); b.innerHTML=''; tileEls={};
+  if(typeof hintTimer!=='undefined'&&hintTimer){clearTimeout(hintTimer);hintTimer=null;hintVal=null;}
   const arr=board(); const solved=isSolved(arr);
   b.classList.toggle('solved',solved);
   const size=100/N;                    /* each tile is size% of the board */
@@ -484,6 +485,7 @@ function shakeTile(el){
 }
 function tapTile(val){
   if(solvedCur()) return;
+  clearHint();
   const arr=board();
   const pos=posOf(val);
   const ok=lineSlide(arr,pos);          /* may move 1, 2 or 3 tiles at once */
@@ -492,6 +494,12 @@ function tapTile(val){
     if(soundOn) playWrong();
     status('bad','આ ટાઇલ સરકાવી શકાતી નથી.');
     return;
+  }
+  /* if the user played the move the plan expected, just advance it;
+     otherwise the key check in planFor() will trigger a fresh plan */
+  if(planTaps && planTaps.length && planTaps[0]===pos){
+    planTaps=planTaps.slice(1);
+    planKey=cur+'|'+arr.join(',');
   }
   state.moves[cur]++;
   save(state);
@@ -516,40 +524,233 @@ function onSolved(){
   }
 }
 
-/* ---- hint: briefly lights a tile that can move toward its home ---- */
+/* ---- solver: layered A*, used to drive real hints ----
+   Solves the board in stages (tile, tile, then end-of-row PAIRS via a setup
+   position, then the bottom-two-rows columns as pairs, then the final 2x2).
+   Cells already placed are frozen so the search can never undo finished work.
+   A full plan is computed once per board; each hint reads the next tap. */
+function _Heap(){this.a=[];}
+_Heap.prototype.push=function(x){const a=this.a;a.push(x);let i=a.length-1;
+  while(i>0){const p=(i-1)>>1;if(a[p].f<=a[i].f)break;const t=a[p];a[p]=a[i];a[i]=t;i=p;}};
+_Heap.prototype.pop=function(){const a=this.a,top=a[0],last=a.pop();
+  if(a.length){a[0]=last;let i=0;for(;;){const l=2*i+1,r=l+1;let m=i;
+    if(l<a.length&&a[l].f<a[m].f)m=l;if(r<a.length&&a[r].f<a[m].f)m=r;
+    if(m===i)break;const t=a[m];a[m]=a[i];a[i]=t;i=m;}}
+  return top;};
+Object.defineProperty(_Heap.prototype,'length',{get:function(){return this.a.length;}});
+
+function _md(p,q){return Math.abs(Math.floor(p/N)-Math.floor(q/N))+Math.abs(p%N-q%N);}
+
+/* one blank step (target adjacent to blank) applied to a copy */
+function _stepped(s,np){const bp=s.indexOf(BLANK);const b=s.slice();b[bp]=b[np];b[np]=BLANK;return b;}
+
+/* A* for one stage. want = [[tileValue, destSlot], ...] */
+function _astar(start,want,free,cap){
+  function h(s){
+    /* sum of distances of the wanted tiles to their destinations, plus a
+       half-weighted term pulling the blank toward the tile that is furthest
+       from home. The second term is what gives the search a gradient when a
+       wanted tile has to travel several rows. */
+    let x=0,worst=0,wp=-1;
+    for(let i=0;i<want.length;i++){
+      const p=s.indexOf(want[i][0]); const d=_md(p,want[i][1]); x+=d;
+      if(d>worst){worst=d;wp=p;}
+    }
+    if(wp>=0) x+=_md(s.indexOf(BLANK),wp)*0.5;
+    return x;}
+  function goal(s){for(let i=0;i<want.length;i++) if(s[want[i][1]]!==want[i][0]) return false; return true;}
+  if(goal(start)) return {moves:[],state:start};
+  const open=new _Heap(); open.push({s:start,g:0,f:h(start),m:[]});
+  const best=new Map([[start.join(','),0]]);
+  let n=0;
+  while(open.length){
+    if(++n>cap) return null;
+    const cur=open.pop();
+    if(goal(cur.s)) return {moves:cur.m,state:cur.s};
+    const bp=cur.s.indexOf(BLANK), r=Math.floor(bp/N), c=bp%N;
+    const dirs=[[-1,0],[1,0],[0,-1],[0,1]];
+    for(let d=0;d<4;d++){
+      const nr=r+dirs[d][0], nc=c+dirs[d][1];
+      if(nr<0||nr>=N||nc<0||nc>=N) continue;
+      const np=nr*N+nc; if(!free.has(np)) continue;
+      const b=_stepped(cur.s,np), kk=b.join(','), ng=cur.g+1;
+      if(best.has(kk)&&best.get(kk)<=ng) continue;
+      best.set(kk,ng);
+      open.push({s:b,g:ng,f:ng+h(b),m:cur.m.concat([np])});
+    }
+  }
+  return null;
+}
+
+/* ordered stages for an NxN board */
+function _stages(){
+  const out=[];
+  for(let r=0;r<N-2;r++){
+    for(let c=0;c<N-2;c++){const t=r*N+c; out.push({want:[[t,t]],add:[t]});}
+    const a=r*N+(N-2), b=r*N+(N-1), below=b+N;
+    out.push({want:[[a,b],[b,below]],add:[]});   /* setup — never place directly */
+    out.push({want:[[a,a],[b,b]],add:[a,b]});    /* rotate the pair home */
+  }
+  for(let c=0;c<N-2;c++){
+    const a=(N-2)*N+c, b=(N-1)*N+c, right=a+1;
+    out.push({want:[[a,a],[b,right]],add:[]});
+    out.push({want:[[a,a],[b,b]],add:[a,b]});
+  }
+  const l=[(N-2)*N+(N-2),(N-2)*N+(N-1),(N-1)*N+(N-2)];
+  out.push({want:l.map(function(t){return [t,t];}),add:l});
+  return out;
+}
+
+/* Full plan for a board -> array of tap slots, or null if not found. */
+function solvePlan(start){
+  const ST=_stages(); const solved=new Set(); const taps=[];
+  let cur=start.slice();
+  for(let i=0;i<ST.length;i++){
+    const st=ST[i];
+    let done=true;
+    for(let k=0;k<st.want.length;k++) if(cur[st.want[k][1]]!==st.want[k][0]){done=false;break;}
+    if(!done){
+      const free=new Set();
+      for(let p=0;p<TOTAL;p++) if(!solved.has(p)) free.add(p);
+      /* Bounded search. A tight cap keeps every replan fast; if a stage needs
+         more, we retry once with a wider cap and then give up rather than
+         freeze the UI. Stage order guarantees a solution exists, so the only
+         cost of a miss is that this hint is unavailable for one tap. */
+      let r=_astar(cur,st.want,free,60000);
+      if(!r) r=_astar(cur,st.want,free,250000);
+      if(!r) return null;
+      for(let k=0;k<r.moves.length;k++) taps.push(r.moves[k]);
+      cur=r.state;
+    }
+    for(let k=0;k<st.add.length;k++) solved.add(st.add[k]);
+  }
+  return isSolved(cur)?taps:null;
+}
+
+/* ---- stage tracking -------------------------------------------------------
+   The stage we are on is DERIVED FROM THE BOARD, never carried as mutable
+   state, so it stays correct no matter what the user plays between hints.
+
+   Stages are ordered and each "commits" some cells (st.add). A stage is
+   complete when every cell it commits holds its final tile. Setup stages
+   commit nothing, so they are identified by their following stage instead:
+   a setup is only pending if the pair-stage after it is still pending.
+   That distinction is what stops the solver bouncing between a setup and
+   its rotation forever.                                                     */
+const _ST=_stages();
+
+/* cells committed by all stages strictly before index i */
+function _frozenBefore(i){
+  const f=new Set();
+  for(let k=0;k<i;k++) for(let j=0;j<_ST[k].add.length;j++) f.add(_ST[k].add[j]);
+  return f;
+}
+/* is the stage at index i already achieved on this board? */
+function _stageDone(arr,i){
+  const st=_ST[i];
+  if(st.add.length){                       /* committing stage: check its cells */
+    for(let k=0;k<st.add.length;k++) if(arr[st.add[k]]!==st.add[k]) return false;
+    return true;
+  }
+  /* setup stage: done once the pair stage that follows it is done */
+  return _stageDone(arr,i+1);
+}
+/* index of the first stage still to do, or -1 when solved */
+function currentStage(arr){
+  for(let i=0;i<_ST.length;i++) if(!_stageDone(arr,i)) return i;
+  return -1;
+}
+
+/* Cached tap list for the CURRENT stage only. An off-plan move invalidates
+   just this list — the stage pointer above survives, so the strategy holds. */
+let planTaps=null, planKey=null;
+
+function planFor(arr){
+  const key=cur+'|'+arr.join(',');
+  if(planKey===key && planTaps && planTaps.length) return planTaps;
+
+  const i=currentStage(arr);
+  if(i<0){ planTaps=null; planKey=key; return null; }
+
+  const free=new Set(), frozen=_frozenBefore(i);
+  for(let p=0;p<TOTAL;p++) if(!frozen.has(p)) free.add(p);
+
+  /* Solve just this stage. For a setup stage, first check whether the pair
+     can be placed directly from here — after a few moves that is often true,
+     and insisting on the setup position would be unreachable. Only fall back
+     to building the setup when the direct placement is not available. */
+  let r=null;
+  if(!_ST[i].add.length && i+1<_ST.length){
+    r=_astar(arr,_ST[i+1].want,free,60000);          /* direct pair placement */
+  }
+  if(!r) r=_astar(arr,_ST[i].want,free,60000);
+  if(!r) r=_astar(arr,_ST[i].want,free,90000);
+  if(!r && !_ST[i].add.length && i+1<_ST.length){
+    r=_astar(arr,_ST[i+1].want,free,90000);
+  }
+  /* Last resort: the end-of-row pair can be boxed in by that row's own
+     leading tiles. Temporarily unfreeze them and solve the whole row at
+     once. This is expensive, so it only runs when everything above failed. */
+  if(!r){
+    const pair = _ST[i].add.length ? _ST[i] : (i+1<_ST.length ? _ST[i+1] : null);
+    if(pair && pair.add.length===2){
+      const row=Math.floor(pair.add[0]/N);
+      if(row<N-2){
+        const wide=new Set(free);
+        const want=[];
+        for(let c=0;c<N;c++){const t=row*N+c; wide.add(t); want.push([t,t]);}
+        r=_astar(arr,want,wide,300000);
+      }
+    }
+  }
+  if(!r){ planTaps=null; planKey=key; return null; }
+
+  planTaps=r.moves; planKey=key;
+  return planTaps;
+}
+function invalidatePlan(){ planTaps=null; planKey=null; }
+
+/* ---- hint: lights the tile that is the next correct move ---- */
+let hintTimer=null, hintVal=null;
+function clearHint(){
+  if(hintTimer){ clearTimeout(hintTimer); hintTimer=null; }
+  if(hintVal!==null){
+    const e=tileEls[hintVal];                 /* re-resolve: renderBoard may have rebuilt it */
+    if(e) e.classList.remove('hintlit');
+    hintVal=null;
+  }
+  document.querySelectorAll('.tile.hintlit').forEach(e=>e.classList.remove('hintlit'));
+}
 function useHint(){
   if(solvedCur()){ status('hint','આ કોયડો પહેલેથી પૂર્ણ છે.'); return; }
-  const arr=board(); const bp=blankPos();
-  const br=Math.floor(bp/N),bc=bp%N;
-  /* candidate tiles adjacent to blank; prefer one that's NOT yet home and moving helps */
-  const cands=[];
-  for(let pos=0;pos<TOTAL;pos++){
-    if(arr[pos]===BLANK) continue;
-    if(canMove(pos)) cands.push(pos);
+  clearHint();                                /* never stack two highlights */
+  const arr=board();
+  const taps=planFor(arr);
+  if(!taps || !taps.length){                  /* solver found nothing usable */
+    status('hint','અત્યારે સૂચન મળી શક્યું નહીં.');
+    return;
   }
-  if(!cands.length) return;
-  /* pick a tile that is currently out of place */
-  let pick=cands.find(p=>arr[p]!==p);
-  if(pick===undefined) pick=cands[Math.floor(Math.random()*cands.length)];
-  const el=tileEls[arr[pick]];
-  if(el){
-    el.classList.add('hintlit');
-    setTimeout(()=>{el.classList.remove('hintlit');},1300);
-  }
+  const slot=taps[0];                         /* the next correct tap */
+  const val=arr[slot];                        /* track by VALUE — slots shift, values don't */
+  const el=tileEls[val];
+  if(el===undefined || val===BLANK){ status('hint','અત્યારે સૂચન મળી શક્યું નહીં.'); return; }
+  el.classList.add('hintlit');
+  hintVal=val;
+  hintTimer=setTimeout(()=>{ hintTimer=null; clearHint(); },1300);
   if(soundOn) playHint();
-  status('hint','આ ટાઇલ સરકાવી શકાય.');
+  status('hint','આ ટાઇલ સરકાવો.');
 }
 
 /* ---- navigation ---- */
 function nextPuzzle(){
   if(cur<PUZZLES.length-1 && solvedCur()){
-    cur++; state.tab=cur; ensureBoard(cur); save(state); renderAll();
+    cur++; state.tab=cur; ensureBoard(cur); save(state); invalidatePlan(); renderAll(); warmPlan();
     window.scrollTo({top:0,behavior:'smooth'});
   }
 }
 function prevPuzzle(){
   if(cur>0){
-    cur--; state.tab=cur; ensureBoard(cur); save(state); renderAll();
+    cur--; state.tab=cur; ensureBoard(cur); save(state); invalidatePlan(); renderAll(); warmPlan();
     window.scrollTo({top:0,behavior:'smooth'});
   }
 }
@@ -585,6 +786,13 @@ ensureBoard(cur);
 preloadSounds();
 setSoundIcon();
 renderAll();
+
+/* warm the solver after first paint so the first Hint tap is instant */
+function warmPlan(){
+  if(solvedCur()) return;
+  setTimeout(function(){ try{ planFor(board()); }catch(e){} },0);
+}
+warmPlan();
 
 const allSolvedInit = PUZZLES.every((p,i)=>state.boards[i] && isSolved(state.boards[i]));
 if(allSolvedInit){
