@@ -64,7 +64,7 @@ body{
   box-shadow:0 8px 28px -10px rgba(78,33,95,.16), 0 2px 8px -3px rgba(78,33,95,.08);padding:14px;margin-bottom:14px;}
 
 /* moves + goal preview row */
-.stagetop{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;}
+.stagetop{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;flex-wrap:wrap;row-gap:10px;}
 .moves{display:flex;align-items:center;gap:9px;}
 .moves .mlabel{font-size:12.5px;font-weight:600;color:var(--muted);letter-spacing:.02em;}
 .moves .mval{min-width:44px;height:34px;padding:0 12px;border-radius:11px;background:var(--brand-soft);
@@ -85,7 +85,6 @@ body{
 .goalbox.open{display:flex;flex-direction:column;}
 .goalbox .gcard{background:var(--surface);border-radius:20px;padding:14px;box-shadow:var(--shadow);
   max-width:340px;width:100%;text-align:center;animation:rise .35s cubic-bezier(.22,1,.36,1);}
-.goalbox .gtitle{font-weight:700;font-size:16px;color:var(--brand);margin:2px 0 10px;}
 .goalbox .gfull{width:100%;aspect-ratio:1/1;border-radius:14px;background-size:cover;background-position:center;
   border:2px solid var(--brand-soft);}
 .goalbox .gclose{margin-top:12px;width:100%;background:var(--brand);color:#fff;border:none;cursor:pointer;
@@ -114,6 +113,18 @@ body{
 .tile .face.shake{animation:shake .3s ease;}
 .board.solved .tile .face{box-shadow:inset 0 0 0 1px rgba(255,255,255,.35);}
 .board.solved .tile .idx{opacity:0;}
+/* Hard mode: no number guides, solve by the picture alone */
+.board.hard .tile .idx{display:none;}
+
+/* difficulty segmented toggle (left of the goal label) */
+.diff{display:inline-flex;align-items:stretch;background:var(--surface);border:1px solid var(--line);
+  border-radius:11px;overflow:hidden;box-shadow:var(--shadow-sm);height:38px;flex:none;}
+.diff button{border:none;background:transparent;cursor:pointer;-webkit-appearance:none;
+  font-family:'Hind Vadodara',sans-serif;font-weight:600;font-size:12.5px;color:var(--muted);
+  padding:0 12px;display:flex;align-items:center;justify-content:center;transition:background .15s ease,color .15s ease;}
+.diff button.on{background:var(--brand);color:#fff;}
+.diff button:active{background:var(--brand-soft);}
+.diff button.on:active{background:var(--brand-deep);}
 
 /* ---- status line ---- */
 .status{min-height:24px;text-align:center;font-size:14px;line-height:1.4;font-weight:500;
@@ -215,7 +226,7 @@ body{
   <!-- header -->
   <header class="phead">
     <div class="hrow1">
-      <h1 class="ptitle">Sliding Puzzle</h1>
+      <h1 class="ptitle">પંદર કોયડો</h1>
       <div class="hctrls">
         <span class="rpill" id="round"></span>
         <button class="hbtn" id="soundBtn" onclick="toggleSound()" aria-label="Sound"></button>
@@ -235,6 +246,10 @@ body{
         <span class="mval" id="moves">0</span>
       </div>
       <div class="goal">
+        <div class="diff" id="diff" role="group" aria-label="મુશ્કેલી">
+          <button type="button" id="diffEasy" onclick="setDifficulty('easy')" aria-pressed="true">Easy</button>
+          <button type="button" id="diffHard" onclick="setDifficulty('hard')" aria-pressed="false">Hard</button>
+        </div>
         <span class="glabel">ધ્યેય<br>ચિત્ર</span>
         <div class="goalimg" id="goalimg" role="button" tabindex="0" aria-label="ધ્યેય ચિત્ર મોટું જુઓ" onclick="openGoal()"></div>
       </div>
@@ -292,7 +307,6 @@ body{
 <!-- goal image lightbox -->
 <div class="goalbox" id="goalbox" onclick="closeGoal()">
   <div class="gcard" onclick="event.stopPropagation()">
-    <div class="gtitle" id="goalTitle"></div>
     <div class="gfull" id="goalFull"></div>
     <button class="gclose" onclick="closeGoal()">Close</button>
   </div>
@@ -341,6 +355,7 @@ window.addEventListener('pagehide',pushProgress);
 let state = load() || {tab:0, sound:false, celebrated:false, boards:[null,null,null], moves:[0,0,0]};
 if(!state.boards) state.boards=[null,null,null];
 if(!state.moves)  state.moves=[0,0,0];
+if(state.difficulty!=='hard') state.difficulty='easy';   /* default: Easy (number guides on) */
 let soundOn = !!state.sound;
 let cur = state.tab||0;
 let tileEls={};   /* value -> tile element, for gliding moves without rebuild */
@@ -365,6 +380,21 @@ function setSoundIcon(){const b=document.getElementById('soundBtn');b.innerHTML=
   ?'<svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M16 9a3.5 3.5 0 0 1 0 6"/><path d="M19 7a7 7 0 0 1 0 10"/></svg>'
   :'<svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M22 9l-5 6M17 9l5 6"/></svg>';}
 function toggleSound(){soundOn=!soundOn;state.sound=soundOn;setSoundIcon();save(state);}
+
+/* ---- difficulty (Easy = number guides on, Hard = off) ---- */
+function renderDifficulty(){
+  const hard = state.difficulty==='hard';
+  const be=document.getElementById('diffEasy'), bh=document.getElementById('diffHard');
+  if(be){ be.classList.toggle('on',!hard); be.setAttribute('aria-pressed', String(!hard)); }
+  if(bh){ bh.classList.toggle('on', hard); bh.setAttribute('aria-pressed', String(hard)); }
+  const b=document.getElementById('board'); if(b) b.classList.toggle('hard', hard);
+}
+function setDifficulty(d){
+  const nd = d==='hard' ? 'hard' : 'easy';
+  if(state.difficulty===nd){ renderDifficulty(); return; }
+  state.difficulty=nd; save(state);
+  renderDifficulty();
+}
 
 /* ---- solvable shuffle ---- */
 function goalArr(){const a=[];for(let i=0;i<TOTAL;i++)a.push(i);return a;}
@@ -409,6 +439,7 @@ function renderBoard(){
   if(typeof hintTimer!=='undefined'&&hintTimer){clearTimeout(hintTimer);hintTimer=null;hintVal=null;}
   const arr=board(); const solved=isSolved(arr);
   b.classList.toggle('solved',solved);
+  b.classList.toggle('hard', state.difficulty==='hard');
   const size=100/N;                    /* each tile is size% of the board */
   for(let pos=0;pos<TOTAL;pos++){
     const val=arr[pos];
@@ -450,7 +481,7 @@ function renderActions(){
   document.getElementById('btnPrev').disabled=(cur===0);
   document.getElementById('btnNext').disabled=!(solvedCur() && !isLast);
 }
-function renderAll(){renderProgress();renderHead();renderMoves();renderGoal();renderBoard();renderActions();setSoundIcon();clearStatus();}
+function renderAll(){renderProgress();renderHead();renderMoves();renderGoal();renderBoard();renderActions();setSoundIcon();renderDifficulty();clearStatus();}
 
 /* ---- movement ---- */
 function posOf(val){return board().indexOf(val);}
@@ -763,7 +794,6 @@ function clearStatus(){document.getElementById('status').className='status';}
 /* ---- goal image lightbox ---- */
 function openGoal(){
   document.getElementById('goalFull').style.backgroundImage="url('"+PUZZLES[cur].img+"')";
-  document.getElementById('goalTitle').textContent=PUZZLES[cur].title;
   document.getElementById('goalbox').classList.add('open');
 }
 function closeGoal(){document.getElementById('goalbox').classList.remove('open');}
