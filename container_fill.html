@@ -222,7 +222,7 @@ body{
 
   <div class="step">
     <div class="ic"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
-    <div class="tx"><b>પાત્ર પર ટૅપ કરો</b><p>જે પાત્ર પહેલાં ભરાશે તેના પર ટૅપ કરો, પછી "Check Answer" દબાવો.</p></div>
+    <div class="tx"><b>પાત્ર પર ટૅપ કરો</b><p>જે પાત્ર પહેલાં ભરાશે તેના પર ટૅપ કરો, પછી "Check Answer" દબાવો — જવાબ પછી બદલી શકાશે નહીં.</p></div>
   </div>
 
   <button class="got" onclick="closeHelp()">Close</button>
@@ -337,7 +337,7 @@ function fullTank(sim){
 }
 
 /* ---------------- storage ---------------- */
-var KEY='dcgs_waterfill_v4';
+var KEY='dcgs_waterfill_v5';
 function save(d){try{localStorage.setItem(KEY,JSON.stringify(d))}catch(e){}}
 function load(){try{return JSON.parse(localStorage.getItem(KEY))}catch(e){return null}}
 
@@ -356,8 +356,8 @@ pushProgress();
 function markDone(){ _completed=true; activityDone(); pushProgress(); }
 window.addEventListener('pagehide',pushProgress);
 
-var state=load()||{tab:0,sound:false,celebrated:false,solved:[false,false,false],snaps:{}};
-if(!state.solved)state.solved=[false,false,false];
+var state=load()||{tab:0,sound:false,celebrated:false,answers:[null,null,null],snaps:{}};
+if(!state.answers)state.answers=[null,null,null];
 if(!state.snaps)state.snaps={};
 var soundOn=!!state.sound, cur=state.tab||0;
 var selection=null, animating=false, animId=null;
@@ -381,8 +381,8 @@ function setSoundIcon(){var b=document.getElementById('soundBtn');b.innerHTML=so
   ?'<svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M16 9a3.5 3.5 0 0 1 0 6"/><path d="M19 7a7 7 0 0 1 0 10"/></svg>'
   :'<svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M22 9l-5 6M17 9l5 6"/></svg>';}
 function toggleSound(){soundOn=!soundOn;state.sound=soundOn;setSoundIcon();save(state);}
-function solved(i){return !!state.solved[i];}
-function allSolved(){return state.solved.every(Boolean);}
+function answered(i){return !!state.answers[i];}
+function allAnswered(){return state.answers.every(Boolean);}
 
 /* ---------------- snapshot (restore solved water on reload) ---------------- */
 function packSnap(sim){
@@ -411,50 +411,113 @@ ctx.scale(dpr,dpr);
 var sim=null;
 
 function drawFaucet(){
-  var fx=PUZZLES[cur].source[0]*CELL;
+  var spoutCX=(PUZZLES[cur].source[0]+1)*CELL;   // stream falls at source cols
   ctx.fillStyle='#F07C1E';
-  ctx.fillRect(fx-24,10,50,12);
-  ctx.fillRect(fx-22,2,12,10);
-  ctx.fillRect(fx-28,0,22,6);
-  ctx.fillRect(fx+16,16,13,16);
-  ctx.beginPath();ctx.arc(fx+22.5,36,4,0,Math.PI*2);ctx.fill();
+  rr(spoutCX-48,8,56,14,5);                      // body
+  rr(spoutCX-34,0,14,10,4);                      // handle stem
+  rr(spoutCX-42,-2,30,7,3);                      // handle bar
+  rr(spoutCX-7,18,14,16,5);                      // spout down
 }
+function rr(x,y,w,h,r){roundRect(x,y,w,h,r);ctx.fill();}
+
+/* Crisp-line renderer: trace maximal straight runs of SOLID cells and
+   stroke each as one smooth line. The grid stays the single source of
+   truth, so wall openings (and sealed outlets) render pixel-accurately. */
+function drawWalls(){
+  ctx.strokeStyle='#4E4956';
+  ctx.lineWidth=3.4;
+  ctx.lineCap='round';
+  ctx.beginPath();
+  var x,y,i,s;
+  var inRun=new Uint8Array(GW*GH);
+  for(y=0;y<GH;y++){                    // horizontal runs
+    x=0;
+    while(x<GW){
+      if(sim.type[sim.idx(x,y)]===SOLID){
+        s=x; while(x<GW&&sim.type[sim.idx(x,y)]===SOLID)x++;
+        if(x-s>=2){
+          ctx.moveTo((s+0.5)*CELL,(y+0.5)*CELL);
+          ctx.lineTo((x-0.5)*CELL,(y+0.5)*CELL);
+          for(i=s;i<x;i++)inRun[y*GW+i]=1;
+        }
+      } else x++;
+    }
+  }
+  for(x=0;x<GW;x++){                    // vertical runs
+    y=0;
+    while(y<GH){
+      if(sim.type[sim.idx(x,y)]===SOLID){
+        s=y; while(y<GH&&sim.type[sim.idx(x,y)]===SOLID)y++;
+        if(y-s>=2){
+          ctx.moveTo((x+0.5)*CELL,(s+0.5)*CELL);
+          ctx.lineTo((x+0.5)*CELL,(y-0.5)*CELL);
+          for(i=s;i<y;i++)inRun[i*GW+x]=1;
+        }
+      } else y++;
+    }
+  }
+  ctx.stroke();
+  /* isolated solid cells (not in any run) as dots */
+  ctx.fillStyle='#4E4956';
+  for(y=0;y<GH;y++)for(x=0;x<GW;x++){
+    if(sim.type[sim.idx(x,y)]===SOLID&&!inRun[y*GW+x]){
+      ctx.beginPath();ctx.arc((x+0.5)*CELL,(y+0.5)*CELL,2.1,0,Math.PI*2);ctx.fill();
+    }
+  }
+}
+
+/* Smooth water: one rect per column per contiguous wet run, with the
+   surface offset by the top cell's liquid fraction -> level waterline. */
+function drawWater(){
+  ctx.fillStyle='rgba(96,190,222,0.92)';
+  var x,y,i,v,top,bot,frac;
+  for(x=0;x<GW;x++){
+    y=0;
+    while(y<GH){
+      i=sim.idx(x,y);
+      if(sim.type[i]===BLANK&&sim.liquid[i]>0.04){
+        top=y;
+        while(y<GH&&sim.type[sim.idx(x,y)]===BLANK&&sim.liquid[sim.idx(x,y)]>0.04)y++;
+        bot=y;
+        v=Math.min(1,sim.liquid[sim.idx(x,top)]);
+        frac=(bot-top===1)?v:Math.max(v,0.25);   // lone cells shrink; columns keep a clean line
+        var sy=(top+(1-frac))*CELL;
+        ctx.fillRect(x*CELL,sy,CELL,bot*CELL-sy);
+      } else y++;
+    }
+  }
+}
+
 function draw(){
   ctx.clearRect(0,0,CAN_W,CAN_H);
   ctx.fillStyle='#F6F5F7';ctx.fillRect(0,0,CAN_W,CAN_H);
+  drawWater();
+  drawWalls();
   drawFaucet();
-  /* cells */
-  for(var y=0;y<GH;y++)for(var x=0;x<GW;x++){
-    var i=sim.idx(x,y);
-    if(sim.type[i]===SOLID){
-      ctx.fillStyle='#55505c';
-      ctx.fillRect(x*CELL,y*CELL,CELL,CELL);
-    }else{
-      var v=sim.liquid[i];
-      if(v>0.04){
-        ctx.fillStyle='rgba(96,190,222,'+Math.min(1,0.25+v*0.75).toFixed(2)+')';
-        ctx.fillRect(x*CELL,y*CELL,CELL,CELL);
-      }
-    }
-  }
-  /* tank numbers + selection outlines */
+  /* tank numbers + outlines.
+     Locked (answered) state shows BOTH the correct tank (mint) and, if the
+     pick was wrong, the user's own wrong pick (rose) — together, per the
+     MCQ reveal rule. Before checking, only the live selection (purple)
+     shows; nothing about correctness is revealed until Check Answer. */
+  var ans = state.answers[cur];
   for(var k=0;k<TANKS.length;k++){
     var t=TANKS[k];
     var cx=(t.x+t.w/2)*CELL, cy=(t.y+t.h/2)*CELL;
-    var isAnswerShown = solved(cur) && t.id===PUZZLES[cur].answer;
-    var isSel = !solved(cur) && selection===t.id;
-    if(isSel||isAnswerShown){
-      ctx.strokeStyle=isAnswerShown?'#2F9B63':'#752886';
+    var isCorrectTank = ans && t.id===PUZZLES[cur].answer;
+    var isWrongPick = ans && !ans.correct && t.id===ans.selected;
+    var isSel = !ans && selection===t.id;
+    var col = isCorrectTank ? '#2F9B63' : (isWrongPick ? '#C75C72' : (isSel ? '#752886' : null));
+    if(col){
+      ctx.strokeStyle=col;
       ctx.lineWidth=2.5;
       roundRect((t.x-2)*CELL,(t.y-3)*CELL,(t.w+4)*CELL,(t.h+4)*CELL,8);
       ctx.stroke();
     }
-    ctx.font='700 20px "Hind Vadodara", sans-serif';
+    ctx.font='700 21px "Hind Vadodara", sans-serif';
     ctx.textAlign='center';ctx.textBaseline='middle';
-    ctx.fillStyle=isAnswerShown?'#2F9B63':(isSel?'#752886':'#7B2D8E');
-    /* keep the number readable over water */
-    ctx.strokeStyle='rgba(246,245,247,.75)';ctx.lineWidth=4;
+    ctx.strokeStyle='rgba(246,245,247,.8)';ctx.lineWidth=4;
     ctx.strokeText(t.id,cx,cy);
+    ctx.fillStyle=col||'#7B2D8E';
     ctx.fillText(t.id,cx,cy);
   }
 }
@@ -469,7 +532,8 @@ function resetBoard(){
   if(animId){cancelAnimationFrame(animId);animId=null;}
   animating=false;
   sim=buildLevel(PUZZLES[cur]);
-  if(solved(cur)){
+  if(answered(cur)){
+    selection=state.answers[cur].selected;   // restore locked pick for the rose/mint outline
     var snap=state.snaps[cur];
     if(snap){ try{unpackSnap(snap,sim);}catch(e){fillWinnerStatic();} }
     else fillWinnerStatic();
@@ -483,7 +547,7 @@ function fillWinnerStatic(){
 
 /* ---------------- interaction ---------------- */
 canvas.addEventListener('click',function(ev){
-  if(solved(cur)||animating)return;
+  if(answered(cur)||animating)return;
   var r=canvas.getBoundingClientRect();
   var gx=(ev.clientX-r.left)/r.width*GW;
   var gy=(ev.clientY-r.top)/r.height*GH;
@@ -499,30 +563,39 @@ canvas.addEventListener('click',function(ev){
   }
 });
 
-/* ---------------- check + animated proof ---------------- */
+/* ---------------- check + animated proof ----------------
+   MCQ answer flow (v3.4): selecting a tank reveals nothing. Check Answer
+   is the only reveal, and it locks the question permanently — right or
+   wrong, there is no reselect and no second check. A wrong pick shows the
+   user's own wrong tank AND the correct tank together; the stored
+   response is always the user's actual pick, never the correct answer.
+   A checked question counts as done regardless of correctness, so Next
+   unlocks either way. On the final question, ACTIVITY_DONE fires the
+   instant Check Answer is pressed — not delayed by the reveal animation. */
 function checkAnswer(){
-  if(solved(cur)||selection===null||animating)return;
+  if(answered(cur)||selection===null||animating)return;
   var p=PUZZLES[cur];
-  if(selection===p.answer){
-    state.solved[cur]=true; state.tab=cur; save(state);
-    if(soundOn)playCorrect();
-    var last=allSolved();
-    if(last&&!state.celebratedQueued){ markDone(); }
-    if(soundOn){ if(allSolved())playWin(); else playLevel(); }
-    renderActions();
-    status('ok','સાચું! જુઓ — પાણી ક્યાં જાય છે... 🌊',true);
-    runProofAnimation();
-  } else {
-    if(soundOn)playWrong();
+  var ok=(selection===p.answer);
+  state.answers[cur]={selected:selection, correct:ok};   // write-once, always the user's pick
+  state.tab=cur; save(state);
+  renderActions();   // locks immediately: Check disabled, Next enabled if applicable
+
+  if(soundOn){ if(ok)playCorrect(); else playWrong(); }
+  if(!ok){
     var w=document.getElementById('boardWrap');
     w.classList.add('shakeg');
-    var wrongSel=selection;
     setTimeout(function(){w.classList.remove('shakeg');},400);
-    status('bad','આ પાત્ર પહેલાં નહીં ભરાય. પાઇપ ફરી જુઓ.');
   }
+  status(ok?'ok':'bad', ok?'સાચું! જુઓ — પાણી ક્યાં જાય છે... 🌊':'ખોટો જવાબ. સાચો રસ્તો જુઓ... 🌊', true);
+
+  var isFinal = allAnswered();               // this check just completed the set
+  if(isFinal) markDone();                    // ACTIVITY_DONE now, regardless of right/wrong
+  else if(soundOn) playLevel();
+
+  runProofAnimation(isFinal);                // always reveal the true answer by watching it fill
 }
 
-function runProofAnimation(){
+function runProofAnimation(isFinal){
   animating=true;
   sim=buildLevel(PUZZLES[cur]);
   var srcx=PUZZLES[cur].source[0], srcy=PUZZLES[cur].source[1];
@@ -543,11 +616,23 @@ function runProofAnimation(){
     animating=false; animId=null;
     draw();
     try{ state.snaps[cur]=packSnap(sim); save(state); }catch(e){}
-    if(allSolved()){
-      status('done','બધા કોયડા પૂર્ણ. ખૂબ સરસ! 🌸',true);
-      if(!state.celebrated){state.celebrated=true;save(state);showCelebrate();}
+    var ans=state.answers[cur];
+    if(isFinal){
+      /* Reveal is now fully visible on screen — hold the celebration back
+         5s from THIS point so the answer stays readable before the
+         overlay covers it, then show it (playWin fires with the overlay). */
+      if(!state.celebrated){
+        setTimeout(function(){
+          state.celebrated=true; save(state);
+          if(soundOn)playWin();
+          status('done','બધા કોયડા પૂર્ણ. ખૂબ સરસ! 🌸',true);
+          showCelebrate();
+        },5000);
+      }
     } else {
-      status('ok','સાચું! પાણી અહીં જ છલોછલ ભરાય. 🌊',true);
+      status(ans.correct?'ok':'bad',
+        ans.correct?'સાચું! પાણી અહીં જ છલોછલ ભરાય. 🌊':'સાચો જવાબ પાત્ર '+PUZZLES[cur].answer+' હતું.',
+        true);
     }
     renderActions();
   }
@@ -560,10 +645,10 @@ function renderHead(){document.getElementById('hsub').textContent=PUZZLES[cur].s
 function renderActions(){
   var isLast=cur===PUZZLES.length-1;
   document.getElementById('btnPrev').disabled=(cur===0);
-  document.getElementById('btnNext').disabled=!(solved(cur)&&!isLast);
+  document.getElementById('btnNext').disabled=!(answered(cur)&&!isLast);
   var chk=document.getElementById('btnCheck');
-  chk.disabled = solved(cur) ? true : (selection===null);
-  document.getElementById('tapHint').style.visibility = solved(cur)?'hidden':'visible';
+  chk.disabled = answered(cur) ? true : (selection===null);
+  document.getElementById('tapHint').style.visibility = answered(cur)?'hidden':'visible';
 }
 function renderAll(){selection=null;renderProgress();renderHead();resetBoard();renderActions();setSoundIcon();clearStatus();}
 
@@ -571,7 +656,7 @@ var stTimer;
 function status(type,msg,sticky){var s=document.getElementById('status');s.className='status show '+type;s.textContent=msg;clearTimeout(stTimer);if(!sticky)stTimer=setTimeout(clearStatus,2600);}
 function clearStatus(){document.getElementById('status').className='status';}
 
-function nextPuzzle(){if(cur<PUZZLES.length-1&&solved(cur)){cur++;state.tab=cur;save(state);renderAll();window.scrollTo({top:0,behavior:'smooth'});}}
+function nextPuzzle(){if(cur<PUZZLES.length-1&&answered(cur)){cur++;state.tab=cur;save(state);renderAll();window.scrollTo({top:0,behavior:'smooth'});}}
 function prevPuzzle(){if(cur>0){cur--;state.tab=cur;save(state);renderAll();window.scrollTo({top:0,behavior:'smooth'});}}
 
 function openHelp(){document.getElementById('scrim').classList.add('open');document.getElementById('sheet').classList.add('open');}
@@ -583,12 +668,15 @@ function closeCelebrate(){document.getElementById('celebrate').classList.remove(
 /* ---------------- init ---------------- */
 preloadSounds();
 renderAll();
-if(allSolved()){
+if(allAnswered()){
   status('done','બધા કોયડા પૂર્ણ. ખૂબ સરસ! 🌸',true);
   _completed=true;
   pushProgress();
-} else if(solved(cur)){
-  status('ok','આ કોયડો પૂર્ણ. તૈયાર હો ત્યારે આગળ વધો.',true);
+} else if(answered(cur)){
+  var ra=state.answers[cur];
+  status(ra.correct?'ok':'bad',
+    ra.correct?'આ કોયડો પૂર્ણ. તૈયાર હો ત્યારે આગળ વધો.':'સાચો જવાબ પાત્ર '+PUZZLES[cur].answer+' હતું.',
+    true);
 }
 </script>
 
