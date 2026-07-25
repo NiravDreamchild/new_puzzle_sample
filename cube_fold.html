@@ -87,7 +87,7 @@ body{
 .opt.ok .tag{color:var(--mint);}
 .opt.err{border-color:var(--rose);background:var(--rose-soft);}
 .opt.err .tag{color:var(--rose);}
-.opt.locked{cursor:default;}
+.opt.locked{cursor:default;pointer-events:none;}
 .opt .mark{position:absolute;top:7px;right:9px;width:20px;height:20px;opacity:0;transition:opacity .2s ease;}
 .opt .mark svg{width:20px;height:20px;stroke-width:2.4;}
 .opt.ok .mark,.opt.err .mark{opacity:1;}
@@ -254,7 +254,7 @@ body{
 
   <div class="step">
     <div class="ic"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></div>
-    <div class="tx"><b>પસંદ કરી ચકાસો</b><p>જે ઘન આ પાથરણમાંથી બની શકે તે વિકલ્પ પસંદ કરી “Check Answer” દબાવો.</p></div>
+    <div class="tx"><b>પસંદ કરી ચકાસો</b><p>જે ઘન આ પાથરણમાંથી બની શકે તે વિકલ્પ પસંદ કરી “Check Answer” દબાવો. જવાબ એક જ વાર ચકાસી શકાશે — ખોટો પડે તો સાચો જવાબ લીલા રંગમાં દેખાશે અને આગળ વધી શકાશે.</p></div>
   </div>
 
   <button class="got" onclick="closeHelp()">Close</button>
@@ -284,28 +284,28 @@ body{
    ========================================================================= */
 const PUZZLES = [
   { id:'p1',
-    symbols:{ U:'🌙', W:'🍃', S:'🌸', E:'🍎', N:'⭐', D:'☀️' },
+    symbols:{ U:'🍼', W:'🧸', S:'👶', E:'🎀', N:'🐣', D:'🧦' },
     options:[
-      { top:'🍃', left:'🌸', right:'🍎' },   /* W,S,E  -> W&E opposite  ✗ */
-      { top:'🌙', left:'🌸', right:'🍎' },   /* U,S,E  -> buildable      ✓ */
-      { top:'🌙', left:'☀️', right:'🍎' },   /* U,D,E  -> U&D opposite   ✗ */
-      { top:'🌙', left:'🌸', right:'⭐' }    /* U,S,N  -> S&N opposite   ✗ */
+      { top:'🧸', left:'👶', right:'🎀' },   /* W,S,E  -> W&E opposite  ✗ */
+      { top:'🍼', left:'👶', right:'🎀' },   /* U,S,E  -> buildable      ✓ */
+      { top:'🍼', left:'🧦', right:'🎀' },   /* U,D,E  -> U&D opposite   ✗ */
+      { top:'🍼', left:'👶', right:'🐣' }    /* U,S,N  -> S&N opposite   ✗ */
     ] },
   { id:'p2',
-    symbols:{ U:'🐣', W:'🌷', S:'🦋', E:'🍯', N:'🐢', D:'🌈' },
+    symbols:{ U:'🐥', W:'🦆', S:'🐻', E:'🎈', N:'🚗', D:'🌙' },
     options:[
-      { top:'🌷', left:'🦋', right:'🍯' },   /* W,S,E  -> W&E opposite   ✗ */
-      { top:'🐣', left:'🦋', right:'🐢' },   /* U,S,N  -> S&N opposite   ✗ */
-      { top:'🐣', left:'🦋', right:'🍯' },   /* U,S,E  -> buildable      ✓ */
-      { top:'🐣', left:'🌈', right:'🍯' }    /* U,D,E  -> U&D opposite   ✗ */
+      { top:'🦆', left:'🐻', right:'🎈' },   /* W,S,E  -> W&E opposite   ✗ */
+      { top:'🐥', left:'🐻', right:'🚗' },   /* U,S,N  -> S&N opposite   ✗ */
+      { top:'🐥', left:'🐻', right:'🎈' },   /* U,S,E  -> buildable      ✓ */
+      { top:'🐥', left:'🌙', right:'🎈' }    /* U,D,E  -> U&D opposite   ✗ */
     ] },
   { id:'p3',
-    symbols:{ U:'🎈', W:'🍓', S:'🐘', E:'🌻', N:'🚗', D:'🦉' },
+    symbols:{ U:'🌈', W:'🍭', S:'🐰', E:'🧩', N:'🐘', D:'💤' },
     options:[
-      { top:'🎈', left:'🐘', right:'🌻' },   /* U,S,E  -> buildable      ✓ */
-      { top:'🎈', left:'🐘', right:'🚗' },   /* U,S,N  -> S&N opposite   ✗ */
-      { top:'🍓', left:'🐘', right:'🌻' },   /* W,S,E  -> W&E opposite   ✗ */
-      { top:'🎈', left:'🦉', right:'🌻' }    /* U,D,E  -> U&D opposite   ✗ */
+      { top:'🌈', left:'🐰', right:'🧩' },   /* U,S,E  -> buildable      ✓ */
+      { top:'🌈', left:'🐰', right:'🐘' },   /* U,S,N  -> S&N opposite   ✗ */
+      { top:'🍭', left:'🐰', right:'🧩' },   /* W,S,E  -> W&E opposite   ✗ */
+      { top:'🌈', left:'💤', right:'🧩' }    /* U,D,E  -> U&D opposite   ✗ */
     ] }
 ];
 
@@ -323,7 +323,7 @@ function answerIndex(P){ let idx=-1,cnt=0;
 PUZZLES.forEach((P,i)=>{ const r=answerIndex(P);
   if(r.cnt!==1) console.warn('Puzzle',i,'has',r.cnt,'buildable options — expected 1'); });
 
-const KEY='dcgs_cubefold_v1';
+const KEY='dcgs_cubefold_v2';
 const TAGS=['A','B','C','D'];
 
 function save(d){try{localStorage.setItem(KEY,JSON.stringify(d))}catch(e){}}
@@ -347,12 +347,17 @@ function markDone(){ _completed=true; activityDone(); pushProgress(); }
 window.addEventListener('pagehide',pushProgress);
 
 /* ---- state ---- */
-let state = load() || { tab:0, sound:false, celebrated:false, solved:[false,false,false], picked:[null,null,null] };
-if(!state.solved) state.solved=[false,false,false];
+/* [v3.4] answers[i] = {selected:<optionIndex>, correct:<bool>} — written ONCE, on Check
+   Answer, and always holding the USER'S own pick (never the correct index).
+   answers[i] being truthy IS the "this question is answered / locked" flag.
+   picked[] only holds the pre-check selection so a reload keeps the highlight. */
+let state = load() || { tab:0, sound:false, celebrated:false, answers:[null,null,null], picked:[null,null,null] };
+if(!state.answers) state.answers=[null,null,null];
 if(!state.picked) state.picked=[null,null,null];
 let soundOn = !!state.sound;
 let cur = state.tab||0;
-let sel = state.picked[cur];   /* current selection index (or null) */
+function pickedAt(i){const v=state.picked[i];return (v===undefined||v===null)?null:v;}
+let sel = pickedAt(cur);   /* current selection index (or null) */
 
 /* ---- sound (mp3 assets) ---- */
 const SND={
@@ -374,8 +379,9 @@ function setSoundIcon(){const b=document.getElementById('soundBtn');b.innerHTML=
   :'<svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M22 9l-5 6M17 9l5 6"/></svg>';}
 function toggleSound(){soundOn=!soundOn;state.sound=soundOn;setSoundIcon();save(state);}
 
-function solved(i){return !!state.solved[i];}
-function allSolved(){return state.solved.every(Boolean);}
+/* [v3.4] a question is DONE the moment it is checked — right or wrong */
+function answered(i){return !!state.answers[i];}
+function allAnswered(){return PUZZLES.every((p,i)=>answered(i));}
 
 /* ---- isometric cube SVG ---- */
 /* vertices for a 120x120 viewBox: cx=60 cy=58 A=38 B=21 */
@@ -424,20 +430,26 @@ function renderNet(){
   document.getElementById('net').innerHTML=netSVG(PUZZLES[cur].symbols);
 }
 
+/* [v3.4] Phase 1 (no answer stored): nothing is revealed — only .sel on the pick.
+   Phase 2 (answer stored): every card locks, the correct one goes mint, and a
+   wrong pick goes rose alongside it. Both stay visible together. */
 function renderOpts(){
   const P=PUZZLES[cur], wrap=document.getElementById('opts'); wrap.innerHTML='';
-  const isSolved=solved(cur);
+  const A=state.answers[cur];
   const correctIdx=answerIndex(P).idx;
   P.options.forEach((o,i)=>{
     const b=document.createElement('button');
     let cls='opt';
-    if(isSolved){ cls+=' locked'; if(i===correctIdx) cls+=' ok'; }
-    else if(i===sel){ cls+=' sel'; }
+    if(A){
+      cls+=' locked';
+      if(i===correctIdx) cls+=' ok';
+      else if(i===A.selected) cls+=' err';
+    } else if(i===sel){ cls+=' sel'; }
     b.className=cls;
     b.innerHTML='<span class="tag">'+TAGS[i]+'</span>'
       +'<span class="mark">'+(i===correctIdx?CHECK_ICON:CROSS_ICON)+'</span>'
       +cubeSVG(o);
-    if(!isSolved){ b.addEventListener('click',()=>pickOption(i)); }
+    if(!A){ b.addEventListener('click',()=>pickOption(i)); }
     wrap.appendChild(b);
   });
 }
@@ -445,12 +457,18 @@ function renderOpts(){
 function renderActions(){
   const isLast = cur===PUZZLES.length-1;
   document.getElementById('btnPrev').disabled = (cur===0);
-  document.getElementById('btnNext').disabled = !(solved(cur) && !isLast);
-  document.getElementById('btnCheck').disabled = solved(cur) || sel===null;
+  /* [v3.4] Next unlocks on a checked question — right OR wrong */
+  document.getElementById('btnNext').disabled = !(answered(cur) && !isLast);
+  /* [v3.4] Check: off until something is selected, off again forever once checked */
+  document.getElementById('btnCheck').disabled = answered(cur) || sel===null;
 }
 
 function renderAll(){renderProgress();renderNet();renderOpts();renderActions();setSoundIcon();clearStatus();
-  if(solved(cur)) status('done','આ કોયડો પૂર્ણ. 🌸',true);}
+  const A=state.answers[cur];
+  if(A){
+    if(A.correct) status('ok','સાચો જવાબ! આ ઘન બની શકે. 🌸',true);
+    else status('bad','સાચો જવાબ લીલા રંગમાં દર્શાવ્યો છે.',true);
+  }}
 
 /* ---- status ---- */
 let stTimer;
@@ -458,55 +476,60 @@ function status(type,msg,sticky){const s=document.getElementById('status');s.cla
 function clearStatus(){document.getElementById('status').className='status';}
 
 /* ---- interaction ---- */
+/* [v3.4] Selecting reveals NOTHING — no colour, no icon, no status, no sound */
 function pickOption(i){
-  if(solved(cur)) return;
+  if(answered(cur)) return;
   sel=i; state.picked[cur]=i; save(state);
-  /* clear any error styling, re-render selection */
   renderOpts(); renderActions(); clearStatus();
 }
 
-function checkAnswer(){
-  if(solved(cur) || sel===null) return;
-  const P=PUZZLES[cur], correctIdx=answerIndex(P).idx;
-  if(sel===correctIdx){
-    state.solved[cur]=true; save(state);
-    renderOpts(); renderActions();
-    onSolvedPuzzle();
-  } else {
-    /* wrong: shake + mark the chosen option, keep it selectable */
-    const btn=document.querySelectorAll('.opt')[sel];
-    if(btn){
-      btn.classList.remove('sel'); btn.classList.add('err');
-      btn.querySelector('.mark').innerHTML=CROSS_ICON;
-      btn.classList.remove('shake'); void btn.offsetWidth; btn.classList.add('shake');
-    }
-    status('bad','આ ઘન બની ન શકે — સામસામેની બાજુઓ તપાસો.');
-    if(soundOn) playWrong();
-  }
+function shake(i){
+  const btn=document.querySelectorAll('.opt')[i]; if(!btn) return;
+  btn.classList.remove('shake'); void btn.offsetWidth; btn.classList.add('shake');
 }
 
-function onSolvedPuzzle(){
-  if(allSolved()){
+/* [v3.4] The only reveal. Terminal — the question locks either way. */
+function checkAnswer(){
+  if(answered(cur)) return;          // already locked
+  if(sel===null) return;             // nothing selected
+  const P=PUZZLES[cur], correctIdx=answerIndex(P).idx, ok=(sel===correctIdx);
+  state.answers[cur]={ selected:sel, correct:ok };   // the user's own pick, always
+  save(state);
+  renderOpts();                      // paints the locked state (mint / mint+rose)
+  renderActions();                   // Check off, Next on
+  if(ok){
+    if(soundOn) playCorrect();
+    status('ok','સાચો જવાબ! આ ઘન બની શકે. 🌸',true);
+  } else {
+    if(soundOn) playWrong();
+    shake(sel);
+    status('bad','સાચો જવાબ લીલા રંગમાં દર્શાવ્યો છે.',true);
+  }
+  onAnswered();
+}
+
+function onAnswered(){
+  if(!allAnswered()){ if(soundOn) playLevel(); return; }   // mid-set question done
+  markDone();                                              // ACTIVITY_DONE now — not in 5s
+  if(state.celebrated) return;
+  setTimeout(function(){                                   // let the answer be read first
+    state.celebrated=true; save(state);
     status('done','બધા કોયડા પૂર્ણ. ખૂબ સરસ! 🌸',true);
     if(soundOn) playWin();
-    if(!state.celebrated){ state.celebrated=true; save(state); showCelebrate(); }
-    markDone();
-  } else {
-    status('ok','સાચો જવાબ! આ ઘન બની શકે. 🌸',true);
-    if(soundOn) playLevel();
-  }
+    showCelebrate();
+  },5000);
 }
 
 /* ---- navigation ---- */
 function nextPuzzle(){
-  if(cur<PUZZLES.length-1 && solved(cur)){
-    cur++; state.tab=cur; sel=state.picked[cur]; save(state);
+  if(cur<PUZZLES.length-1 && answered(cur)){
+    cur++; state.tab=cur; sel=pickedAt(cur); save(state);
     renderAll(); window.scrollTo({top:0,behavior:'smooth'});
   }
 }
 function prevPuzzle(){
   if(cur>0){
-    cur--; state.tab=cur; sel=state.picked[cur]; save(state);
+    cur--; state.tab=cur; sel=pickedAt(cur); save(state);
     renderAll(); window.scrollTo({top:0,behavior:'smooth'});
   }
 }
@@ -522,7 +545,8 @@ function closeCelebrate(){document.getElementById('celebrate').classList.remove(
 /* ---- init ---- */
 preloadSounds();
 renderAll();
-if(allSolved()){
+/* [v3.4/v3.3] restore only — no 5s timer, no celebration, no activityDone() */
+if(allAnswered()){
   status('done','બધા કોયડા પૂર્ણ. ખૂબ સરસ! 🌸',true);
   _completed=true; pushProgress();
 }

@@ -74,27 +74,29 @@ body{
 .tc.rb0{border-bottom:none;}
 .tc.res{color:var(--brand);background:#FCF8FD;}
 .tc.q{background:var(--accent-soft);color:#B5781E;}
-.tc.q.solved{background:linear-gradient(135deg,var(--brand),var(--brand-deep));color:#fff;}
+.tc.q.revealed{background:linear-gradient(135deg,var(--brand),var(--brand-deep));color:#fff;}
 
 /* option cards */
 .opts{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:14px;}
-.opt{aspect-ratio:1/1.05;border:1px solid var(--line);border-radius:12px;background:var(--surface);
+.opt{aspect-ratio:1/1.05;background:var(--surface);border:1px solid var(--line);border-radius:14px;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
   cursor:pointer;-webkit-appearance:none;padding:0;box-shadow:var(--shadow-sm);
   font-family:'Hind Vadodara',sans-serif;font-weight:700;font-size:clamp(16px,5vw,21px);color:var(--brand);
-  transition:transform .1s ease,background .18s ease,color .18s ease,box-shadow .2s ease;}
+  transition:transform .1s ease,background .18s ease,color .18s ease,border-color .18s ease,box-shadow .2s ease;}
 .opt:active{transform:scale(.97);}
 .opt .lbl{font-size:10px;font-weight:600;letter-spacing:.08em;color:var(--muted);line-height:1;}
-.opt.sel{background:linear-gradient(135deg,var(--brand),var(--brand-deep));color:#fff;border-color:transparent;}
-.opt.sel .lbl{color:rgba(255,255,255,.72);}
-.opt.wrong{background:var(--rose-soft);border-color:transparent;color:var(--rose);box-shadow:none;}
-.opt.wrong .lbl{color:var(--rose);opacity:.7;}
-.opt.locked{cursor:default;}
-.opt.dim{opacity:.4;box-shadow:none;}
+.opt.sel{background:var(--brand-soft);border-color:var(--brand);color:var(--brand);}
+.opt.sel .lbl{color:var(--brand);opacity:.7;}
+.opt.correct{background:var(--mint-soft);border-color:var(--mint);color:var(--mint);box-shadow:none;}
+.opt.correct .lbl{color:var(--mint);opacity:.75;}
+.opt.wrong{background:var(--rose-soft);border-color:var(--rose);color:var(--rose);box-shadow:none;}
+.opt.wrong .lbl{color:var(--rose);opacity:.75;}
+.opt.locked{pointer-events:none;}
+.opt.dim{opacity:.42;box-shadow:none;}
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
 .shake{animation:shake .3s ease;}
 
-/* answer explanation (revealed on solve) */
+/* answer explanation (revealed on check) */
 .expl{display:none;margin-top:14px;border:1px solid var(--line);border-radius:var(--r-md);
   background:#FCFAFD;padding:13px 14px;}
 .expl.show{display:block;animation:rise .45s cubic-bezier(.22,1,.36,1);}
@@ -205,7 +207,7 @@ body{
   <!-- header -->
   <header class="phead">
     <div class="hrow1">
-      <h1 class="ptitle">Logical Reasoning</h1>
+      <h1 class="ptitle">રિઝનીંગ</h1>
       <div class="hctrls">
         <span class="rpill" id="round"></span>
         <button class="hbtn" id="soundBtn" onclick="toggleSound()" aria-label="Sound"></button>
@@ -217,7 +219,7 @@ body{
     <p class="hsub" id="hsub"></p>
   </header>
 
-  <!-- play area: number grid + options + answer explanation -->
+  <!-- play area: number grid + options + revealed working -->
   <div class="stage">
     <div class="tbl" id="tbl"></div>
     <div class="opts" id="opts"></div>
@@ -262,12 +264,12 @@ body{
 
   <div class="step">
     <div class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="7" height="7" rx="2"/><rect x="14" y="4" width="7" height="7" rx="2"/><rect x="3" y="15" width="7" height="7" rx="2"/><path d="M15 18.5l2 2 4-4"/></svg></div>
-    <div class="tx"><b>વિકલ્પ પસંદ કરો</b><p>ચાર વિકલ્પમાંથી એક પસંદ કરી "Check Answer" દબાવો. ખોટું પડે તો ફરી પ્રયત્ન કરી શકાય છે.</p></div>
+    <div class="tx"><b>એક જ વાર તપાસાય</b><p>વિકલ્પ પસંદ કરો ત્યાં સુધી કંઈ દેખાતું નથી. "Check Answer" દબાવો એટલે જવાબ ખૂલે — અને પ્રશ્ન ત્યાં જ પૂરો થાય. તેથી ધીરજથી વિચારીને જ દબાવો.</p></div>
   </div>
 
   <div class="step">
     <div class="ic"><svg viewBox="0 0 24 24"><path d="M4 7h10M4 12h10M4 17h6"/><path d="M16.5 16.5l2 2 3.5-3.5"/></svg></div>
-    <div class="tx"><b>ત્રણેય કોયડા</b><p>જવાબ સાચો પડે એટલે "Next" દબાવીને આગળના કોયડા પર જાઓ. ત્રણેય પૂરા થાય ત્યારે સેટ પૂર્ણ.</p></div>
+    <div class="tx"><b>ત્રણેય કોયડા</b><p>જવાબ તપાસ્યા પછી "Next" દબાવીને આગળના કોયડા પર જાઓ. ત્રણેય તપાસાઈ જાય ત્યારે સેટ પૂર્ણ.</p></div>
   </div>
 
   <button class="got" onclick="closeHelp()">Close</button>
@@ -286,6 +288,7 @@ body{
    rule p1 : (b × c) − a
    rule p2 : (a + b) × c
    rule p3 : a² + b² + c²
+   `answer` is the INDEX of the correct option.
 */
 const PUZZLES = [
   {
@@ -293,7 +296,7 @@ const PUZZLES = [
     sub_gu:"પ્રથમ બે હરોળના આંકડાઓનો સંબંધ શોધો.",
     grid:[[2,5,6,28],[4,9,9,77],[3,7,6,'?']],
     options:[36,39,42,45],
-    answer:39,
+    answer:1,
     expl:[
       ['પ્રથમ હરોળ','(5 × 6) − 2 = 30 − 2 = 28'],
       ['બીજી હરોળ','(9 × 9) − 4 = 81 − 4 = 77'],
@@ -305,7 +308,7 @@ const PUZZLES = [
     sub_gu:"દરેક હરોળમાં એક જ નિયમ ચાલે છે.",
     grid:[[3,4,2,14],[5,2,3,21],[6,3,4,'?']],
     options:[22,27,36,42],
-    answer:36,
+    answer:2,
     expl:[
       ['પ્રથમ હરોળ','(3 + 4) × 2 = 7 × 2 = 14'],
       ['બીજી હરોળ','(5 + 2) × 3 = 7 × 3 = 21'],
@@ -317,7 +320,7 @@ const PUZZLES = [
     sub_gu:"સરવાળા-ગુણાકારથી આગળ પણ વિચારો.",
     grid:[[2,3,4,29],[1,5,3,35],[2,4,6,'?']],
     options:[12,44,48,56],
-    answer:56,
+    answer:3,
     expl:[
       ['પ્રથમ હરોળ','(2×2) + (3×3) + (4×4) = 4 + 9 + 16 = 29'],
       ['બીજી હરોળ','(1×1) + (5×5) + (3×3) = 1 + 25 + 9 = 35'],
@@ -327,7 +330,7 @@ const PUZZLES = [
 ];
 const N = PUZZLES.length;
 const QUESTION = "જે ખાનામાં '?' છે, ત્યાં કયો આંકડો આવે ?";
-const KEY = 'dcgs_reasoning_v2';
+const KEY = 'dcgs_reasoning_v3';
 
 function save(d){try{localStorage.setItem(KEY,JSON.stringify(d))}catch(e){}}
 function load(){try{return JSON.parse(localStorage.getItem(KEY))}catch(e){return null}}
@@ -349,17 +352,16 @@ function pushProgress(){postToApp({type:'PROGRESS',time_spent_sec:timeSpentSec()
 setInterval(pushProgress,3000);
 pushProgress();
 
-function markDone(){ _completed=true; activityDone(); pushProgress(); }   /* call when the whole set is solved */
+function markDone(){ _completed=true; activityDone(); pushProgress(); }   /* call when the whole set is done */
 window.addEventListener('pagehide',pushProgress);   /* best-effort, where it fires */
 
 /* ---- state ---- */
-let state = load() || {tab:0, sound:false, celebrated:false, picked:[null,null,null], solved:[false,false,false], wrongs:[[],[],[]]};
-if(!Array.isArray(state.picked) || state.picked.length!==N) state.picked=[null,null,null];
-if(!Array.isArray(state.solved) || state.solved.length!==N) state.solved=[false,false,false];
-if(!Array.isArray(state.wrongs) || state.wrongs.length!==N) state.wrongs=[[],[],[]];
+let state = load() || {tab:0, sound:false, celebrated:false, answers:{}};
+if(!state.answers || typeof state.answers!=='object') state.answers={};
 let soundOn = !!state.sound;
 let cur = state.tab||0;
 if(cur<0||cur>=N) cur=0;
+let sel = -1;                      /* live selection for the current question (not persisted) */
 
 /* ---- sound (mp3 assets) ---- */
 const SND={
@@ -380,14 +382,14 @@ function playCorrect(){ playSound('correct'); }
 function playWrong(){   playSound('wrong');   }
 function playLevel(){   playSound('level');   }
 function playWin(){     playSound('win');     }
-function playHint(){    playSound('hint');    }
+function playHint(){    playSound('hint');    }   /* MCQ file: no Hint button, never called */
 
 function setSoundIcon(){const b=document.getElementById('soundBtn');b.innerHTML=soundOn
   ?'<svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M16 9a3.5 3.5 0 0 1 0 6"/><path d="M19 7a7 7 0 0 1 0 10"/></svg>'
   :'<svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M22 9l-5 6M17 9l5 6"/></svg>';}
 function toggleSound(){soundOn=!soundOn;state.sound=soundOn;setSoundIcon();save(state);}
 
-function solved(i){ return !!state.solved[i]; }
+function answered(i){ return !!state.answers[i]; }
 
 /* ---- render ---- */
 function renderProgress(){ document.getElementById('round').textContent=(cur+1)+'/'+N; }
@@ -413,58 +415,60 @@ function renderGrid(){
 }
 function paintQ(){
   const q=document.getElementById('qcell'); if(!q) return;
-  if(solved(cur)){ q.classList.add('solved'); q.textContent=String(PUZZLES[cur].answer); }
-  else { q.classList.remove('solved'); q.textContent='?'; }
+  const p=PUZZLES[cur];
+  if(answered(cur)){ q.classList.add('revealed'); q.textContent=String(p.options[p.answer]); }
+  else { q.classList.remove('revealed'); q.textContent='?'; }
 }
-function renderOpts(){
+function renderOptions(){
   const p=PUZZLES[cur], box=document.getElementById('opts'); box.innerHTML='';
   const labels=['A','B','C','D'];
   p.options.forEach((v,i)=>{
     const b=document.createElement('button');
-    b.className='opt'; b.dataset.v=v;
+    b.className='opt'; b.dataset.i=i;
     b.innerHTML='<span class="lbl">'+labels[i]+'</span><span class="val">'+v+'</span>';
-    b.addEventListener('click',()=>pickOption(v));
+    b.addEventListener('click',()=>pickOption(i));
     box.appendChild(b);
   });
-  paintOpts();
+  paintOptions();
 }
-function paintOpts(){
-  const p=PUZZLES[cur];
+function paintOptions(){
+  const p=PUZZLES[cur], a=state.answers[cur];
   document.querySelectorAll('.opt').forEach(el=>{
-    const v=parseInt(el.dataset.v,10);
-    el.classList.remove('sel','wrong','locked','dim');
-    if(solved(cur)){
+    const i=parseInt(el.dataset.i,10);
+    el.classList.remove('sel','correct','wrong','locked','dim');
+    if(a){
       el.classList.add('locked');
-      if(v===p.answer) el.classList.add('sel'); else el.classList.add('dim');
+      if(i===p.answer) el.classList.add('correct');
+      else if(i===a.selected) el.classList.add('wrong');
+      else el.classList.add('dim');
       return;
     }
-    if(state.wrongs[cur].indexOf(v)>=0) el.classList.add('wrong');
-    if(state.picked[cur]===v) el.classList.add('sel');
+    if(i===sel) el.classList.add('sel');       /* selection only — reveals nothing */
   });
 }
 function renderExpl(){
   const p=PUZZLES[cur], e=document.getElementById('expl');
-  if(!solved(cur)){ e.className='expl'; e.innerHTML=''; return; }
-  let h='<h4>જવાબ : '+p.answer+'</h4>';
+  if(!answered(cur)){ e.className='expl'; e.innerHTML=''; return; }
+  let h='<h4>જવાબ : '+p.options[p.answer]+'</h4>';
   p.expl.forEach((row,i)=>{
     h+='<div class="row'+(i===p.expl.length-1?' f':'')+'"><b>'+row[0]+'</b><span>'+row[1]+'</span></div>';
   });
   e.innerHTML=h; e.className='expl show';
 }
 function renderActions(){
-  const isLast = (cur===N-1);
+  const isLast=(cur===N-1);
   document.getElementById('btnPrev').disabled = (cur===0);
-  document.getElementById('btnNext').disabled = !(solved(cur) && !isLast);
-  document.getElementById('btnCheck').disabled = (state.picked[cur]===null || solved(cur));
+  document.getElementById('btnNext').disabled = !(answered(cur) && !isLast);
+  document.getElementById('btnCheck').disabled = (answered(cur) || sel<0);
 }
 function renderAll(){
-  renderProgress(); renderHead(); renderGrid(); renderOpts(); renderExpl(); renderActions();
+  renderProgress(); renderHead(); renderGrid(); renderOptions(); renderExpl(); renderActions();
   setSoundIcon(); clearStatus();
-  if(solved(cur)) showSolvedStatus();
-}
-function showSolvedStatus(){
-  if(state.solved.every(Boolean)) status('done','બધા કોયડા પૂર્ણ. ખૂબ સરસ! 🌸',true);
-  else status('done','આ કોયડો પૂર્ણ. તૈયાર હો ત્યારે આગળ વધો.',true);
+  const a=state.answers[cur];
+  if(a){
+    if(a.correct) status('ok','સાચો જવાબ!',true);
+    else status('bad','સાચો જવાબ નીચે દર્શાવ્યો છે.',true);
+  }
 }
 
 /* ---- status ---- */
@@ -472,57 +476,61 @@ let stTimer;
 function status(type,msg,sticky){const s=document.getElementById('status');s.className='status show '+type;s.textContent=msg;clearTimeout(stTimer);if(!sticky)stTimer=setTimeout(clearStatus,2300);}
 function clearStatus(){document.getElementById('status').className='status';}
 
-/* ---- interaction ---- */
-function pickOption(v){
-  if(solved(cur)) return;
-  state.picked[cur]=v; save(state);
-  paintOpts(); renderActions(); clearStatus();
-}
-function checkAnswer(){
-  if(solved(cur)) return;
-  const v=state.picked[cur];
-  if(v===null) return;
-  if(v===PUZZLES[cur].answer){
-    state.solved[cur]=true; save(state);
-    paintQ(); paintOpts(); renderExpl(); renderActions();
-    if(soundOn) playCorrect();
-    onSolved();
-  } else {
-    if(state.wrongs[cur].indexOf(v)<0) state.wrongs[cur].push(v);
-    state.picked[cur]=null; save(state);
-    const el=document.querySelector('.opt[data-v="'+v+'"]');
-    paintOpts(); renderActions();
-    if(el){ el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake');
-      el.addEventListener('animationend',()=>el.classList.remove('shake'),{once:true}); }
-    if(soundOn) playWrong();
-    status('bad','આ જવાબ બંધ બેસતો નથી. ફરી વિચારો.');
-  }
+/* ---- wrong-answer shake ---- */
+function shake(i){
+  const el=document.querySelector('.opt[data-i="'+i+'"]'); if(!el) return;
+  el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake');
+  el.addEventListener('animationend',()=>el.classList.remove('shake'),{once:true});
 }
 
-/* ---- done ---- */
-function onSolved(){
-  const all = state.solved.every(Boolean);
-  if(all){
-    status('done','બધા કોયડા પૂર્ણ. ખૂબ સરસ! 🌸',true);
-    if(soundOn) playWin();
-    if(!state.celebrated){ state.celebrated=true; save(state); showCelebrate(); }
-    markDone();
+/* ---- phase 1: selecting (nothing is revealed) ---- */
+function pickOption(i){
+  if(answered(cur)) return;
+  sel=i;
+  paintOptions(); renderActions(); clearStatus();
+}
+
+/* ---- phase 2: checked (terminal) ---- */
+function checkAnswer(){
+  if(state.answers[cur]) return;                    // already locked
+  if(sel<0) return;                                 // nothing selected
+  const q=PUZZLES[cur], ok=(sel===q.answer);
+  state.answers[cur]={ selected: sel, correct: ok };  // the user's own pick, always
+  save(state);
+  paintQ(); renderOptions(); renderExpl(); renderActions();
+  if(ok){
+    if(soundOn) playCorrect();
+    status('ok','સાચો જવાબ!',true);
   } else {
-    status('done','આ કોયડો પૂર્ણ. તૈયાર હો ત્યારે આગળ વધો.',true);
-    if(soundOn) playLevel();
+    if(soundOn) playWrong();
+    shake(sel);
+    status('bad','સાચો જવાબ નીચે દર્શાવ્યો છે.',true);
   }
+  onAnswered();
+}
+
+function onAnswered(){
+  const all = PUZZLES.every((p,i)=>!!state.answers[i]);
+  if(!all){ if(soundOn) playLevel(); return; }     // mid-set question done
+  markDone();                                      // ACTIVITY_DONE now — not in 5s
+  if(state.celebrated) return;
+  setTimeout(function(){
+    state.celebrated=true; save(state);
+    if(soundOn) playWin();
+    showCelebrate();
+  }, 5000);                                        // let the revealed answer be read first
 }
 
 /* ---- navigation ---- */
 function nextPuzzle(){
-  if(cur<N-1 && solved(cur)){
-    cur++; state.tab=cur; save(state); renderAll();
+  if(cur<N-1 && answered(cur)){
+    cur++; state.tab=cur; sel=-1; save(state); renderAll();
     window.scrollTo({top:0,behavior:'smooth'});
   }
 }
 function prevPuzzle(){
   if(cur>0){
-    cur--; state.tab=cur; save(state); renderAll();
+    cur--; state.tab=cur; sel=-1; save(state); renderAll();
     window.scrollTo({top:0,behavior:'smooth'});
   }
 }
@@ -541,16 +549,16 @@ function closeCelebrate(){
 /* ---- keyboard ---- */
 window.addEventListener('keydown',e=>{
   if(e.key==='Enter'){ checkAnswer(); return; }
-  if(solved(cur)) return;
+  if(answered(cur)) return;
   const idx='ABCD'.indexOf(e.key.toUpperCase());
-  if(idx>=0){ pickOption(PUZZLES[cur].options[idx]); return; }
-  if(e.key>='1'&&e.key<='4'){ pickOption(PUZZLES[cur].options[parseInt(e.key,10)-1]); }
+  if(idx>=0){ pickOption(idx); return; }
+  if(e.key>='1'&&e.key<='4'){ pickOption(parseInt(e.key,10)-1); }
 });
 
 /* ---- init ---- */
 preloadSounds();
 renderAll();
-if(state.solved.every(Boolean)){
+if(PUZZLES.every((p,i)=>!!state.answers[i])){
   status('done','બધા કોયડા પૂર્ણ. ખૂબ સરસ! 🌸',true);
   _completed=true;
   pushProgress();
