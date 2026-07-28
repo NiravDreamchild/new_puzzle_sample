@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#FBF9FC">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Dreamchild · Hidden Object</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Vadodara:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FBF9FC;
+  --surface:#FFFFFF;
+  --ink:#2E2A32;
+  --muted:#8C8794;
+  --line:#ECE7F0;
+  --brand:#752886;
+  --brand-deep:#561F69;
+  --brand-soft:#F3E9F8;
+  --accent:#F2A03D;
+  --accent-soft:#FCEFDC;
+  --mint:#2F9B63;
+  --mint-soft:#E5F4EC;
+  --rose:#C75C72;
+  --rose-soft:#FAEAEE;
+  --mark:#E23B3B;          /* the "circled it" red — swap for --rose if you want it softer */
+  --shadow:0 10px 30px -12px rgba(78,33,95,.18);
+  --shadow-sm:0 4px 14px -8px rgba(78,33,95,.20);
+  --r-lg:22px; --r-md:16px; --r-sm:12px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg);color:var(--ink);
+  font-family:'Hind Vadodara',sans-serif;
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+  background-image:radial-gradient(120% 60% at 50% -10%, var(--brand-soft) 0%, rgba(243,233,248,0) 60%);
+}
+.wrap{max-width:460px;margin:0 auto;padding:16px 16px 28px;position:relative;z-index:1;}
+
+/* ---- header ---- */
+.phead{background:var(--surface);border:1px solid var(--line);border-radius:18px;
+  box-shadow:0 6px 20px -12px rgba(78,33,95,.16);padding:15px 16px;margin-bottom:14px;}
+.hrow1{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.ptitle{font-weight:700;font-size:23px;line-height:1.05;color:var(--brand);margin:0;letter-spacing:-.01em;}
+.hctrls{display:flex;align-items:center;gap:8px;flex:none;}
+.hbtn{width:40px;height:38px;border:1px solid var(--line);border-radius:11px;background:var(--surface);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-appearance:none;padding:0;
+  transition:background .15s ease;}
+.hbtn:active{background:var(--brand-soft);}
+.hbtn svg{width:20px;height:20px;fill:none;stroke:var(--muted);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.hbtn.info{width:38px;background:var(--brand-soft);border-color:transparent;}
+.hbtn.info svg{stroke:var(--brand);}
+.hsub{text-align:center;font-weight:600;font-size:15px;line-height:1.5;color:var(--ink);margin:13px 0 1px;}
+
+/* ---- stage card ---- */
+.stage{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
+  box-shadow:0 8px 28px -10px rgba(78,33,95,.16), 0 2px 8px -3px rgba(78,33,95,.08);padding:14px;margin-bottom:14px;}
+
+/* scene viewport */
+.scene{position:relative;overflow:hidden;border-radius:12px;border:1px solid var(--line);
+  background:#F7F3FA;touch-action:none;user-select:none;-webkit-user-select:none;cursor:crosshair;}
+.canvas{position:absolute;left:0;top:0;width:100%;transform-origin:0 0;will-change:transform;--inv:1;}
+.canvas img{display:block;width:100%;height:auto;pointer-events:none;-webkit-user-drag:none;}
+.layer{position:absolute;inset:0;pointer-events:none;}
+.oops{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:26px;font-size:13.5px;line-height:1.6;color:var(--muted);}
+.oops b{color:var(--ink);}
+.scene.err .oops{display:flex;}
+.scene.err .canvas{display:none;}
+
+/* scene markers — found/hint rings scale WITH the picture so they stay around
+   the object; the miss ripple stays a constant size on screen */
+.spot{position:absolute;transform:translate(-50%,-50%) scale(var(--inv));}
+.spot i{display:flex;align-items:center;justify-content:center;border-radius:50%;font-style:normal;}
+.spot.found,.spot.hint{transform:translate(-50%,-50%);}
+.spot.found i{border:3px solid var(--mark);background:transparent;
+  box-shadow:0 0 0 2px rgba(255,255,255,.55);
+  animation:pop .34s cubic-bezier(.22,1,.36,1);}
+.spot.hint i{border:3px solid var(--accent);background:rgba(242,160,61,.16);
+  animation:pulse 1s ease infinite;}
+.spot.miss i{width:clamp(30px,9vw,40px);height:clamp(30px,9vw,40px);
+  border:2.5px solid var(--rose);background:var(--rose-soft);animation:fade .7s ease forwards;}
+@keyframes pop{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.14)}}
+@keyframes fade{from{opacity:.9;transform:scale(.7)}to{opacity:0;transform:scale(1.25)}}
+
+/* zoom reset */
+.zreset{position:absolute;right:8px;bottom:8px;min-height:32px;padding:0 12px;border-radius:11px;
+  background:rgba(255,255,255,.94);border:1px solid var(--line);box-shadow:var(--shadow-sm);
+  font-family:'Hind Vadodara',sans-serif;font-weight:600;font-size:12px;color:var(--ink);
+  display:none;align-items:center;gap:5px;cursor:pointer;-webkit-appearance:none;}
+.zreset.on{display:flex;}
+.zreset svg{width:14px;height:14px;fill:none;stroke:var(--brand);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+
+/* tally */
+.tally{display:flex;align-items:center;justify-content:center;gap:7px;margin-top:13px;
+  font-size:13px;font-weight:600;color:var(--muted);}
+.tally b{color:var(--brand);font-weight:700;}
+.bar{height:5px;border-radius:999px;background:var(--line);margin-top:9px;overflow:hidden;}
+.bar i{display:block;height:100%;width:0;border-radius:999px;
+  background:linear-gradient(90deg,var(--brand),var(--brand-deep));transition:width .3s ease;}
+
+/* ---- find list ---- */
+.findhead{text-align:center;font-size:13.5px;font-weight:600;color:var(--ink);margin:15px 0 8px;}
+.findhead b{color:var(--brand);font-weight:700;}
+.findwrap{position:relative;border-radius:12px;overflow:hidden;border:1px solid var(--line);
+  background:#FCFAFD;line-height:0;}
+.findwrap.hide{display:none;}
+.findwrap img{display:block;width:100%;height:auto;}
+.ticks{position:absolute;inset:0;pointer-events:none;}
+.tk{position:absolute;transform:translate(-50%,-50%);border-radius:50%;
+  width:clamp(26px,8vw,38px);height:clamp(26px,8vw,38px);
+  border:3px solid var(--mark);background:transparent;
+  box-shadow:0 0 0 2px rgba(255,255,255,.55);
+  animation:pop .34s cubic-bezier(.22,1,.36,1);}
+.badges{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;justify-content:center;}
+.badges.hide{display:none;}
+.badge{min-width:32px;height:32px;padding:0 8px;border-radius:10px;border:1px solid var(--line);
+  background:#fff;display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:700;color:#6b6470;transition:all .2s ease;}
+.badge.found{border:2px solid var(--brand);color:var(--brand);background:#fff;}
+
+/* ---- status ---- */
+.status{min-height:24px;text-align:center;font-size:14px;line-height:1.4;font-weight:500;
+  color:var(--muted);padding:2px 8px;margin:6px 0;opacity:0;transition:opacity .25s ease;}
+.status.show{opacity:1;}
+.status.ok{color:var(--mint);}
+.status.bad{color:var(--rose);}
+.status.hint{color:#B5781E;}
+.status.done{color:var(--brand);font-weight:600;}
+
+/* ---- action bar ---- */
+.actionbar{margin-top:14px;margin-bottom:6px;}
+.actionbar .inner{display:flex;align-items:center;justify-content:center;}
+.cbtn{font-family:'Hind Vadodara',sans-serif;cursor:pointer;-webkit-appearance:none;
+  display:flex;align-items:center;justify-content:center;gap:5px;
+  transition:transform .12s ease,opacity .2s ease,background .2s ease,box-shadow .2s ease;}
+.cbtn:active{transform:scale(.97);}
+.cbtn svg{width:16px;height:16px;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;}
+.cbtn.hint{min-height:36px;border-radius:12px;padding:0 22px;background:var(--surface);border:1px solid var(--line);
+  color:var(--ink);font-weight:600;font-size:13px;box-shadow:var(--shadow-sm);}
+.cbtn.hint svg{stroke:var(--brand);}
+
+/* ---- footer ---- */
+.foot{text-align:center;font-size:11px;color:var(--muted);letter-spacing:.03em;margin-top:14px;}
+.foot b{font-weight:600;color:#a79bb0;}
+
+/* ---- help sheet ---- */
+.scrim{position:fixed;inset:0;background:rgba(46,42,50,.42);backdrop-filter:blur(2px);z-index:40;
+  opacity:0;pointer-events:none;transition:opacity .28s ease;}
+.scrim.open{opacity:1;pointer-events:auto;}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:41;background:var(--surface);
+  border-radius:26px 26px 0 0;box-shadow:0 -16px 40px -16px rgba(46,42,50,.3);
+  max-width:460px;margin:0 auto;padding:10px 22px calc(26px + env(safe-area-inset-bottom));
+  transform:translateY(110%);transition:transform .34s cubic-bezier(.22,1,.36,1);}
+.sheet.open{transform:translateY(0);}
+.grab{width:42px;height:5px;border-radius:999px;background:var(--line);margin:6px auto 16px;}
+.sheet h3{font-weight:700;font-size:20px;margin:0 0 4px;}
+.sheet .lead{font-size:14px;color:var(--muted);margin:0 0 18px;line-height:1.5;}
+.step{display:flex;gap:14px;align-items:flex-start;margin-bottom:16px;}
+.step .ic{flex:none;width:46px;height:46px;border-radius:14px;background:var(--brand-soft);
+  display:flex;align-items:center;justify-content:center;}
+.step .ic svg{width:26px;height:26px;stroke:var(--brand);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
+.step .tx b{display:block;font-weight:600;font-size:15px;color:var(--ink);margin-bottom:2px;}
+.step .tx p{margin:0;font-size:13.5px;color:var(--muted);line-height:1.5;}
+.sheet .got{width:100%;margin-top:6px;background:var(--brand);color:#fff;border:none;cursor:pointer;
+  font-family:'Hind Vadodara',sans-serif;border-radius:14px;min-height:48px;font-weight:700;font-size:15px;}
+
+/* ---- celebration ---- */
+.celebrate{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;
+  background:rgba(251,249,252,.86);backdrop-filter:blur(3px);text-align:center;padding:30px;}
+.celebrate.show{display:flex;flex-direction:column;}
+.celebrate .em{font-size:54px;margin-bottom:6px;animation:rise .6s cubic-bezier(.22,1,.36,1);}
+.celebrate h2{font-weight:700;font-size:24px;color:var(--brand);margin:0 0 8px;}
+.celebrate p{font-size:15px;color:var(--ink);font-weight:500;margin:0 0 22px;max-width:280px;line-height:1.5;}
+.celebrate .btn{min-width:200px;background:var(--brand);color:#fff;border:none;cursor:pointer;
+  font-family:'Hind Vadodara',sans-serif;border-radius:14px;min-height:55px;font-weight:700;font-size:18px;}
+@keyframes rise{from{transform:translateY(16px) scale(.8);opacity:0}to{transform:none;opacity:1}}
+.petal{position:fixed;top:-24px;z-index:49;font-size:18px;animation:drift linear forwards;pointer-events:none;}
+@keyframes drift{to{transform:translateY(106vh) rotate(360deg);opacity:0}}
+
+/* ---- ambient puzzle-piece background ---- */
+.bg{position:fixed;top:0;left:0;right:0;height:100vh;height:100lvh;overflow:hidden;pointer-events:none;z-index:0;}
+.piece{position:absolute;transform:rotate(var(--rot,0deg));opacity:.2;}
+.piece svg{display:block;width:100%;height:auto;fill:currentColor;}
+.piece.f1{top:-30px;left:-46px;width:150px;color:#fa7068;--rot:-14deg;}
+.piece.f2{top:78px;right:-52px;width:150px;color:#fbca5f;--rot:18deg;}
+.piece.f3{top:46%;right:-58px;width:110px;color:#a0c95d;--rot:26deg;}
+.piece.f4{bottom:-40px;right:-30px;width:170px;color:#9ddbe6;--rot:-18deg;}
+.piece.f5{bottom:46px;left:-56px;width:150px;color:#f3adc9;--rot:8deg;}
+.piece.f6{top:36%;left:-70px;width:100px;color:#d4ab99;--rot:30deg;}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001ms !important;transition-duration:.05ms !important;}
+}
+:focus-visible{outline:2.5px solid var(--brand);outline-offset:2px;border-radius:6px;}
+</style>
+</head>
+<body>
+<div class="bg" aria-hidden="true">
+  <div class="piece f1"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece f2"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece f3"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece f4"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece f5"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece f6"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+</div>
+
+<div class="wrap">
+  <!-- header -->
+  <header class="phead">
+    <div class="hrow1">
+      <h1 class="ptitle">Find the image</h1>
+      <div class="hctrls">
+        <button class="hbtn" id="soundBtn" onclick="toggleSound()" aria-label="Sound"></button>
+        <button class="hbtn info" onclick="openHelp()" aria-label="How to play">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><circle cx="12" cy="8" r="0.6" fill="currentColor" stroke="none"/></svg>
+        </button>
+      </div>
+    </div>
+    <p class="hsub">નીચે આપેલાં નાનાં ચિત્રો મોટા ચિત્રમાં છુપાયેલાં છે<br>તે શોધીને તેના પર ટૅપ કરો.</p>
+  </header>
+
+  <!-- play area -->
+  <div class="stage">
+    <div class="scene" id="scene">
+      <div class="canvas" id="canvas">
+        <img id="pic" alt="">
+        <div class="layer" id="layer"></div>
+      </div>
+      <div class="oops"><b>ચિત્ર લોડ થઈ શક્યું નથી.</b><br>સ્ક્રિપ્ટમાં <b>IMAGE_SRC</b> તપાસો.</div>
+      <button class="zreset" id="zreset" onclick="resetView()">
+        <svg viewBox="0 0 24 24"><path d="M3 9V5a2 2 0 0 1 2-2h4M21 9V5a2 2 0 0 0-2-2h-4M3 15v4a2 2 0 0 0 2 2h4M21 15v4a2 2 0 0 1-2 2h-4"/></svg>
+        પૂરું ચિત્ર
+      </button>
+    </div>
+
+    <div class="tally"><span>મળી ગયાં:</span> <b id="tally">0/0</b></div>
+    <div class="bar"><i id="bar"></i></div>
+
+    <div class="findhead">આ <b id="fcount">0</b> ચિત્રો શોધો</div>
+    <div class="findwrap hide" id="findWrap">
+      <img id="listPic" alt="">
+      <div class="ticks" id="ticks"></div>
+    </div>
+    <div class="badges hide" id="badges"></div>
+  </div>
+
+  <!-- status -->
+  <div class="status" id="status"></div>
+
+  <!-- action bar -->
+  <div class="actionbar">
+    <div class="inner">
+      <button class="cbtn hint" onclick="useHint()">
+        <svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 1 4 10.5c-.7.6-1 1.2-1 2v.5H9v-.5c0-.8-.3-1.4-1-2A6 6 0 0 1 12 3z"/></svg>
+        Hint
+      </button>
+    </div>
+  </div>
+
+  <div class="foot">© <b>Dreamchild Garbhsanskar</b></div>
+</div>
+
+<!-- help sheet -->
+<div class="scrim" id="scrim" onclick="closeHelp()"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="How to play">
+  <div class="grab"></div>
+  <h3>કેવી રીતે રમવું</h3>
+  <p class="lead">નાનાં ચિત્રો મોટા ચિત્રમાં ક્યાંક છુપાયેલાં છે. ઉતાવળ નહીં — શાંતિથી.</p>
+
+  <div class="step">
+    <div class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 15l4-4 4 4 3-3 4 4"/></svg></div>
+    <div class="tx"><b>નીચેની પટ્ટી જુઓ</b><p>નીચે નંબર સાથે નાનાં ચિત્રો આપેલાં છે. એ જ વસ્તુઓ ઉપરના મોટા ચિત્રમાં શોધવાની છે.</p></div>
+  </div>
+
+  <div class="step">
+    <div class="ic"><svg viewBox="0 0 24 24"><path d="M9 11V5.5a1.5 1.5 0 0 1 3 0V11"/><path d="M12 11V4.5a1.5 1.5 0 0 1 3 0V11"/><path d="M15 11V6.5a1.5 1.5 0 0 1 3 0V15a6 6 0 0 1-6 6h-1a6 6 0 0 1-5-2.7L6 15.5a1.6 1.6 0 0 1 2.6-1.8L9 14V11z"/></svg></div>
+    <div class="tx"><b>વસ્તુ પર ટૅપ કરો</b><p>વસ્તુ દેખાય કે તરત તેના પર આંગળી અડાડો. સાચી હોય તો તેની આસપાસ લાલ ગોળ કુંડાળું દોરાશે — નીચેની પટ્ટીમાં પણ એ જ ચિત્ર ફરતે કુંડાળું થશે.</p></div>
+  </div>
+
+  <div class="step">
+    <div class="ic"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M11 8v6M8 11h6"/><path d="M21 21l-5-5"/></svg></div>
+    <div class="tx"><b>ઝૂમ કરો</b><p>ચિત્ર નાનું લાગે તો બે આંગળીથી ખેંચીને મોટું કરો, અથવા બે વાર ટૅપ કરો. પછી આંગળી સરકાવીને ફેરવો.</p></div>
+  </div>
+
+  <div class="step">
+    <div class="ic"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 1 4 10.5c-.7.6-1 1.2-1 2v.5H9v-.5c0-.8-.3-1.4-1-2A6 6 0 0 1 12 3z"/></svg></div>
+    <div class="tx"><b>અટકી જાવ તો</b><p>"Hint" દબાવો — બાકી રહેલી એક વસ્તુની જગ્યા થોડી વાર ઝબકશે.</p></div>
+  </div>
+
+  <button class="got" onclick="closeHelp()">Close</button>
+</div>
+
+<!-- celebration -->
+<div class="celebrate" id="celebrate">
+  <div class="em">🌸</div>
+  <h2>કોયડો પૂર્ણ</h2>
+  <p>ખૂબ સરસ! તમારી એકાગ્રતા કમાલની છે.</p>
+  <button class="btn" onclick="closeCelebrate()">Congratulations</button>
+</div>
+
+<script>
+/* ============================ CONFIG — START ============================
+   Generated by coord_picker.html. Paste the whole block from the picker
+   over everything between CONFIG — START and CONFIG — END.
+     x,  y  : object centre in the SCENE image, as a %
+     r      : tap radius, as a % of the scene width
+     lx, ly : where item n sits on the FIND-LIST image, as a % (null = none)
+   ====================================================================== */
+
+const IMAGE_SRC   = 'https://dreamchild.s3.ap-south-1.amazonaws.com/Live/Data_Master_New/File_8359/1785238576_1177654426.png';
+const ASPECT      = 0.7634;   /* scene width / height */
+
+const LIST_SRC    = 'https://dreamchild.s3.ap-south-1.amazonaws.com/Live/Data_Master_New/File_8359/1785238576_1361198136.png';
+const LIST_ASPECT = 2.0922;   /* find-list width / height */
+
+const OBJECTS = [
+  {n:  1, id:'obj1',   name:'',                  x: 87.5, y: 45.7, r:   4, lx:null, ly:null},
+  {n:  2, id:'obj2',   name:'',                  x: 81.2, y: 79.2, r: 4.5, lx:null, ly:null},
+  {n:  3, id:'obj3',   name:'',                  x: 17.4, y: 58.6, r: 4.5, lx:null, ly:null},
+  {n:  4, id:'obj4',   name:'',                  x:   37, y: 80.6, r:   6, lx:null, ly:null},
+  {n:  5, id:'obj5',   name:'',                  x: 93.4, y: 65.9, r: 3.5, lx:null, ly:null},
+  {n:  6, id:'obj6',   name:'',                  x: 38.2, y:   12, r: 4.5, lx:null, ly:null},
+  {n:  7, id:'obj7',   name:'',                  x: 22.6, y: 38.7, r:   5, lx:null, ly:null},
+  {n:  8, id:'obj8',   name:'',                  x: 21.4, y:   18, r:   5, lx:null, ly:null},
+  {n:  9, id:'obj9',   name:'',                  x: 80.8, y: 15.6, r:   5, lx:null, ly:null},
+  {n: 10, id:'obj10',  name:'',                  x: 66.3, y: 89.2, r:   6, lx:null, ly:null}
+];
+
+/* ============================= CONFIG — END ============================= */
+
+const KEY = 'dcgs_hidden_v1';   /* bump the suffix if you change the object list */
+const HIT_MIN = 24;             /* a tap target is never smaller than 24 CSS px */
+const KMAX = 4;                 /* maximum zoom */
+
+function save(d){try{localStorage.setItem(KEY,JSON.stringify(d))}catch(e){}}
+function load(){try{return JSON.parse(localStorage.getItem(KEY))}catch(e){return null}}
+
+/* ---- app bridge (RN WebView) ---- */
+function postToApp(m){try{window.ReactNativeWebView&&window.ReactNativeWebView.postMessage(JSON.stringify(m));}catch(e){}}
+function activityDone(){postToApp({type:'ACTIVITY_DONE'});}   /* -> onWebActivityComplete in the app */
+
+/* active time only (pauses while the app is backgrounded) */
+let _active=0,_since=Date.now(),_completed=false;
+document.addEventListener('visibilitychange',function(){
+  if(document.hidden){_active+=Date.now()-_since;}else{_since=Date.now();}
+  pushProgress();
+});
+function timeSpentSec(){return Math.round((_active+(document.hidden?0:Date.now()-_since))/1000);}
+
+/* heartbeat: keep native updated so it can fire puzzle_exited on unmount (back press) */
+function pushProgress(){postToApp({type:'PROGRESS',time_spent_sec:timeSpentSec(),completed:_completed});}
+setInterval(pushProgress,3000);
+pushProgress();
+
+function markDone(){ _completed=true; activityDone(); pushProgress(); }   /* call when the puzzle is solved */
+window.addEventListener('pagehide',pushProgress);   /* best-effort, where it fires */
+
+/* ---- state ---- */
+let state = load() || {sound:false, celebrated:false, found:[]};
+if(!Array.isArray(state.found)) state.found=[];
+state.found = state.found.filter(id => OBJECTS.some(o => o.id === id));   /* drop stale ids */
+let soundOn = !!state.sound;
+
+/* ---- sound (mp3 assets) ---- */
+const SND={
+  correct : 'https://dreamchildapp.com/backend/assets/acitivty_sounds/Right.mp3',
+  wrong   : 'https://dreamchildapp.com/backend/assets/acitivty_sounds/Wrong.mp3',
+  level   : 'https://dreamchildapp.com/backend/assets/acitivty_sounds/Level.mp3',
+  win     : 'https://dreamchildapp.com/backend/assets/acitivty_sounds/Complete.mp3',
+  hint    : 'https://dreamchildapp.com/backend/assets/acitivty_sounds/Hint.mp3'
+};
+const _audio={};
+function preloadSounds(){for(const k in SND){try{const a=new Audio(SND[k]);a.preload='auto';_audio[k]=a;}catch(e){}}}
+function playSound(k){
+  if(!soundOn) return;
+  const a=_audio[k]; if(!a) return;
+  try{ a.pause(); a.currentTime=0; a.play().catch(function(){}); }catch(e){}
+}
+function playCorrect(){ playSound('correct'); }
+function playWrong(){   playSound('wrong');   }
+function playLevel(){   playSound('level');   }
+function playWin(){     playSound('win');     }
+function playHint(){    playSound('hint');    }
+function setSoundIcon(){const b=document.getElementById('soundBtn');b.innerHTML=soundOn
+  ?'<svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M16 9a3.5 3.5 0 0 1 0 6"/><path d="M19 7a7 7 0 0 1 0 10"/></svg>'
+  :'<svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M22 9l-5 6M17 9l5 6"/></svg>';}
+function toggleSound(){soundOn=!soundOn;state.sound=soundOn;setSoundIcon();save(state);}
+
+/* ---- helpers ---- */
+function isFound(id){ return state.found.indexOf(id)>=0; }
+function isSolved(){ return OBJECTS.length>0 && state.found.length>=OBJECTS.length; }
+function label(o){ return o.name ? o.name : ('ચિત્ર '+o.n); }
+
+/* ---- view transform (zoom + pan) ---- */
+const scene=document.getElementById('scene'), canvas=document.getElementById('canvas');
+let k=1, tx=0, ty=0, baseW=0, baseH=0, aspect=ASPECT;
+
+function sizeScene(){
+  baseW = scene.clientWidth;
+  baseH = Math.round(baseW/aspect);
+  scene.style.height = baseH+'px';
+  clampView(); applyView();
+  renderMarks();          /* ring sizes are derived from baseW */
+}
+function clampView(){
+  k=Math.min(KMAX,Math.max(1,k));
+  tx=Math.min(0,Math.max(baseW-baseW*k,tx));
+  ty=Math.min(0,Math.max(baseH-baseH*k,ty));
+}
+function applyView(){
+  canvas.style.transform='translate('+tx+'px,'+ty+'px) scale('+k+')';
+  canvas.style.setProperty('--inv', 1/k);
+  document.getElementById('zreset').classList.toggle('on', k>1.02);
+}
+function zoomAt(nk, cx, cy){
+  nk=Math.min(KMAX,Math.max(1,nk));
+  const bx=(cx-tx)/k, by=(cy-ty)/k;
+  k=nk; tx=cx-bx*k; ty=cy-by*k;
+  clampView(); applyView();
+}
+function resetView(){ k=1; tx=0; ty=0; applyView(); }
+window.addEventListener('resize',sizeScene);
+
+/* ---- render ---- */
+function mark(cls, xPct, yPct, inner){
+  const d=document.createElement('div');
+  d.className='spot '+cls;
+  d.style.left=xPct+'%'; d.style.top=yPct+'%';
+  d.innerHTML='<i>'+(inner||'')+'</i>';
+  document.getElementById('layer').appendChild(d);
+  return d;
+}
+function ringPx(o){ return 2*Math.max(HIT_MIN, baseW*(o.r||7.5)/100); }
+function sizeRing(el,o){
+  const d=ringPx(o);
+  el.firstChild.style.width=d+'px';
+  el.firstChild.style.height=d+'px';
+}
+function renderMarks(){
+  const layer=document.getElementById('layer');
+  layer.querySelectorAll('.spot.found').forEach(el=>el.remove());
+  OBJECTS.forEach(o=>{
+    if(!isFound(o.id)) return;
+    sizeRing(mark('found', o.x, o.y), o);
+  });
+}
+function renderList(){
+  /* ticks drawn on the find-list picture */
+  const t=document.getElementById('ticks'); t.innerHTML='';
+  OBJECTS.forEach(o=>{
+    if(o.lx==null || !isFound(o.id)) return;
+    const d=document.createElement('div');
+    d.className='tk'; d.style.left=o.lx+'%'; d.style.top=o.ly+'%';
+    t.appendChild(d);
+  });
+  /* number badges for anything the strip can't show */
+  const needBadges = OBJECTS.some(o=>o.lx==null) || !LIST_SRC;
+  const b=document.getElementById('badges');
+  b.classList.toggle('hide', !needBadges || !OBJECTS.length);
+  if(needBadges){
+    b.innerHTML='';
+    OBJECTS.forEach(o=>{
+      if(LIST_SRC && o.lx!=null) return;      /* already ticked on the picture */
+      const s=document.createElement('span');
+      s.className='badge'+(isFound(o.id)?' found':'');
+      s.textContent = String(o.n);
+      b.appendChild(s);
+    });
+  }
+}
+function renderTally(){
+  const n=OBJECTS.length||1;
+  document.getElementById('tally').textContent=state.found.length+'/'+OBJECTS.length;
+  document.getElementById('bar').style.width=(state.found.length/n*100)+'%';
+  document.getElementById('fcount').textContent=OBJECTS.length;
+}
+function renderAll(){ renderMarks(); renderList(); renderTally(); setSoundIcon(); }
+
+/* ---- status ---- */
+let stTimer;
+function status(type,msg,sticky){const s=document.getElementById('status');s.className='status show '+type;s.textContent=msg;clearTimeout(stTimer);if(!sticky)stTimer=setTimeout(clearStatus,2300);}
+function clearStatus(){document.getElementById('status').className='status';}
+
+/* ---- tapping ---- */
+function toPct(sx,sy){ return [((sx-tx)/k)/baseW*100, ((sy-ty)/k)/baseH*100]; }
+function hitTest(xPct,yPct){
+  let best=-1, bestRatio=Infinity;
+  OBJECTS.forEach((o,i)=>{
+    if(isFound(o.id)) return;
+    const dx=(xPct-o.x)/100*baseW, dy=(yPct-o.y)/100*baseH;
+    const d=Math.sqrt(dx*dx+dy*dy);
+    const tol=Math.max(HIT_MIN, baseW*(o.r||7.5)/100);
+    const ratio=d/tol;                      /* scale-free: <=1 means inside */
+    if(ratio<bestRatio){ bestRatio=ratio; best=i; }
+  });
+  return (best>=0 && bestRatio<=1) ? best : -1;
+}
+/* a hit is committed immediately — no gesture delay on a correct tap */
+function tryHit(sx,sy){
+  if(isSolved()) return true;
+  const p=toPct(sx,sy);
+  if(p[0]<0||p[1]<0||p[0]>100||p[1]>100) return true;   /* outside the art: ignore, no penalty */
+  const i=hitTest(p[0],p[1]);
+  if(i<0) return false;
+  const o=OBJECTS[i];
+  state.found.push(o.id);
+  save(state);
+  renderAll();
+  if(soundOn) playCorrect();
+  status('ok', label(o)+' — મળી ગયું!');
+  checkDone();
+  return true;
+}
+/* a miss waits out the double-tap window, so zooming never sounds "wrong" */
+function missAt(sx,sy){
+  if(isSolved()) return;
+  const p=toPct(sx,sy);
+  if(soundOn) playWrong();
+  const m=mark('miss',p[0],p[1]); setTimeout(()=>m.remove(),720);
+  status('bad','અહીં કંઈ નથી. ફરી જુઓ.');
+}
+
+/* pointer gestures: tap · drag-pan · pinch-zoom · double-tap zoom */
+const pts=new Map();
+let panning=false, moved=false, lastX=0, lastY=0, pinchD=0, lastTap=0, lastTapXY=[0,0], missTimer=0;
+function sceneXY(e){const r=scene.getBoundingClientRect();return [e.clientX-r.left, e.clientY-r.top];}
+function dist(a,b){return Math.sqrt((a[0]-b[0])*(a[0]-b[0])+(a[1]-b[1])*(a[1]-b[1]));}
+function mid(a,b){return [(a[0]+b[0])/2,(a[1]+b[1])/2];}
+
+scene.addEventListener('pointerdown',e=>{
+  try{ scene.setPointerCapture(e.pointerId); }catch(_){}
+  pts.set(e.pointerId, sceneXY(e));
+  if(pts.size===1){ const p=pts.get(e.pointerId); panning=true; moved=false; lastX=p[0]; lastY=p[1]; }
+  else if(pts.size===2){ const v=[...pts.values()]; pinchD=dist(v[0],v[1]); panning=false; moved=true; }
+});
+scene.addEventListener('pointermove',e=>{
+  if(!pts.has(e.pointerId)) return;
+  pts.set(e.pointerId, sceneXY(e));
+  if(pts.size>=2){
+    const v=[...pts.values()], d=dist(v[0],v[1]), m=mid(v[0],v[1]);
+    if(pinchD>0) zoomAt(k*(d/pinchD), m[0], m[1]);
+    pinchD=d; return;
+  }
+  if(!panning) return;
+  const p=pts.get(e.pointerId);
+  if(Math.abs(p[0]-lastX)>6||Math.abs(p[1]-lastY)>6) moved=true;
+  if(k>1){ tx+=p[0]-lastX; ty+=p[1]-lastY; clampView(); applyView(); }
+  lastX=p[0]; lastY=p[1];
+});
+function endPointer(e){
+  const p=pts.get(e.pointerId); pts.delete(e.pointerId);
+  if(pts.size===0){
+    if(panning && !moved && p){
+      const now=Date.now();
+      if(now-lastTap<300 && dist(p,lastTapXY)<28){        /* double tap → zoom */
+        lastTap=0; clearTimeout(missTimer);
+        if(k>1.02) resetView(); else zoomAt(2.5,p[0],p[1]);
+      } else {
+        lastTap=now; lastTapXY=p;
+        clearTimeout(missTimer);
+        if(!tryHit(p[0],p[1])) missTimer=setTimeout(()=>missAt(p[0],p[1]),280);
+      }
+    }
+    panning=false; pinchD=0;
+  } else if(pts.size===1){ const v=[...pts.values()][0]; lastX=v[0]; lastY=v[1]; panning=true; moved=true; }
+}
+scene.addEventListener('pointerup',endPointer);
+scene.addEventListener('pointercancel',endPointer);
+scene.addEventListener('wheel',e=>{ e.preventDefault(); const p=sceneXY(e); zoomAt(k*(e.deltaY<0?1.12:1/1.12), p[0], p[1]); },{passive:false});
+
+/* the reset-view button sits inside the scene — keep its taps off the board */
+['pointerdown','pointerup','pointermove','click'].forEach(t=>
+  document.getElementById('zreset').addEventListener(t,e=>e.stopPropagation()));
+
+/* ---- hint ---- */
+function useHint(){
+  if(isSolved()){ status('hint','આ કોયડો પહેલેથી પૂર્ણ છે.'); return; }
+  const rem=OBJECTS.filter(o=>!isFound(o.id));
+  if(!rem.length) return;
+  const o=rem[Math.floor(Math.random()*rem.length)];
+  const m=mark('hint',o.x,o.y);
+  sizeRing(m,o);
+  setTimeout(()=>m.remove(),1600);
+  if(soundOn) playHint();
+  status('hint','💡 '+label(o)+' અહીં છે.');
+}
+
+/* ---- done ---- */
+function checkDone(){
+  if(!isSolved()) return;
+  status('done','બધાં ચિત્રો મળી ગયાં. ખૂબ સરસ! 🌸',true);
+  if(soundOn) playWin();
+  if(!state.celebrated){ state.celebrated=true; save(state); showCelebrate(); }
+  markDone();
+}
+
+/* ---- help sheet ---- */
+function openHelp(){document.getElementById('scrim').classList.add('open');document.getElementById('sheet').classList.add('open');}
+function closeHelp(){document.getElementById('scrim').classList.remove('open');document.getElementById('sheet').classList.remove('open');}
+
+/* ---- celebration ---- */
+function showCelebrate(){const c=document.getElementById('celebrate');c.classList.add('show');const ems=['🌸','🌼','✨','🍃','💜'];for(let i=0;i<16;i++){const p=document.createElement('div');p.className='petal';p.textContent=ems[i%ems.length];p.style.left=(Math.random()*100)+'%';p.style.animationDuration=(2.4+Math.random()*1.6)+'s';p.style.animationDelay=(Math.random()*.6)+'s';document.body.appendChild(p);setTimeout(()=>p.remove(),4600);}}
+function closeCelebrate(){
+  document.getElementById('celebrate').classList.remove('show');
+  postToApp({type:'GO_BACK'});
+}
+
+/* ---- init ---- */
+(function initScene(){
+  const img=document.getElementById('pic');
+  img.addEventListener('load',function(){
+    if(img.naturalWidth && img.naturalHeight) aspect = img.naturalWidth/img.naturalHeight;
+    sizeScene(); renderMarks();
+  });
+  img.addEventListener('error',function(){ scene.classList.add('err'); });
+  img.src=IMAGE_SRC;
+})();
+
+(function initFindList(){
+  const wrap=document.getElementById('findWrap'), img=document.getElementById('listPic');
+  if(!LIST_SRC){ return; }                       /* badges already handle this */
+  img.addEventListener('load',function(){ wrap.classList.remove('hide'); renderList(); });
+  img.addEventListener('error',function(){ wrap.classList.add('hide'); renderList(); });
+  img.src=LIST_SRC;
+})();
+
+preloadSounds();
+sizeScene();
+renderAll();
+if(isSolved()){
+  status('done','બધાં ચિત્રો મળી ગયાં. ખૂબ સરસ! 🌸',true);
+  _completed=true;
+  pushProgress();
+} else if(!OBJECTS.length){
+  status('hint','OBJECTS ખાલી છે — coord_picker.html માંથી config પેસ્ટ કરો.',true);
+}
+</script>
+</body>
+</html>
