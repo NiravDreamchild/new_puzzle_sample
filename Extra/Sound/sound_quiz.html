@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#FBF9FC">
-<title>Dreamchild · Reasoning</title>
+<title>Dreamchild · Sound Quiz</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hind+Vadodara:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -62,42 +62,45 @@ body{
 .stage{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
   box-shadow:0 8px 28px -10px rgba(78,33,95,.16), 0 2px 8px -3px rgba(78,33,95,.08);padding:14px;margin-bottom:14px;}
 
-/* equations — one framed panel, columns aligned across every row */
-.eqpanel{border:1.5px solid var(--line);border-radius:16px;overflow:hidden;background:var(--surface);
-  box-shadow:0 2px 12px -8px rgba(78,33,95,.22);}
-.eqs{display:grid;grid-template-columns:1fr 17px 1fr 17px 1fr 14px minmax(46px,auto);}
-.c{display:flex;align-items:center;justify-content:center;min-height:56px;padding:8px 1px;
-  background:#FCFAFD;border-bottom:1px solid var(--line);}
-.c.rl{border-bottom:none;}
-.c.q{background:var(--brand-soft);}
-.term{display:inline-flex;align-items:center;justify-content:center;
-  font-size:clamp(20px,6.4vw,28px);line-height:1.15;}
-.term.dbl{padding:3px 5px;border-radius:10px;background:var(--accent-soft);
-  box-shadow:inset 0 0 0 1.5px rgba(242,160,61,.5);font-size:clamp(16px,5.2vw,23px);}
-.op{font-size:clamp(13px,4vw,17px);font-weight:600;color:var(--muted);}
-.c.q .op{color:#9C77A8;}
-.eqv{font-weight:700;font-size:clamp(15px,4.8vw,20px);color:var(--ink);}
-.c.q .eqv{color:var(--brand);font-size:clamp(17px,5.4vw,22px);}
+.soundnote{display:none;margin:0 0 12px;padding:9px 12px;border-radius:12px;background:var(--accent-soft);
+  color:#9A5A12;font-size:12.5px;font-weight:600;text-align:center;line-height:1.45;}
+.soundnote.show{display:block;}
 
-/* options */
-.opts{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:13px;}
-.opt{min-height:54px;border:1.5px solid var(--line);border-radius:14px;background:var(--surface);
-  font-family:'Hind Vadodara',sans-serif;font-weight:700;font-size:19px;color:var(--ink);
-  display:flex;align-items:center;justify-content:center;gap:9px;cursor:pointer;-webkit-appearance:none;
-  box-shadow:var(--shadow-sm);padding:0 8px;
-  transition:transform .12s ease,background .18s ease,color .18s ease,border-color .18s ease;}
+/* player */
+.player{display:flex;flex-direction:column;align-items:center;gap:11px;padding:10px 0 20px;}
+.playbtn{position:relative;width:104px;height:104px;border-radius:50%;border:none;cursor:pointer;
+  -webkit-appearance:none;padding:0;background:linear-gradient(135deg,var(--brand),var(--brand-deep));
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 14px 30px -12px rgba(110,42,133,.6);transition:transform .12s ease;}
+.playbtn:active{transform:scale(.96);}
+.playbtn svg{width:40px;height:40px;fill:none;stroke:#fff;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.playbtn::before,.playbtn::after{content:"";position:absolute;inset:0;border-radius:50%;
+  border:2px solid var(--brand);opacity:0;}
+.playbtn.on::before{animation:ring 1.4s ease-out infinite;}
+.playbtn.on::after{animation:ring 1.4s ease-out .55s infinite;}
+@keyframes ring{0%{transform:scale(1);opacity:.5}100%{transform:scale(1.6);opacity:0}}
+.ptext{margin:0;font-size:13px;font-weight:600;color:var(--muted);}
+
+/* option cards */
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+.opt{position:relative;min-height:58px;border-radius:14px;border:1px solid var(--line);background:var(--surface);
+  cursor:pointer;-webkit-appearance:none;padding:8px 11px 8px 41px;text-align:left;
+  display:flex;align-items:center;
+  font-family:'Hind Vadodara',sans-serif;font-weight:600;font-size:15px;line-height:1.3;color:var(--ink);
+  box-shadow:var(--shadow-sm);
+  transition:background .18s ease,border-color .18s ease,color .18s ease,transform .12s ease;}
 .opt:active{transform:scale(.98);}
-.opt .lb{flex:none;width:23px;height:23px;border-radius:50%;background:var(--brand-soft);color:var(--brand);
-  display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;
+.opt .k{position:absolute;left:11px;top:50%;transform:translateY(-50%);
+  width:22px;height:22px;border-radius:7px;background:var(--brand-soft);color:var(--brand);
+  display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:700;
   transition:background .18s ease,color .18s ease;}
 .opt.sel{background:var(--brand-soft);border-color:var(--brand);color:var(--brand);}
-.opt.sel .lb{background:var(--brand);color:#fff;}
+.opt.sel .k{background:var(--brand);color:#fff;}
 .opt.correct{background:var(--mint-soft);border-color:var(--mint);color:var(--mint);}
-.opt.correct .lb{background:var(--mint);color:#fff;}
+.opt.correct .k{background:var(--mint);color:#fff;}
 .opt.wrong{background:var(--rose-soft);border-color:var(--rose);color:var(--rose);}
-.opt.wrong .lb{background:var(--rose);color:#fff;}
+.opt.wrong .k{background:var(--rose);color:#fff;}
 .opt.locked{pointer-events:none;box-shadow:none;}
-.opt.locked.dim{opacity:.5;}
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
 .shake{animation:shake .3s ease}
 
@@ -113,21 +116,20 @@ body{
 /* ---- action bar ---- */
 .actionbar{margin-top:14px;}
 .actionbar .inner{display:flex;flex-direction:row;align-items:center;justify-content:space-between;
-  flex-wrap:wrap;gap:6px;row-gap:8px;}
+  flex-wrap:wrap;gap:12px;row-gap:8px;}
 .cmid{display:flex;align-items:center;gap:6px;}
 .cbtn{font-family:'Hind Vadodara',sans-serif;cursor:pointer;-webkit-appearance:none;
   display:flex;align-items:center;justify-content:center;gap:5px;
   transition:transform .12s ease,opacity .2s ease,background .2s ease,box-shadow .2s ease;}
 .cbtn:active{transform:scale(.97);}
 .cbtn svg{width:16px;height:16px;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;}
-.cbtn.prev,.cbtn.next{min-height:36px;border-radius:12px;padding:0 20px;background:var(--brand);border:none;color:#fff;
-  font-weight:700;font-size:13.5px;box-shadow:0 8px 20px -8px rgba(110,42,133,.5);}
-.cbtn.prev svg,.cbtn.next svg{stroke:#fff;}
-.cbtn.check{min-height:36px;border-radius:12px;padding:0 20px;background:var(--brand);border:none;color:#fff;
-  font-weight:700;font-size:13.5px;box-shadow:0 8px 20px -8px rgba(110,42,133,.5);}
-.cbtn:disabled{cursor:default;}
+.cbtn.prev,.cbtn.next,.cbtn.check{min-height:36px;border-radius:12px;padding:0 20px;background:var(--brand);
+  border:none;color:#fff;font-weight:700;font-size:13.5px;box-shadow:0 8px 20px -8px rgba(110,42,133,.5);}
+.cbtn.prev svg,.cbtn.next svg,.cbtn.check svg{stroke:#fff;}
 .cbtn.check:disabled{opacity:.35;pointer-events:none;box-shadow:none;}
-.cbtn.prev:disabled,.cbtn.next:disabled{background:var(--surface);border:1px solid var(--line);color:var(--muted);box-shadow:none;font-weight:600;}
+.cbtn:disabled{cursor:default;}
+.cbtn.prev:disabled,.cbtn.next:disabled{background:var(--surface);border:1px solid var(--line);
+  color:var(--muted);box-shadow:none;font-weight:600;}
 .cbtn.prev:disabled svg,.cbtn.next:disabled svg{stroke:var(--muted);}
 
 /* ---- footer ---- */
@@ -200,7 +202,7 @@ body{
   <!-- header -->
   <header class="phead">
     <div class="hrow1">
-      <h1 class="ptitle">Reasoning</h1>
+      <h1 class="ptitle">અવાજ ઓળખો</h1>
       <div class="hctrls">
         <span class="rpill" id="round"></span>
         <button class="hbtn" id="soundBtn" onclick="toggleSound()" aria-label="Sound"></button>
@@ -209,24 +211,30 @@ body{
         </button>
       </div>
     </div>
-    <p class="hsub" id="hsub"></p>
+    <p class="hsub">આ કયો અવાજ છે?<br>અવાજ સાંભળીને સાચો જવાબ પસંદ કરો.</p>
   </header>
 
   <!-- STAGE -->
   <div class="stage">
-    <div class="eqpanel"><div class="eqs" id="eqs"></div></div>
+    <div class="soundnote" id="soundnote">🔊 આ કોયડો અવાજથી રમાય છે — ઉપરના બટનથી અવાજ ચાલુ કરો.</div>
+    <div class="player">
+      <button class="playbtn" id="playbtn" onclick="playQ()" aria-label="Play the sound">
+        <svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M16 9a3.5 3.5 0 0 1 0 6"/><path d="M19 7a7 7 0 0 1 0 10"/></svg>
+      </button>
+      <p class="ptext" id="ptext">અવાજ સાંભળવા દબાવો</p>
+    </div>
     <div class="opts" id="opts"></div>
   </div>
 
   <!-- status -->
   <div class="status" id="status"></div>
 
-  <!-- action bar -->
+  <!-- actions -->
   <div class="actionbar">
     <div class="inner">
       <button class="cbtn prev" id="btnPrev" onclick="prevPuzzle()"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>Back</button>
       <div class="cmid">
-        <button class="cbtn check" id="btnCheck" onclick="checkAnswer()" disabled>Check Answer</button>
+        <button class="cbtn check" id="btnCheck" onclick="checkAnswer()">Check Answer</button>
       </div>
       <button class="cbtn next" id="btnNext" onclick="nextPuzzle()">Next<svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
     </div>
@@ -240,26 +248,26 @@ body{
 <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="How to play">
   <div class="grab"></div>
   <h3>કેવી રીતે રમવું</h3>
-  <p class="lead">દરેક ચિત્રની પાછળ એક આંકડો છુપાયેલો છે. ઉતાવળ નહીં — શાંતિથી.</p>
+  <p class="lead">દરેક પ્રશ્નમાં એક અવાજ વાગશે. એ કયો અવાજ છે તે ઓળખવાનું છે.</p>
 
   <div class="step">
-    <div class="ic"><svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/><circle cx="12" cy="12" r="9"/></svg></div>
-    <div class="tx"><b>કિંમત શોધો</b><p>પહેલી ત્રણ હરોળ પરથી દરેક ચિત્રનો આંકડો નક્કી કરો.</p></div>
+    <div class="ic"><svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M16 9a3.5 3.5 0 0 1 0 6"/><path d="M19 7a7 7 0 0 1 0 10"/></svg></div>
+    <div class="tx"><b>અવાજ ચાલુ રાખો</b><p>ઉપરના સ્પીકર બટનથી અવાજ ચાલુ કરો. હેડફોન હોય તો વધુ સારું.</p></div>
   </div>
 
   <div class="step">
-    <div class="ic"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/><path d="M3 12h2M19 12h2"/></svg></div>
-    <div class="tx"><b>ગુણાકાર પહેલાં</b><p>છેલ્લી હરોળમાં × હોય તો પહેલાં ગુણાકાર કરવો, પછી સરવાળો.</p></div>
+    <div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M10 8.5l6 3.5-6 3.5z"/></svg></div>
+    <div class="tx"><b>અવાજ સાંભળો</b><p>વચ્ચેનું મોટું બટન દબાવો. ફરી સાંભળવું હોય તેટલી વાર દબાવી શકાય.</p></div>
   </div>
 
   <div class="step">
-    <div class="ic"><svg viewBox="0 0 24 24"><circle cx="9" cy="9" r="5"/><circle cx="16" cy="16" r="5"/></svg></div>
-    <div class="tx"><b>ધ્યાનથી ગણો</b><p>પીળા ખાનામાં એક કરતાં વધારે ચિત્ર હોય છે — તેની કિંમત બમણી થાય.</p></div>
+    <div class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="13" width="18" height="7" rx="2"/></svg></div>
+    <div class="tx"><b>જવાબ પસંદ કરો</b><p>ચાર વિકલ્પમાંથી એક પસંદ કરો. તપાસ્યા પહેલાં પસંદગી બદલી શકાય છે.</p></div>
   </div>
 
   <div class="step">
-    <div class="ic"><svg viewBox="0 0 24 24"><path d="M4 7h10M4 12h10M4 17h6"/><path d="M16.5 16.5l2 2 3.5-3.5"/></svg></div>
-    <div class="tx"><b>જવાબ ચકાસો</b><p>એક વિકલ્પ પસંદ કરી "Check Answer" દબાવો. જવાબ એક જ વાર ચકાસી શકાશે — ખોટો હોય તો સાચો જવાબ લીલા રંગમાં દેખાશે.</p></div>
+    <div class="ic"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></div>
+    <div class="tx"><b>Check Answer દબાવો</b><p>જવાબ તપાસો. ખોટો હોય તો સાચો જવાબ લીલા રંગમાં દેખાશે. પછી એ પ્રશ્ન બંધ થઈ જાય છે — ફરી બદલી શકાતો નથી.</p></div>
   </div>
 
   <button class="got" onclick="closeHelp()">Close</button>
@@ -274,43 +282,20 @@ body{
 </div>
 
 <script>
-/* ---------- puzzle data ----------
-   rows: items = [emoji, count]  ·  ops between items  ·  res (right side)
-   values verified:
-   P1 🍎=9, 🍌=4, 🍇=6  → 9 + 6×4 = 33
-   P2 🌻=12, 🐝=8, 🍯=5 → 12 + (5+5)×8 = 92
-   P3 ⚽=7, 🎈=5, 🎁=4  → 5 + (7+7)×4 = 61
------------------------------------- */
-const PUZZLES=[
- {id:'p1', sub_gu:'પહેલી ત્રણ હરોળ પરથી દરેક ચિત્રની કિંમત શોધો.',
-  rows:[
-   {items:[['🍎',1],['🍎',1],['🍎',1]], ops:['+','+'], res:'27'},
-   {items:[['🍌',1],['🍎',1],['🍎',1]], ops:['+','+'], res:'22'},
-   {items:[['🍌',1],['🍌',1],['🍇',1]], ops:['+','+'], res:'14'},
-   {items:[['🍎',1],['🍇',1],['🍌',1]], ops:['+','×'], res:'?', q:true}
-  ],
-  options:[27,33,39,60], ans:33},
-
- {id:'p2', sub_gu:'ધ્યાનથી જુઓ — છેલ્લી હરોળમાં એક ચિત્ર બે વાર છે.',
-  rows:[
-   {items:[['🌻',1],['🌻',1],['🌻',1]], ops:['+','+'], res:'36'},
-   {items:[['🐝',1],['🌻',1],['🌻',1]], ops:['+','+'], res:'32'},
-   {items:[['🐝',1],['🐝',1],['🍯',1]], ops:['+','+'], res:'21'},
-   {items:[['🌻',1],['🍯',2],['🐝',1]], ops:['+','×'], res:'?', q:true}
-  ],
-  options:[52,92,140,176], ans:92},
-
- {id:'p3', sub_gu:'અહીં ગુણાકાર પણ છે — ધીરજથી ગણો.',
-  rows:[
-   {items:[['⚽',1],['⚽',1],['⚽',1]], ops:['+','+'], res:'21'},
-   {items:[['🎈',1],['⚽',1],['🎈',1]], ops:['×','+'], res:'40'},
-   {items:[['🎁',1],['🎁',1],['⚽',1]], ops:['+','×'], res:'32'},
-   {items:[['🎈',1],['⚽',2],['🎁',1]], ops:['+','×'], res:'?', q:true}
-  ],
-  options:[33,48,61,76], ans:61}
+/* =========================================================
+   QUESTIONS — answer is the index into options[]
+   ========================================================= */
+const QUESTIONS=[
+  {sound:'bird',     options:['ઢોલ','પક્ષી','વરસાદ','ઘંટડી'],            answer:1},
+  {sound:'drum',     options:['વાંસળી','પાણીનું ટીપું','ઢોલ','પક્ષી'],   answer:2},
+  {sound:'rain',     options:['વરસાદ','ઘંટડી','ઢોલ','તાળી'],            answer:0},
+  {sound:'flute',    options:['ઘૂઘરા','ઢોલ','વરસાદ','વાંસળી'],          answer:3},
+  {sound:'ghungroo', options:['ઘૂઘરા','પવન','ઢોલ','વાંસળી'],            answer:0},
+  {sound:'drop',     options:['પવન','તાળી','પક્ષી','પાણીનું ટીપું'],     answer:3}
 ];
-const KEY='dcgs_reasoning_v3';
-const LB=['A','B','C','D'];
+const KEYS=['A','B','C','D'];
+
+const KEY='dcgs_soundquiz_v1';
 
 function save(d){try{localStorage.setItem(KEY,JSON.stringify(d))}catch(e){}}
 function load(){try{return JSON.parse(localStorage.getItem(KEY))}catch(e){return null}}
@@ -332,37 +317,22 @@ function pushProgress(){postToApp({type:'PROGRESS',time_spent_sec:timeSpentSec()
 setInterval(pushProgress,3000);
 pushProgress();
 
-function markDone(){ _completed=true; activityDone(); pushProgress(); }   /* whole set solved */
-window.addEventListener('pagehide',pushProgress);
+function markDone(){ _completed=true; activityDone(); pushProgress(); }   /* call when the last answer is checked */
+window.addEventListener('pagehide',pushProgress);   /* best-effort, where it fires */
 
-/* ---- state (normalized on load — never trust what's in storage) ---- */
-const N=PUZZLES.length;
-function slot(src,i){ return (src&&typeof src==='object') ? src[i] : undefined; }
-function normalize(raw){
-  raw = (raw && typeof raw==='object') ? raw : {};
-  const answers=[];
-  for(let i=0;i<N;i++){
-    const a=slot(raw.answers,i);
-    const s=(a&&typeof a==='object')?a.selected:undefined;
-    answers[i] = (typeof s==='number' && PUZZLES[i].options.indexOf(s)>=0)
-      ? {selected:s, correct:(s===PUZZLES[i].ans)}     // correctness is re-derived, never trusted
-      : null;
-  }
-  let tab = Number(raw.tab);
-  if(!Number.isInteger(tab) || tab<0 || tab>=N) tab=0;
-  return {tab:tab, sound:!!raw.sound, celebrated:!!raw.celebrated, answers:answers};
-}
-let state=normalize(load());
-let soundOn=!!state.sound, cur=state.tab;
-let sel=null;                 /* transient selection for the open question — never stored */
+/* ---- state ---- */
+let state=load()||{tab:0,sound:false,celebrated:false,answers:{}};
+if(!state.answers)state.answers={};
+let soundOn=!!state.sound, cur=state.tab||0;
+if(cur<0||cur>=QUESTIONS.length)cur=0;
+let sel=-1;
 
-/* ---- sound (mp3 assets) ---- */
+/* ---- feedback sound (hosted MP3s) — no Hint sound in an MCQ file ---- */
 const SND={
   correct:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Right.mp3',
   wrong:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Wrong.mp3',
   level:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Level.mp3',
-  win:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Complete.mp3',
-  hint:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Hint.mp3'
+  win:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Complete.mp3'
 };
 const _audio={};
 function preloadSounds(){for(const k in SND){try{const a=new Audio(SND[k]);a.preload='auto';_audio[k]=a;}catch(e){}}}
@@ -371,153 +341,257 @@ function playSound(k){
   const a=_audio[k]; if(!a) return;
   try{ a.pause(); a.currentTime=0; a.play().catch(function(){}); }catch(e){}
 }
-function playCorrect(){playSound('correct');}
-function playWrong(){playSound('wrong');}
-function playLevel(){playSound('level');}
-function playWin(){playSound('win');}
-function playHint(){playSound('hint');}
+function playCorrect(){ playSound('correct'); }
+function playWrong(){   playSound('wrong');   }
+function playLevel(){   playSound('level');   }
+function playWin(){     playSound('win');     }
+
 function setSoundIcon(){const b=document.getElementById('soundBtn');b.innerHTML=soundOn
   ?'<svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M16 9a3.5 3.5 0 0 1 0 6"/><path d="M19 7a7 7 0 0 1 0 10"/></svg>'
   :'<svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M22 9l-5 6M17 9l5 6"/></svg>';}
-function toggleSound(){soundOn=!soundOn;state.sound=soundOn;setSoundIcon();save(state);}
+function renderSoundNote(){document.getElementById('soundnote').classList.toggle('show',!soundOn);}
+function toggleSound(){
+  soundOn=!soundOn;state.sound=soundOn;setSoundIcon();renderSoundNote();save(state);
+  if(soundOn){status('ok','અવાજ ચાલુ. હવે વચ્ચેનું બટન દબાવો.');}
+  else{status('hint','અવાજ બંધ. આ કોયડો અવાજ વગર રમી શકાતો નથી.');}
+}
 
-/* ---- helpers ---- */
-function answered(i){return !!state.answers[i];}
-function allAnswered(){return state.answers.every(function(a){return !!a;});}
+/* =========================================================
+   QUESTION SOUNDS — synthesised in the browser (Web Audio)
+   ========================================================= */
+let _ctx,_masterGain,_noiseBuf;
+function AC(){
+  if(!_ctx){ try{ _ctx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return null; } }
+  if(_ctx.state==='suspended'){ try{_ctx.resume();}catch(e){} }
+  return _ctx;
+}
+function MASTER(){
+  const c=AC(); if(!c) return null;
+  if(!_masterGain){ _masterGain=c.createGain(); _masterGain.gain.value=.85; _masterGain.connect(c.destination); }
+  return _masterGain;
+}
+function noise(c){
+  if(_noiseBuf) return _noiseBuf;
+  const len=c.sampleRate*2, b=c.createBuffer(1,len,c.sampleRate), d=b.getChannelData(0);
+  for(let i=0;i<len;i++) d[i]=Math.random()*2-1;
+  _noiseBuf=b; return b;
+}
+
+const TONES={
+  bird:{dur:620,make:function(c,m,t){
+    for(let i=0;i<3;i++){
+      const s=t+i*.15,o=c.createOscillator(),g=c.createGain();
+      o.type='triangle';
+      o.frequency.setValueAtTime(2100,s);
+      o.frequency.exponentialRampToValueAtTime(3600,s+.05);
+      o.frequency.exponentialRampToValueAtTime(2300,s+.1);
+      g.gain.setValueAtTime(.0001,s);
+      g.gain.exponentialRampToValueAtTime(.26,s+.012);
+      g.gain.exponentialRampToValueAtTime(.0001,s+.115);
+      o.connect(g);g.connect(m);o.start(s);o.stop(s+.13);
+    }}},
+
+  drum:{dur:1050,make:function(c,m,t){
+    [0,.34,.68].forEach(function(off){
+      const s=t+off,o=c.createOscillator(),g=c.createGain();
+      o.type='sine';
+      o.frequency.setValueAtTime(180,s);
+      o.frequency.exponentialRampToValueAtTime(52,s+.16);
+      g.gain.setValueAtTime(.0001,s);
+      g.gain.exponentialRampToValueAtTime(.5,s+.008);
+      g.gain.exponentialRampToValueAtTime(.0001,s+.3);
+      o.connect(g);g.connect(m);o.start(s);o.stop(s+.32);
+      const n=c.createBufferSource();n.buffer=noise(c);
+      const bp=c.createBiquadFilter();bp.type='bandpass';bp.frequency.value=1800;bp.Q.value=1;
+      const ng=c.createGain();
+      ng.gain.setValueAtTime(.2,s);ng.gain.exponentialRampToValueAtTime(.0001,s+.05);
+      n.connect(bp);bp.connect(ng);ng.connect(m);n.start(s);n.stop(s+.07);
+    });}},
+
+  rain:{dur:1620,make:function(c,m,t){
+    const src=c.createBufferSource();src.buffer=noise(c);src.loop=true;
+    const hp=c.createBiquadFilter();hp.type='highpass';hp.frequency.value=950;
+    const lp=c.createBiquadFilter();lp.type='lowpass';lp.frequency.value=4400;
+    const g=c.createGain();
+    g.gain.setValueAtTime(.0001,t);
+    g.gain.linearRampToValueAtTime(.17,t+.3);
+    g.gain.setValueAtTime(.17,t+1.1);
+    g.gain.exponentialRampToValueAtTime(.0001,t+1.58);
+    src.connect(hp);hp.connect(lp);lp.connect(g);g.connect(m);
+    src.start(t);src.stop(t+1.62);}},
+
+  flute:{dur:1120,make:function(c,m,t){
+    [588,660,784,660].forEach(function(fr,i){
+      const s=t+i*.26,o=c.createOscillator(),g=c.createGain(),lfo=c.createOscillator(),lg=c.createGain();
+      o.type='sine';o.frequency.setValueAtTime(fr,s);
+      lfo.type='sine';lfo.frequency.value=5.2;lg.gain.value=fr*.013;
+      lfo.connect(lg);lg.connect(o.frequency);
+      g.gain.setValueAtTime(.0001,s);
+      g.gain.linearRampToValueAtTime(.24,s+.07);
+      g.gain.setValueAtTime(.24,s+.18);
+      g.gain.exponentialRampToValueAtTime(.0001,s+.27);
+      o.connect(g);g.connect(m);
+      o.start(s);o.stop(s+.29);lfo.start(s);lfo.stop(s+.29);
+    });}},
+
+  ghungroo:{dur:1180,make:function(c,m,t){
+    for(let i=0;i<10;i++){
+      const s=t+i*.085, f=1500+((i*337)%880);
+      [[1,.11,.30],[2.41,.06,.19]].forEach(function(p){
+        const o=c.createOscillator(),g=c.createGain();
+        o.type='sine';o.frequency.value=f*p[0];
+        g.gain.setValueAtTime(.0001,s);
+        g.gain.exponentialRampToValueAtTime(p[1],s+.004);
+        g.gain.exponentialRampToValueAtTime(.0001,s+p[2]);
+        o.connect(g);g.connect(m);o.start(s);o.stop(s+p[2]+.03);
+      });
+    }}},
+
+  drop:{dur:960,make:function(c,m,t){
+    [0,.24,.5,.72].forEach(function(off,i){
+      const s=t+off,o=c.createOscillator(),g=c.createGain();
+      o.type='sine';
+      o.frequency.setValueAtTime(620+i*80,s);
+      o.frequency.exponentialRampToValueAtTime(1520+i*120,s+.09);
+      g.gain.setValueAtTime(.0001,s);
+      g.gain.exponentialRampToValueAtTime(.3,s+.005);
+      g.gain.exponentialRampToValueAtTime(.0001,s+.135);
+      o.connect(g);g.connect(m);o.start(s);o.stop(s+.15);
+    });}}
+};
+
+let playTimer=null;
+function playQ(){
+  if(!soundOn){ status('hint','🔊 પહેલાં ઉપરના બટનથી અવાજ ચાલુ કરો.'); return; }
+  const s=TONES[QUESTIONS[cur].sound]; if(!s) return;
+  const c=AC(), m=MASTER(); if(!c||!m) return;
+  try{ s.make(c,m,c.currentTime+.02); }catch(e){}
+  const btn=document.getElementById('playbtn'), tx=document.getElementById('ptext');
+  btn.classList.add('on'); tx.textContent='વાગી રહ્યું છે…';
+  clearTimeout(playTimer);
+  playTimer=setTimeout(function(){
+    btn.classList.remove('on');
+    tx.textContent='ફરી સાંભળવા દબાવો';
+  }, s.dur);
+}
 
 /* ---- render ---- */
-function renderProgress(){document.getElementById('round').textContent=(cur+1)+'/'+PUZZLES.length;}
-function renderHead(){document.getElementById('hsub').innerHTML="જ્યાં '?' છે, ત્યાં કયો આંકડો આવે ?<br>"+PUZZLES[cur].sub_gu;}
-function renderEqs(){
-  const box=document.getElementById('eqs'); box.innerHTML='';
-  const rows=PUZZLES[cur].rows;
-  rows.forEach((row,ri)=>{
-    const last=(ri===rows.length-1);
-    const cell=(inner)=>{
-      const c=document.createElement('div');
-      c.className='c'+(row.q?' q':'')+(last?' rl':'');
-      c.appendChild(inner); box.appendChild(c);
-    };
-    const span=(cls,txt)=>{const s=document.createElement('span');s.className=cls;s.textContent=txt;return s;};
-    row.items.forEach((it,i)=>{
-      cell(span('term'+(it[1]>1?' dbl':''), it[0].repeat(it[1])));
-      if(i<row.ops.length) cell(span('op',row.ops[i]));
-    });
-    cell(span('op','='));
-    cell(span('eqv',row.res));
-  });
+function renderProgress(){document.getElementById('round').textContent=(cur+1)+'/'+QUESTIONS.length;}
+function renderPlayer(){
+  const btn=document.getElementById('playbtn'), tx=document.getElementById('ptext');
+  clearTimeout(playTimer); btn.classList.remove('on');
+  tx.textContent='અવાજ સાંભળવા દબાવો';
 }
-function renderOpts(){
+function renderOptions(){
   const box=document.getElementById('opts'); box.innerHTML='';
-  const P=PUZZLES[cur], a=state.answers[cur];
-  P.options.forEach((n,i)=>{
+  const q=QUESTIONS[cur], ans=state.answers[cur];
+  q.options.forEach(function(txt,i){
     const b=document.createElement('button');
     let cls='opt';
-    if(a){                                        /* Phase 2 — locked */
+    if(ans){
       cls+=' locked';
-      if(n===P.ans) cls+=' correct';
-      else if(n===a.selected) cls+=' wrong';
-      else cls+=' dim';
-    } else if(sel===n){                           /* Phase 1 — selecting */
+      if(i===q.answer) cls+=' correct';
+      else if(i===ans.selected) cls+=' wrong';
+    } else if(i===sel){
       cls+=' sel';
     }
     b.className=cls;
-    b.dataset.n=n;
-    b.innerHTML='<span class="lb">'+LB[i]+'</span>'+n;
-    if(!a) b.addEventListener('click',()=>pickOption(n));
+    b.dataset.i=i;
+    b.innerHTML='<span class="k">'+KEYS[i]+'</span>'+txt;
+    b.addEventListener('click',function(){ selectOption(i); });
     box.appendChild(b);
   });
 }
 function renderActions(){
-  const isLast=cur===PUZZLES.length-1;
+  const isLast=cur===QUESTIONS.length-1, answered=!!state.answers[cur];
   document.getElementById('btnPrev').disabled=(cur===0);
-  document.getElementById('btnNext').disabled=!(answered(cur)&&!isLast);
-  document.getElementById('btnCheck').disabled=(answered(cur)||sel===null);
+  document.getElementById('btnNext').disabled=!(answered&&!isLast);
+  document.getElementById('btnCheck').disabled=(answered||sel<0);
 }
-function renderAll(){renderProgress();renderHead();renderEqs();renderOpts();renderActions();setSoundIcon();clearStatus();}
+function renderAll(){
+  sel = state.answers[cur] ? state.answers[cur].selected : -1;
+  renderProgress();renderPlayer();renderOptions();renderActions();setSoundIcon();renderSoundNote();clearStatus();
+  if(state.answers[cur]){
+    const ok=state.answers[cur].correct;
+    status(ok?'ok':'bad', ok?'સાચો જવાબ!':'સાચો જવાબ લીલા રંગમાં દર્શાવ્યો છે.', true);
+  }
+}
 
 /* ---- status ---- */
 let stTimer;
 function status(type,msg,sticky){const s=document.getElementById('status');s.className='status show '+type;s.textContent=msg;clearTimeout(stTimer);if(!sticky)stTimer=setTimeout(clearStatus,2300);}
 function clearStatus(){document.getElementById('status').className='status';}
 
-/* ---- play (v3.4: selection reveals nothing; Check Answer is the only reveal, and it locks) ---- */
-function pickOption(n){
-  if(answered(cur)) return;                       /* locked — no reselect */
-  sel=n;                                          /* nothing revealed, nothing stored, no sound */
-  renderOpts(); renderActions(); clearStatus();
+/* ---- answering: selection reveals NOTHING ---- */
+function selectOption(i){
+  if(state.answers[cur]) return;      // locked
+  sel=i;
+  renderOptions();
+  renderActions();
 }
-function shake(n){
-  const el=document.querySelector('.opt[data-n="'+n+'"]');
+
+function shake(i){
+  const el=document.querySelector('.opt[data-i="'+i+'"]');
   if(!el) return;
   el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake');
-  setTimeout(()=>el.classList.remove('shake'),320);
+  setTimeout(function(){ el.classList.remove('shake'); },340);
 }
+
 function checkAnswer(){
-  if(answered(cur)) return;                       /* already locked */
-  if(sel===null) return;                          /* nothing selected */
-  const P=PUZZLES[cur], ok=(sel===P.ans);
-  state.answers[cur]={selected:sel, correct:ok};  /* the user's own pick, right or wrong */
+  if(state.answers[cur]) return;                        // already locked
+  if(sel<0) return;                                     // nothing selected
+  const q=QUESTIONS[cur], ok=(sel===q.answer);
+  state.answers[cur]={selected:sel, correct:ok};        // the user's own pick, always
   save(state);
-  renderOpts();                                   /* paints the locked state */
-  renderActions();                                /* Check off, Next on */
+  renderOptions();
+  renderActions();
   if(ok){
-    if(soundOn) playCorrect();
+    playCorrect();
     status('ok','સાચો જવાબ!',true);
   } else {
-    if(soundOn) playWrong();
+    playWrong();
     shake(sel);
-    status('bad','સાચો જવાબ નીચે લીલા રંગમાં દર્શાવ્યો છે.',true);
+    status('bad','સાચો જવાબ લીલા રંગમાં દર્શાવ્યો છે.',true);
   }
   onAnswered();
 }
+
 function onAnswered(){
-  if(!allAnswered()){                             /* mid-set question done */
-    if(soundOn) playLevel();
-    return;
-  }
-  markDone();                                     /* ACTIVITY_DONE now — not in 5s */
+  const all=QUESTIONS.every(function(q,i){ return !!state.answers[i]; });
+  if(!all){ playLevel(); return; }                      // mid-set question done
+  markDone();                                           // ACTIVITY_DONE now — not in 5s
   if(state.celebrated) return;
-  setTimeout(function(){                          /* let the revealed answer be read first */
+  setTimeout(function(){
     state.celebrated=true; save(state);
-    if(soundOn) playWin();
+    playWin();
     showCelebrate();
-  },5000);
+  }, 5000);                                             // let the revealed answer be read first
 }
 
 /* ---- navigation ---- */
-function nextPuzzle(){if(cur<PUZZLES.length-1&&answered(cur)){cur++;sel=null;state.tab=cur;save(state);renderAll();window.scrollTo({top:0,behavior:'smooth'});}}
-function prevPuzzle(){if(cur>0){cur--;sel=null;state.tab=cur;save(state);renderAll();window.scrollTo({top:0,behavior:'smooth'});}}
+function nextPuzzle(){ if(cur<QUESTIONS.length-1&&state.answers[cur]){ cur++; state.tab=cur; save(state); renderAll(); window.scrollTo({top:0,behavior:'smooth'}); } }
+function prevPuzzle(){ if(cur>0){ cur--; state.tab=cur; save(state); renderAll(); window.scrollTo({top:0,behavior:'smooth'}); } }
 
 /* ---- help sheet ---- */
 function openHelp(){document.getElementById('scrim').classList.add('open');document.getElementById('sheet').classList.add('open');}
 function closeHelp(){document.getElementById('scrim').classList.remove('open');document.getElementById('sheet').classList.remove('open');}
 
 /* ---- celebration ---- */
-function showCelebrate(){const c=document.getElementById('celebrate');c.classList.add('show');const ems=['🌸','🌼','✨','🍃','💜'];for(let i=0;i<16;i++){const p=document.createElement('div');p.className='petal';p.textContent=ems[i%ems.length];p.style.left=(Math.random()*100)+'%';p.style.animationDuration=(2.4+Math.random()*1.6)+'s';p.style.animationDelay=(Math.random()*.6)+'s';document.body.appendChild(p);setTimeout(()=>p.remove(),4600);}}
+function showCelebrate(){const c=document.getElementById('celebrate');c.classList.add('show');const ems=['🌸','🌼','✨','🍃','💜'];for(let i=0;i<16;i++){const p=document.createElement('div');p.className='petal';p.textContent=ems[i%ems.length];p.style.left=(Math.random()*100)+'%';p.style.animationDuration=(2.4+Math.random()*1.6)+'s';p.style.animationDelay=(Math.random()*.6)+'s';document.body.appendChild(p);setTimeout(function(){p.remove();},4600);}}
 function closeCelebrate(){
   document.getElementById('celebrate').classList.remove('show');
   postToApp({type:'GO_BACK'});
 }
 
-/* ---- keyboard ---- */
-window.addEventListener('keydown',e=>{
-  if(answered(cur)) return;
-  if(e.key>='1'&&e.key<='4'){const n=PUZZLES[cur].options[parseInt(e.key)-1];if(n!==undefined)pickOption(n);}
-  else if(e.key==='Enter'){checkAnswer();}
-});
-
 /* ---- init ---- */
 preloadSounds();
 renderAll();
-if(allAnswered()){
+if(QUESTIONS.every(function(q,i){ return !!state.answers[i]; })){
   status('done','બધા પ્રશ્નો પૂર્ણ. ખૂબ સરસ! 🌸',true);
   _completed=true;
   pushProgress();
-} else if(answered(cur)){
-  status(state.answers[cur].correct?'ok':'bad',
-         state.answers[cur].correct?'સાચો જવાબ!':'સાચો જવાબ નીચે લીલા રંગમાં દર્શાવ્યો છે.',true);
 }
+else if(!soundOn) status('hint','🔊 રમવા માટે ઉપરના બટનથી અવાજ ચાલુ કરો.');
 </script>
 </body>
 </html>

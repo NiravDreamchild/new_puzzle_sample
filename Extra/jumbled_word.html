@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#FBF9FC">
+<title>Dreamchild · Jumbled Word</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Vadodara:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FBF9FC;
+  --surface:#FFFFFF;
+  --ink:#2E2A32;
+  --muted:#8C8794;
+  --line:#ECE7F0;
+  --brand:#752886;
+  --brand-deep:#561F69;
+  --brand-soft:#F3E9F8;
+  --accent:#F2A03D;
+  --accent-soft:#FCEFDC;
+  --mint:#2F9B63;
+  --mint-soft:#E5F4EC;
+  --rose:#C75C72;
+  --rose-soft:#FAEAEE;
+  --shadow:0 10px 30px -12px rgba(78,33,95,.18);
+  --shadow-sm:0 4px 14px -8px rgba(78,33,95,.20);
+  --r-lg:22px; --r-md:16px; --r-sm:12px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg);color:var(--ink);
+  font-family:'Hind Vadodara',sans-serif;
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+  background-image:radial-gradient(120% 60% at 50% -10%, var(--brand-soft) 0%, rgba(243,233,248,0) 60%);
+}
+.wrap{max-width:460px;margin:0 auto;padding:16px 16px 28px;position:relative;z-index:1;}
+
+/* ---- header ---- */
+.phead{background:var(--surface);border:1px solid var(--line);border-radius:18px;
+  box-shadow:0 6px 20px -12px rgba(78,33,95,.16);padding:15px 16px;margin-bottom:14px;}
+.hrow1{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.ptitle{font-family:'Hind Vadodara',sans-serif;font-weight:700;font-size:23px;line-height:1.05;color:var(--brand);margin:0;letter-spacing:-.01em;}
+.hctrls{display:flex;align-items:center;gap:8px;flex:none;}
+.rpill{display:flex;align-items:center;justify-content:center;min-width:50px;height:38px;padding:0 12px;
+  border:1px solid var(--line);border-radius:11px;background:var(--surface);
+  font-family:'Hind Vadodara',sans-serif;font-weight:600;font-size:16px;color:var(--ink);letter-spacing:.01em;}
+.hbtn{width:40px;height:38px;border:1px solid var(--line);border-radius:11px;background:var(--surface);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-appearance:none;padding:0;
+  transition:background .15s ease;}
+.hbtn:active{background:var(--brand-soft);}
+.hbtn svg{width:20px;height:20px;fill:none;stroke:var(--muted);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.hbtn.info{width:38px;background:var(--brand-soft);border-color:transparent;}
+.hbtn.info svg{stroke:var(--brand);}
+.hsub{font-family:'Hind Vadodara',sans-serif;text-align:center;font-weight:600;font-size:15px;
+  line-height:1.5;color:var(--ink);margin:13px 0 1px;}
+
+/* ---- stage card ---- */
+.stage{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
+  box-shadow:0 8px 28px -10px rgba(78,33,95,.16), 0 2px 8px -3px rgba(78,33,95,.08);padding:14px;margin-bottom:14px;}
+
+/* clue */
+.clue{background:#FAF7FB;border:1px solid var(--line);border-radius:14px;padding:12px 14px;
+  text-align:center;font-weight:500;font-size:14.5px;line-height:1.5;color:#564B5E;}
+.clue b{display:block;font-size:11.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:3px;}
+
+/* slots (the word being built) */
+.slots{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:16px 0 4px;
+  touch-action:none;user-select:none;-webkit-user-select:none;}
+.slot{min-width:clamp(52px,16.5vw,64px);height:clamp(56px,17vw,66px);padding:0 6px;
+  display:flex;align-items:center;justify-content:center;border-radius:12px;
+  background:#FAF7FB;border:2px dashed #DFD3E7;color:#564B5E;
+  font-family:'Hind Vadodara',sans-serif;font-weight:600;font-size:clamp(19px,6vw,26px);line-height:1;
+  transition:background .18s ease,color .18s ease,border-color .18s ease,transform .12s ease;}
+.slot.filled{background:var(--brand-soft);border:2px solid var(--brand);color:var(--brand);cursor:grab;}
+.slot.hinted{background:var(--accent-soft);border:2px solid var(--accent);color:#9A5A12;cursor:default;}
+.slot.drop{background:var(--accent-soft);border:2px solid var(--accent);}
+.slot.grabbing{opacity:.35;}
+.slot.done{background:linear-gradient(135deg,var(--brand),var(--brand-deep));border:2px solid transparent;color:#fff;}
+.slot.bad{background:var(--rose-soft);border:2px solid var(--rose);color:var(--rose);}
+
+/* tray (scrambled letters) */
+.trayzone{margin-top:14px;border-radius:16px;padding:12px 8px;background:#FDFBFE;border:1px dashed var(--line);
+  min-height:84px;display:flex;align-items:center;justify-content:center;
+  touch-action:none;user-select:none;-webkit-user-select:none;transition:background .18s ease,border-color .18s ease;}
+.trayzone.over{background:var(--accent-soft);border-color:var(--accent);}
+.tray{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;width:100%;}
+.tile{min-width:clamp(52px,16.5vw,64px);height:clamp(56px,17vw,66px);padding:0 6px;
+  display:flex;align-items:center;justify-content:center;border-radius:12px;
+  background:var(--surface);border:1px solid var(--line);color:var(--brand);
+  font-family:'Hind Vadodara',sans-serif;font-weight:600;font-size:clamp(19px,6vw,26px);line-height:1;
+  box-shadow:var(--shadow-sm);cursor:grab;transition:transform .12s ease,opacity .2s ease,background .15s ease;}
+.tile:active{cursor:grabbing;}
+.tile.grabbing{transform:scale(.9);background:var(--brand-soft);opacity:.5;}
+.trayempty{font-size:13.5px;font-weight:500;color:var(--muted);}
+
+/* floating tile that follows the finger/cursor while dragging */
+.dragghost{position:fixed;left:0;top:0;z-index:60;pointer-events:none;
+  min-width:clamp(52px,16.5vw,64px);height:clamp(56px,17vw,66px);padding:0 8px;border-radius:13px;
+  transform:translate(-50%,-62%) scale(1.1) rotate(-3deg);
+  background:linear-gradient(135deg,var(--brand),var(--brand-deep));color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Hind Vadodara',sans-serif;font-weight:700;font-size:clamp(20px,6vw,27px);line-height:1;
+  box-shadow:0 16px 30px -10px rgba(78,33,95,.55);}
+
+/* clear row (belongs to the board) */
+.erow{display:flex;margin-top:10px;}
+.erase{width:100%;min-height:46px;border:1px solid var(--line);border-radius:14px;background:var(--surface);
+  display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;-webkit-appearance:none;
+  font-family:'Hind Vadodara',sans-serif;font-weight:600;font-size:14.5px;color:var(--ink);box-shadow:var(--shadow-sm);
+  transition:transform .1s ease,background .15s ease,opacity .2s ease;flex:1;}
+.erase:active{transform:scale(.98);background:var(--brand-soft);}
+.erase svg{width:19px;height:19px;fill:none;stroke:var(--muted);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.erase:disabled{opacity:.35;box-shadow:none;cursor:default;}
+
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.shake{animation:shake .3s ease}
+
+/* ---- status line ---- */
+.status{min-height:24px;text-align:center;font-size:14px;line-height:1.4;font-weight:500;
+  color:var(--muted);padding:2px 8px;margin:6px 0;opacity:0;transition:opacity .25s ease;}
+.status.show{opacity:1;}
+.status.ok{color:var(--mint);}
+.status.bad{color:var(--rose);}
+.status.hint{color:#B5781E;}
+.status.done{color:var(--brand);font-weight:600;}
+
+/* ---- action bar ---- */
+.actionbar{margin-top:14px;}
+.actionbar .inner{display:flex;flex-direction:row;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:6px;row-gap:8px;}
+.cmid{display:flex;align-items:center;gap:6px;}
+.cbtn{font-family:'Hind Vadodara',sans-serif;cursor:pointer;-webkit-appearance:none;
+  display:flex;align-items:center;justify-content:center;gap:5px;
+  transition:transform .12s ease,opacity .2s ease,background .2s ease,box-shadow .2s ease;}
+.cbtn:active{transform:scale(.97);}
+.cbtn svg{width:16px;height:16px;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;}
+.cbtn.hint{min-height:36px;border-radius:12px;padding:0 22px;background:var(--surface);border:1px solid var(--line);
+  color:var(--ink);font-weight:600;font-size:13px;box-shadow:var(--shadow-sm);}
+.cbtn.hint svg{stroke:var(--brand);}
+.cbtn.prev,.cbtn.next{min-height:36px;border-radius:12px;padding:0 20px;background:var(--brand);border:none;color:#fff;
+  font-weight:700;font-size:13.5px;box-shadow:0 8px 20px -8px rgba(110,42,133,.5);}
+.cbtn.prev svg,.cbtn.next svg{stroke:#fff;}
+.cbtn:disabled{cursor:default;}
+.cbtn.prev:disabled,.cbtn.next:disabled{background:var(--surface);border:1px solid var(--line);color:var(--muted);box-shadow:none;font-weight:600;}
+.cbtn.prev:disabled svg,.cbtn.next:disabled svg{stroke:var(--muted);}
+
+/* ---- footer ---- */
+.foot{text-align:center;font-family:'Hind Vadodara',sans-serif;font-size:11px;color:var(--muted);
+  letter-spacing:.03em;margin-top:18px;}
+.foot b{font-weight:600;color:#a79bb0;}
+
+/* ---- help sheet ---- */
+.scrim{position:fixed;inset:0;background:rgba(46,42,50,.42);backdrop-filter:blur(2px);z-index:40;
+  opacity:0;pointer-events:none;transition:opacity .28s ease;}
+.scrim.open{opacity:1;pointer-events:auto;}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:41;background:var(--surface);
+  border-radius:26px 26px 0 0;box-shadow:0 -16px 40px -16px rgba(46,42,50,.3);
+  max-width:460px;margin:0 auto;padding:10px 22px calc(26px + env(safe-area-inset-bottom));
+  transform:translateY(110%);transition:transform .34s cubic-bezier(.22,1,.36,1);}
+.sheet.open{transform:translateY(0);}
+.grab{width:42px;height:5px;border-radius:999px;background:var(--line);margin:6px auto 16px;}
+.sheet h3{font-family:'Hind Vadodara',sans-serif;font-weight:700;font-size:20px;margin:0 0 4px;}
+.sheet .lead{font-size:14px;color:var(--muted);margin:0 0 18px;line-height:1.5;}
+.step{display:flex;gap:14px;align-items:flex-start;margin-bottom:16px;}
+.step .ic{flex:none;width:46px;height:46px;border-radius:14px;background:var(--brand-soft);
+  display:flex;align-items:center;justify-content:center;}
+.step .ic svg{width:26px;height:26px;stroke:var(--brand);fill:none;stroke-width:1.7;
+  stroke-linecap:round;stroke-linejoin:round;}
+.step .tx b{display:block;font-family:'Hind Vadodara',sans-serif;font-weight:600;font-size:15px;color:var(--ink);margin-bottom:2px;}
+.step .tx p{margin:0;font-size:13.5px;color:var(--muted);line-height:1.5;}
+.sheet .got{width:100%;margin-top:6px;background:var(--brand);color:#fff;border:none;cursor:pointer;
+  font-family:'Hind Vadodara',sans-serif;border-radius:14px;min-height:48px;font-weight:700;font-size:15px;}
+
+/* ---- celebration ---- */
+.celebrate{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;
+  background:rgba(251,249,252,.86);backdrop-filter:blur(3px);text-align:center;padding:30px;}
+.celebrate.show{display:flex;flex-direction:column;}
+.celebrate .em{font-size:54px;margin-bottom:6px;animation:rise .6s cubic-bezier(.22,1,.36,1);}
+.celebrate h2{font-family:'Hind Vadodara',sans-serif;font-weight:700;font-size:24px;color:var(--brand);margin:0 0 8px;}
+.celebrate p{font-size:15px;color:var(--ink);font-weight:500;margin:0 0 22px;max-width:280px;line-height:1.5;}
+.celebrate .btn{min-width:200px;background:var(--brand);color:#fff;border:none;cursor:pointer;
+  font-family:'Hind Vadodara',sans-serif;border-radius:14px;min-height:55px;font-weight:700;font-size:18px;}
+@keyframes rise{from{transform:translateY(16px) scale(.8);opacity:0}to{transform:none;opacity:1}}
+.petal{position:fixed;top:-24px;z-index:49;font-size:18px;animation:drift linear forwards;pointer-events:none;}
+@keyframes drift{to{transform:translateY(106vh) rotate(360deg);opacity:0}}
+
+/* ---- ambient puzzle-piece background ---- */
+.bg{position:fixed;top:0;left:0;right:0;height:100vh;height:100lvh;overflow:hidden;pointer-events:none;z-index:0;}
+.piece{position:absolute;transform:rotate(var(--rot,0deg));opacity:.2;}
+.piece svg{display:block;width:100%;height:auto;fill:currentColor;}
+.piece.f1{top:-30px;left:-46px;width:150px;color:#fa7068;--rot:-14deg;}
+.piece.f2{top:78px;right:-52px;width:150px;color:#fbca5f;--rot:18deg;}
+.piece.f3{top:46%;right:-58px;width:110px;color:#a0c95d;--rot:26deg;}
+.piece.f4{bottom:-40px;right:-30px;width:170px;color:#9ddbe6;--rot:-18deg;}
+.piece.f5{bottom:46px;left:-56px;width:150px;color:#f3adc9;--rot:8deg;}
+.piece.f6{top:36%;left:-70px;width:100px;color:#d4ab99;--rot:30deg;}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001ms !important;transition-duration:.05ms !important;}
+}
+:focus-visible{outline:2.5px solid var(--brand);outline-offset:2px;border-radius:6px;}
+</style>
+</head>
+<body>
+<div class="bg" aria-hidden="true">
+  <div class="piece f1"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece f2"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece f3"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece f4"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece f5"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece f6"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+</div>
+
+<div class="wrap">
+  <!-- header -->
+  <header class="phead">
+    <div class="hrow1">
+      <h1 class="ptitle">અક્ષર ગોઠવો</h1>
+      <div class="hctrls">
+        <span class="rpill" id="round"></span>
+        <button class="hbtn" id="soundBtn" onclick="toggleSound()" aria-label="Sound"></button>
+        <button class="hbtn info" onclick="openHelp()" aria-label="How to play">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><circle cx="12" cy="8" r="0.6" fill="currentColor" stroke="none"/></svg>
+        </button>
+      </div>
+    </div>
+    <p class="hsub" id="hsub"></p>
+  </header>
+
+  <!-- STAGE -->
+  <div class="stage">
+    <div class="clue" id="clue"></div>
+    <div class="slots" id="slots"></div>
+    <div class="trayzone" id="trayzone"><div class="tray" id="tray"></div></div>
+    <div class="erow">
+      <button class="erase" id="clearBtn" onclick="clearWord()">
+        <svg viewBox="0 0 24 24"><path d="M4 15l5.5 5.5a2 2 0 0 0 2.8 0L21 12a2 2 0 0 0 0-2.8L15.8 4a2 2 0 0 0-2.8 0L4 13a2 2 0 0 0 0 2.8z"/><path d="M9 9l6 6"/></svg>
+        Clear
+      </button>
+    </div>
+  </div>
+
+  <!-- status -->
+  <div class="status" id="status"></div>
+
+  <!-- actions -->
+  <div class="actionbar">
+    <div class="inner">
+      <button class="cbtn prev" id="btnPrev" onclick="prevPuzzle()"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>Back</button>
+      <div class="cmid">
+        <button class="cbtn hint" onclick="useHint()"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 1 4 10.5c-.7.6-1 1.2-1 2v.5H9v-.5c0-.8-.3-1.4-1-2A6 6 0 0 1 12 3z"/></svg>Hint</button>
+      </div>
+      <button class="cbtn next" id="btnNext" onclick="nextPuzzle()">Next<svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+    </div>
+  </div>
+
+  <div class="foot">© <b>Dreamchild Garbhsanskar</b></div>
+</div>
+
+<!-- help sheet -->
+<div class="scrim" id="scrim" onclick="closeHelp()"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="How to play">
+  <div class="grab"></div>
+  <h3>કેવી રીતે રમવું</h3>
+  <p class="lead">વિખરાયેલા અક્ષરોને સાચા ક્રમમાં ગોઠવીને શબ્દ બનાવવાનો છે. ઉતાવળ નહીં — શાંતિથી.</p>
+
+  <div class="step">
+    <div class="ic"><svg viewBox="0 0 24 24"><path d="M5 9L2 12l3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3"/><path d="M2 12h20M12 2v20"/></svg></div>
+    <div class="tx"><b>ખેંચીને મૂકો</b><p>નીચેની ટાઇલમાંથી અક્ષરને આંગળીથી ખેંચીને ઉપરના ખાનામાં મૂકો.</p></div>
+  </div>
+
+  <div class="step">
+    <div class="ic"><svg viewBox="0 0 24 24"><path d="M5 12h9"/><path d="M12 7l5 5-5 5"/><circle cx="18" cy="12" r="0.6" fill="currentColor" stroke="none"/></svg></div>
+    <div class="tx"><b>ટૅપથી પણ ચાલશે</b><p>ટાઇલ પર ટૅપ કરો — તે પહેલા ખાલી ખાનામાં ગોઠવાઈ જશે. ભરેલા ખાના પર ટૅપ કરવાથી અક્ષર પાછો નીચે આવી જશે.</p></div>
+  </div>
+
+  <div class="step">
+    <div class="ic"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 1 4 10.5c-.7.6-1 1.2-1 2v.5H9v-.5c0-.8-.3-1.4-1-2A6 6 0 0 1 12 3z"/></svg></div>
+    <div class="tx"><b>ઓળખ અને મદદ</b><p>ઉપર આપેલી ઓળખ પરથી શબ્દ ઓળખો. અટકી જાઓ તો "Hint" દબાવો — એક અક્ષર તેની સાચી જગ્યાએ ગોઠવાઈ જશે.</p></div>
+  </div>
+
+  <div class="step">
+    <div class="ic"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></div>
+    <div class="tx"><b>પૂરું કરો</b><p>બધા અક્ષર સાચા ક્રમમાં ગોઠવાય કે તરત શબ્દ પૂર્ણ થશે. પછી "Next" દબાવીને આગળ વધો.</p></div>
+  </div>
+
+  <button class="got" onclick="closeHelp()">Close</button>
+</div>
+
+<!-- celebration -->
+<div class="celebrate" id="celebrate">
+  <div class="em">🌸</div>
+  <h2>બધા શબ્દો પૂર્ણ</h2>
+  <p>ખૂબ સરસ! તમારી એકાગ્રતા કમાલની છે.</p>
+  <button class="btn" onclick="closeCelebrate()">Congratulations</button>
+</div>
+
+<script>
+/* tiles[] = the word in CORRECT order (one Gujarati letter-cluster per tile)
+   order[] = the scrambled tray order (indices into tiles)                     */
+const PUZZLES = [
+  {id:'balak',   word:'બાળક',   tiles:['બા','ળ','ક'],        order:[1,2,0],
+   clue:'જે ઘરમાં આવે ને આખું ઘર હસી ઊઠે'},
+  {id:'mamta',   word:'મમતા',   tiles:['મ','મ','તા'],        order:[2,0,1],
+   clue:'માતાના હૃદયમાં વહેતો પ્રેમનો ઝરો'},
+  {id:'parivar', word:'પરિવાર', tiles:['પ','રિ','વા','ર'],   order:[2,0,3,1],
+   clue:'સાથે રહેતાં સૌ સ્વજનોનો સમૂહ'},
+  {id:'sanskar', word:'સંસ્કાર', tiles:['સં','સ્કા','ર'],      order:[1,2,0],
+   clue:'જે બાળકને વારસામાં આપીએ છીએ'},
+  {id:'kasrat',  word:'કસરત',   tiles:['ક','સ','ર','ત'],     order:[3,1,0,2],
+   clue:'શરીરને સ્વસ્થ રાખતી રોજની ક્રિયા'}
+];
+const KEY='dcgs_jumbled_v1';
+
+function save(d){try{localStorage.setItem(KEY,JSON.stringify(d))}catch(e){}}
+function load(){try{return JSON.parse(localStorage.getItem(KEY))}catch(e){return null}}
+
+/* ---- app bridge (RN WebView) ---- */
+function postToApp(m){try{window.ReactNativeWebView&&window.ReactNativeWebView.postMessage(JSON.stringify(m));}catch(e){}}
+function activityDone(){postToApp({type:'ACTIVITY_DONE'});}   /* -> onWebActivityComplete in the app */
+
+/* active time only (pauses while the app is backgrounded) */
+let _active=0,_since=Date.now(),_completed=false;
+document.addEventListener('visibilitychange',function(){
+  if(document.hidden){_active+=Date.now()-_since;}else{_since=Date.now();}
+  pushProgress();
+});
+function timeSpentSec(){return Math.round((_active+(document.hidden?0:Date.now()-_since))/1000);}
+
+/* heartbeat: keep native updated so it can fire puzzle_exited on unmount (back press) */
+function pushProgress(){postToApp({type:'PROGRESS',time_spent_sec:timeSpentSec(),completed:_completed});}
+setInterval(pushProgress,3000);
+pushProgress();
+
+function markDone(){ _completed=true; activityDone(); pushProgress(); }   /* call when the whole set is solved */
+window.addEventListener('pagehide',pushProgress);   /* best-effort, where it fires */
+
+/* ---- state ---- */
+let state=load()||{tab:0,sound:false,celebrated:false,slots:null,hints:null,solved:null};
+if(!Array.isArray(state.slots)||state.slots.length!==PUZZLES.length) state.slots=PUZZLES.map(p=>p.tiles.map(()=>null));
+if(!Array.isArray(state.hints)||state.hints.length!==PUZZLES.length) state.hints=PUZZLES.map(()=>[]);
+if(!Array.isArray(state.solved)||state.solved.length!==PUZZLES.length) state.solved=PUZZLES.map(()=>false);
+let soundOn=!!state.sound, cur=Math.min(state.tab||0,PUZZLES.length-1);
+
+/* ---- sound (mp3 assets) ---- */
+const SND={
+  correct:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Right.mp3',
+  wrong:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Wrong.mp3',
+  level:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Level.mp3',
+  win:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Complete.mp3',
+  hint:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Hint.mp3'
+};
+const _audio={};
+function preloadSounds(){for(const k in SND){try{const a=new Audio(SND[k]);a.preload='auto';_audio[k]=a;}catch(e){}}}
+function playSound(k){if(!soundOn)return;const a=_audio[k];if(!a)return;try{a.pause();a.currentTime=0;a.play().catch(function(){});}catch(e){}}
+function playCorrect(){playSound('correct');}
+function playWrong(){playSound('wrong');}
+function playLevel(){playSound('level');}
+function playWin(){playSound('win');}
+function playHint(){playSound('hint');}
+function setSoundIcon(){const b=document.getElementById('soundBtn');b.innerHTML=soundOn
+  ?'<svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M16 9a3.5 3.5 0 0 1 0 6"/><path d="M19 7a7 7 0 0 1 0 10"/></svg>'
+  :'<svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M22 9l-5 6M17 9l5 6"/></svg>';}
+function toggleSound(){soundOn=!soundOn;state.sound=soundOn;setSoundIcon();save(state);}
+
+/* ---- helpers ---- */
+function slotsOf(){return state.slots[cur];}
+function solved(i){return !!state.solved[i];}
+function isHinted(i){return state.hints[cur].indexOf(i)>=0;}
+function allFilled(){return slotsOf().every(v=>v!==null&&v!==undefined);}
+function isCorrect(){const t=PUZZLES[cur].tiles;return slotsOf().every((v,i)=>v!==null&&v!==undefined&&t[v]===t[i]);}
+
+/* ---- render ---- */
+function renderProgress(){document.getElementById('round').textContent=(cur+1)+'/'+PUZZLES.length;}
+function renderHead(){document.getElementById('hsub').textContent='નીચે આપેલા અક્ષરોને સાચા ક્રમમાં ગોઠવીને શબ્દ બનાવો.';}
+function renderClue(){document.getElementById('clue').innerHTML='<b>ઓળખ</b>'+PUZZLES[cur].clue;}
+function renderSlots(){
+  const box=document.getElementById('slots');box.innerHTML='';
+  const p=PUZZLES[cur],S=slotsOf(),done=solved(cur);
+  p.tiles.forEach((_,i)=>{
+    const d=document.createElement('div');
+    const id=S[i];
+    let cls='slot';
+    if(done) cls+=' filled done';
+    else if(isHinted(i)) cls+=' hinted';
+    else if(id!==null&&id!==undefined) cls+=' filled';
+    d.className=cls;d.dataset.s=i;
+    d.textContent=(id!==null&&id!==undefined)?p.tiles[id]:'';
+    box.appendChild(d);
+  });
+}
+function renderTray(){
+  const t=document.getElementById('tray');t.innerHTML='';
+  const p=PUZZLES[cur],used={};
+  slotsOf().forEach(v=>{if(v!==null&&v!==undefined)used[v]=1;});
+  let n=0;
+  p.order.forEach(id=>{
+    if(used[id])return;
+    const b=document.createElement('div');b.className='tile';b.dataset.t=id;b.textContent=p.tiles[id];
+    t.appendChild(b);n++;
+  });
+  if(!n){
+    const s=document.createElement('div');s.className='trayempty';
+    s.textContent=solved(cur)?'શબ્દ પૂર્ણ 🌸':'બધા અક્ષર ગોઠવાઈ ગયા';
+    t.appendChild(s);
+  }
+}
+function renderClear(){
+  const S=slotsOf();
+  let any=false;for(let i=0;i<S.length;i++){if(S[i]!==null&&S[i]!==undefined&&!isHinted(i))any=true;}
+  document.getElementById('clearBtn').disabled=(solved(cur)||!any);
+}
+function renderActions(){
+  const isLast=cur===PUZZLES.length-1;
+  document.getElementById('btnPrev').disabled=(cur===0);
+  document.getElementById('btnNext').disabled=!(solved(cur)&&!isLast);
+}
+function renderStage(){renderClue();renderSlots();renderTray();renderClear();}
+function renderAll(){renderProgress();renderHead();renderStage();renderActions();setSoundIcon();clearStatus();}
+
+/* ---- status ---- */
+let stTimer;
+function status(type,msg,sticky){const s=document.getElementById('status');s.className='status show '+type;s.textContent=msg;clearTimeout(stTimer);if(!sticky)stTimer=setTimeout(clearStatus,2300);}
+function clearStatus(){document.getElementById('status').className='status';}
+
+/* ---- moves ---- */
+function moveSound(){            // wrong only when the finished word is out of order
+  if(!soundOn) return;
+  if(allFilled()&&!isCorrect()) playWrong(); else playCorrect();
+}
+function placeInSlot(id,from,si){
+  const S=slotsOf();
+  if(isHinted(si)) return false;
+  const occ=S[si];
+  if(from&&from.type==='slot'){
+    if(from.i===si) return false;
+    S[from.i]=(occ===undefined?null:occ);      // swap the two slots
+  }
+  S[si]=id;
+  return true;
+}
+function toTray(from){
+  if(!from||from.type!=='slot') return false;
+  if(isHinted(from.i)) return false;
+  const S=slotsOf();
+  if(S[from.i]===null||S[from.i]===undefined) return false;
+  S[from.i]=null;
+  return true;
+}
+function firstEmpty(){const S=slotsOf();for(let i=0;i<S.length;i++){if((S[i]===null||S[i]===undefined)&&!isHinted(i))return i;}return -1;}
+function afterMove(sound){
+  save(state);renderStage();
+  if(sound) moveSound();
+  checkDone();
+}
+function shakeSlots(){
+  const box=document.getElementById('slots');
+  const els=box.querySelectorAll('.slot');
+  els.forEach(el=>{if(!el.classList.contains('hinted'))el.classList.add('bad');});
+  box.classList.remove('shake');void box.offsetWidth;box.classList.add('shake');
+  setTimeout(()=>{box.classList.remove('shake');els.forEach(el=>el.classList.remove('bad'));},700);
+}
+function checkDone(){
+  if(solved(cur)||!allFilled()) return;
+  if(isCorrect()){
+    state.solved[cur]=true;save(state);renderStage();renderActions();
+    const all=state.solved.every(Boolean);
+    if(all){
+      status('done','બધા શબ્દો પૂર્ણ. ખૂબ સરસ! 🌸',true);
+      if(soundOn)playWin();
+      if(!state.celebrated){state.celebrated=true;save(state);showCelebrate();}
+      markDone();
+    }else{
+      status('done','શબ્દ સાચો! તૈયાર હો ત્યારે આગળ વધો.',true);
+      if(soundOn)playLevel();
+    }
+  }else{
+    status('bad','ક્રમ બરાબર નથી. અક્ષર ફરી ગોઠવો.');
+    shakeSlots();
+  }
+}
+
+/* ---- drag & drop (touch + mouse via Pointer Events) ---- */
+let drag=null;
+function zoneAt(x,y){
+  const el=document.elementFromPoint(x,y);if(!el||!el.closest)return null;
+  const s=el.closest('.slot');if(s)return{type:'slot',i:parseInt(s.dataset.s)};
+  if(el.closest('#trayzone'))return{type:'tray'};
+  return null;
+}
+function clearOver(){
+  const d=document.querySelector('.slot.drop');if(d)d.classList.remove('drop');
+  document.getElementById('trayzone').classList.remove('over');
+}
+function markOver(z){
+  clearOver();
+  if(!z)return;
+  if(z.type==='slot'){const c=document.querySelector('.slot[data-s="'+z.i+'"]');if(c&&!c.classList.contains('hinted'))c.classList.add('drop');}
+  else document.getElementById('trayzone').classList.add('over');
+}
+function onDown(e){
+  if(drag)return;
+  if(e.button!==undefined&&e.button!==0)return;
+  if(solved(cur))return;
+  const el=e.target&&e.target.closest?e.target.closest('.tile,.slot'):null;
+  if(!el)return;
+  let id,from;
+  if(el.classList.contains('tile')){id=parseInt(el.dataset.t);from={type:'tray'};}
+  else{
+    const si=parseInt(el.dataset.s);
+    if(isHinted(si))return;
+    const v=slotsOf()[si];
+    if(v===null||v===undefined)return;
+    id=v;from={type:'slot',i:si};
+  }
+  e.preventDefault();
+  const ghost=document.createElement('div');
+  ghost.className='dragghost';ghost.textContent=PUZZLES[cur].tiles[id];
+  document.body.appendChild(ghost);
+  el.classList.add('grabbing');
+  drag={id,from,ghost,el,startX:e.clientX,startY:e.clientY,moved:false,over:null};
+  moveGhost(e.clientX,e.clientY);
+  try{el.setPointerCapture(e.pointerId);}catch(_){}
+}
+function moveGhost(x,y){if(drag){drag.ghost.style.left=x+'px';drag.ghost.style.top=y+'px';}}
+function onMove(e){
+  if(!drag)return;
+  e.preventDefault();
+  if(Math.abs(e.clientX-drag.startX)>5||Math.abs(e.clientY-drag.startY)>5)drag.moved=true;
+  moveGhost(e.clientX,e.clientY);
+  const z=zoneAt(e.clientX,e.clientY);
+  const key=z?(z.type+(z.i!==undefined?z.i:'')):'';
+  if(key!==drag.over){drag.over=key;markOver(z);}
+  drag.zone=z;
+}
+function onUp(e){
+  if(!drag)return;
+  const d=drag;drag=null;
+  if(e)e.preventDefault();
+  d.ghost.remove();
+  d.el.classList.remove('grabbing');
+  clearOver();
+  const z=d.zone;
+  let changed=false;
+  if(d.moved&&z&&z.type==='slot') changed=placeInSlot(d.id,d.from,z.i);
+  else if(d.moved&&z&&z.type==='tray') changed=toTray(d.from);
+  else if(!d.moved){
+    if(d.from.type==='tray'){const s=firstEmpty();if(s>=0)changed=placeInSlot(d.id,d.from,s);}
+    else changed=toTray(d.from);
+  }
+  if(changed) afterMove(true);
+  else renderStage();
+}
+
+/* ---- hint ---- */
+function useHint(){
+  if(solved(cur)){status('hint','આ શબ્દ પહેલેથી ગોઠવાઈ ગયો છે.');return;}
+  const p=PUZZLES[cur],S=slotsOf();
+  let target=-1;
+  for(let i=0;i<p.tiles.length;i++){
+    if(isHinted(i))continue;
+    const v=S[i];
+    if(v===null||v===undefined||p.tiles[v]!==p.tiles[i]){target=i;break;}
+  }
+  if(target<0){status('hint','બધા અક્ષર સાચી જગ્યાએ છે.');return;}
+  let id=-1;
+  for(let k=0;k<p.tiles.length;k++){
+    if(p.tiles[k]!==p.tiles[target])continue;
+    const at=S.indexOf(k);
+    if(at===-1){id=k;break;}                       // free in the tray
+    if(!isHinted(at)){id=k;S[at]=null;break;}      // pull it out of another slot
+  }
+  if(id<0){status('hint','આ અક્ષર અત્યારે ઉપલબ્ધ નથી.');return;}
+  S[target]=id;                                    // any tile that was here goes back to the tray
+  state.hints[cur].push(target);
+  save(state);renderStage();
+  if(soundOn)playHint();
+  status('hint','આ અક્ષર અહીં આવશે.');
+  checkDone();
+}
+
+/* ---- clear ---- */
+function clearWord(){
+  if(solved(cur))return;
+  const S=slotsOf();let ch=false;
+  for(let i=0;i<S.length;i++){if(S[i]!==null&&S[i]!==undefined&&!isHinted(i)){S[i]=null;ch=true;}}
+  if(!ch)return;
+  save(state);renderStage();clearStatus();
+}
+
+/* ---- navigation ---- */
+function nextPuzzle(){if(cur<PUZZLES.length-1&&solved(cur)){cur++;state.tab=cur;save(state);renderAll();window.scrollTo({top:0,behavior:'smooth'});}}
+function prevPuzzle(){if(cur>0){cur--;state.tab=cur;save(state);renderAll();window.scrollTo({top:0,behavior:'smooth'});
+  if(solved(cur))status('done','આ શબ્દ પૂર્ણ. તૈયાર હો ત્યારે આગળ વધો.',true);}}
+
+/* ---- help sheet ---- */
+function openHelp(){document.getElementById('scrim').classList.add('open');document.getElementById('sheet').classList.add('open');}
+function closeHelp(){document.getElementById('scrim').classList.remove('open');document.getElementById('sheet').classList.remove('open');}
+
+/* ---- celebration ---- */
+function showCelebrate(){const c=document.getElementById('celebrate');c.classList.add('show');const ems=['🌸','🌼','✨','🍃','💜'];for(let i=0;i<16;i++){const p=document.createElement('div');p.className='petal';p.textContent=ems[i%ems.length];p.style.left=(Math.random()*100)+'%';p.style.animationDuration=(2.4+Math.random()*1.6)+'s';p.style.animationDelay=(Math.random()*.6)+'s';document.body.appendChild(p);setTimeout(()=>p.remove(),4600);}}
+function closeCelebrate(){document.getElementById('celebrate').classList.remove('show');postToApp({type:'GO_BACK'});}
+
+/* ---- listeners ---- */
+document.getElementById('slots').addEventListener('pointerdown',onDown);
+document.getElementById('trayzone').addEventListener('pointerdown',onDown);
+window.addEventListener('pointermove',onMove,{passive:false});
+window.addEventListener('pointerup',onUp);
+window.addEventListener('pointercancel',onUp);
+
+/* ---- init ---- */
+preloadSounds();
+renderAll();
+if(state.solved.every(Boolean)){
+  status('done','બધા શબ્દો પૂર્ણ. ખૂબ સરસ! 🌸',true);
+  _completed=true;
+  pushProgress();
+}else if(solved(cur)){
+  status('done','આ શબ્દ પૂર્ણ. તૈયાર હો ત્યારે આગળ વધો.',true);
+}
+</script>
+</body>
+</html>
