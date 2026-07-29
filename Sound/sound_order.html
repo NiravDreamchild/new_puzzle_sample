@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#FBF9FC">
-<title>Dreamchild · Sound Ladder</title>
+<title>Dreamchild · Sound Order</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hind+Vadodara:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -62,44 +62,47 @@ body{
 .stage{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
   box-shadow:0 8px 28px -10px rgba(78,33,95,.16), 0 2px 8px -3px rgba(78,33,95,.08);padding:14px;margin-bottom:14px;}
 
-/* round pips */
-.rounds{display:flex;align-items:center;justify-content:center;gap:8px;margin:0 0 11px;
-  font-size:12.5px;font-weight:600;color:var(--muted);}
-.pip{width:9px;height:9px;border-radius:50%;background:var(--line);transition:background .25s ease;}
-.pip.on{background:var(--mint);}
+/* section labels */
+.slab{display:flex;align-items:center;justify-content:center;gap:7px;
+  font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.02em;margin:0 0 8px;}
+.slab svg{width:15px;height:15px;fill:none;stroke:var(--muted);stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;}
+.slab.two{margin-top:16px;}
 
-/* note dots — show HOW MANY notes, never WHICH bar */
-.dots{display:flex;align-items:center;justify-content:center;gap:8px;min-height:14px;margin:0 0 13px;}
-.dot{width:10px;height:10px;border-radius:50%;background:var(--line);
-  transition:background .2s ease,transform .2s ease;}
-.dot.on{background:var(--brand);}
-.dot.live{background:var(--accent);transform:scale(1.45);}
-
-/* pitch ladder */
-.bars{display:flex;align-items:flex-end;justify-content:center;gap:7px;
-  height:clamp(132px,38vw,168px);touch-action:manipulation;}
-.bar{flex:1;min-width:0;border:none;border-radius:12px;cursor:pointer;-webkit-appearance:none;
-  padding:0 0 7px;display:flex;align-items:flex-end;justify-content:center;
-  font-family:'Hind Vadodara',sans-serif;font-weight:700;font-size:12.5px;color:rgba(46,42,50,.5);
-  box-shadow:var(--shadow-sm);transition:transform .1s ease,filter .15s ease,box-shadow .2s ease;}
-.bar:active{transform:translateY(2px) scale(.985);}
-.bar.lit{filter:brightness(1.16) saturate(1.12);
+/* answer strip + pool share the tile grid */
+.row{display:flex;gap:7px;justify-content:center;}
+.tile{flex:1;min-width:0;aspect-ratio:1/1;border:none;border-radius:12px;cursor:pointer;
+  -webkit-appearance:none;padding:0;display:flex;align-items:center;justify-content:center;
+  font-family:'Hind Vadodara',sans-serif;font-size:clamp(15px,4.6vw,20px);color:rgba(46,42,50,.55);
+  box-shadow:var(--shadow-sm);transition:transform .1s ease,filter .15s ease,box-shadow .2s ease,opacity .2s ease;}
+.tile:active{transform:scale(.95);}
+.tile.lit{filter:brightness(1.16) saturate(1.12);
   box-shadow:0 0 0 3px var(--accent),0 10px 22px -10px rgba(78,33,95,.45);}
-.bar.hint{box-shadow:0 0 0 3px var(--accent),0 12px 26px -10px rgba(242,160,61,.75);
+.tile.hint{box-shadow:0 0 0 3px var(--accent),0 12px 26px -10px rgba(242,160,61,.75);
   animation:pulse 1s ease infinite;}
-@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+.tile.gone{opacity:.16;pointer-events:none;box-shadow:none;}
+.tile.done{color:#fff;}
+
+/* empty slot in the answer strip */
+.slot{flex:1;min-width:0;aspect-ratio:1/1;border-radius:12px;background:#FAF7FB;
+  border:2px dashed var(--line);display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:600;color:#CFC5D6;}
+.slot.next{border-color:var(--brand);background:var(--brand-soft);color:var(--brand);}
+
+.strip.bad .tile,.strip.bad .slot{animation:shake .3s ease;}
+.strip.win .tile{box-shadow:0 0 0 2.5px var(--mint),0 8px 18px -10px rgba(47,155,99,.6);}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
 .shake{animation:shake .3s ease}
 
-/* listen */
-.listen{width:100%;margin-top:14px;min-height:50px;border-radius:16px;border:none;cursor:pointer;
+/* listen-back */
+.listen{width:100%;margin-top:16px;min-height:50px;border-radius:16px;border:none;cursor:pointer;
   -webkit-appearance:none;background:linear-gradient(135deg,var(--brand),var(--brand-deep));color:#fff;
   font-family:'Hind Vadodara',sans-serif;font-weight:700;font-size:15px;
   display:flex;align-items:center;justify-content:center;gap:9px;
   box-shadow:0 10px 22px -10px rgba(110,42,133,.55);transition:transform .12s ease,opacity .2s ease;}
 .listen:active{transform:scale(.98);}
 .listen svg{width:20px;height:20px;fill:none;stroke:#fff;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;}
-.listen:disabled{opacity:.55;cursor:default;}
+.listen:disabled{opacity:.5;cursor:default;}
 
 /* ---- status ---- */
 .status{min-height:24px;text-align:center;font-size:14px;line-height:1.4;font-weight:500;
@@ -201,7 +204,7 @@ body{
   <!-- header -->
   <header class="phead">
     <div class="hrow1">
-      <h1 class="ptitle">સૂરની સીડી</h1>
+      <h1 class="ptitle">સૂર ગોઠવો</h1>
       <div class="hctrls">
         <span class="rpill" id="round"></span>
         <button class="hbtn info" onclick="openHelp()" aria-label="How to play">
@@ -214,12 +217,22 @@ body{
 
   <!-- STAGE -->
   <div class="stage">
-    <div class="rounds" id="rounds"></div>
-    <div class="dots" id="dots"></div>
-    <div class="bars" id="bars"></div>
-    <button class="listen" id="listenBtn" onclick="playSeq()">
+
+    <div class="slab">
+      <svg viewBox="0 0 24 24"><path d="M4 19V16"/><path d="M10 19V12"/><path d="M16 19V8"/><path d="M21 19V4"/></svg>
+      નીચેથી ઊંચે
+    </div>
+    <div class="row strip" id="strip"></div>
+
+    <div class="slab two">
+      <svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M16 9a3.5 3.5 0 0 1 0 6"/></svg>
+      દબાવીને સાંભળો
+    </div>
+    <div class="row pool" id="pool"></div>
+
+    <button class="listen" id="listenBtn" onclick="playStrip()">
       <svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M16 9a3.5 3.5 0 0 1 0 6"/><path d="M19 7a7 7 0 0 1 0 10"/></svg>
-      <span id="listenTx">સાંભળો</span>
+      <span id="listenTx">મારો ક્રમ સાંભળો</span>
     </button>
   </div>
 
@@ -245,7 +258,7 @@ body{
 <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="How to play">
   <div class="grab"></div>
   <h3>કેવી રીતે રમવું</h3>
-  <p class="lead">સૂરનો ક્રમ સાંભળો અને એ જ ક્રમમાં પટ્ટીઓ દબાવો. ઉતાવળ નહીં — શાંતિથી.</p>
+  <p class="lead">દરેક રંગ એક સૂર છે. સૌથી નીચા સૂરથી સૌથી ઊંચા સૂર સુધી ગોઠવવાના છે.</p>
 
   <div class="step">
     <div class="ic"><svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M16 9a3.5 3.5 0 0 1 0 6"/><path d="M19 7a7 7 0 0 1 0 10"/></svg></div>
@@ -253,18 +266,18 @@ body{
   </div>
 
   <div class="step">
-    <div class="ic"><svg viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M8 7v10"/><path d="M16 6v12"/><path d="M4 10v4"/><path d="M20 10v4"/></svg></div>
-    <div class="tx"><b>પહેલાં સાંભળો</b><p>"સાંભળો" દબાવો. સૂરનો ક્રમ વાગશે — કઈ પટ્ટી વાગી તે દેખાશે નહીં, ફક્ત સંભળાશે. ઉપરના ટપકાં ગણતરી બતાવે છે.</p></div>
+    <div class="ic"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="2"/><rect x="13" y="13" width="7" height="7" rx="2"/><path d="M4 16h5M15 4h5"/></svg></div>
+    <div class="tx"><b>સાંભળીને ઉપર મૂકો</b><p>નીચેનો રંગ દબાવો — તેનો સૂર સંભળાશે અને એ ઉપરની હરોળમાં ગોઠવાઈ જશે. રંગ પરથી સૂર ઊંચો છે કે નીચો તે ખબર નહીં પડે — ફક્ત કાનથી નક્કી કરવાનું છે.</p></div>
   </div>
 
   <div class="step">
-    <div class="ic"><svg viewBox="0 0 24 24"><path d="M4 20V15"/><path d="M9 20V11"/><path d="M14 20V8"/><path d="M19 20V5"/></svg></div>
-    <div class="tx"><b>એ જ ક્રમમાં દબાવો</b><p>ડાબેથી જમણે સૂર નીચેથી ઊંચે જાય છે. જે ક્રમમાં સાંભળ્યું તે જ ક્રમમાં પટ્ટીઓ દબાવો. ભૂલ થાય તો એ જ રાઉન્ડ ફરી શરૂ થશે.</p></div>
+    <div class="ic"><svg viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h11a6 6 0 0 1 0 12h-4"/></svg></div>
+    <div class="tx"><b>બદલવું હોય તો</b><p>ઉપરની હરોળનો રંગ દબાવો — એ પાછો નીચે આવી જશે. જેટલી વાર જોઈએ તેટલી વાર બદલી શકાય.</p></div>
   </div>
 
   <div class="step">
     <div class="ic"><svg viewBox="0 0 24 24"><path d="M4 7h10M4 12h10M4 17h6"/><path d="M16.5 16.5l2 2 3.5-3.5"/></svg></div>
-    <div class="tx"><b>ત્રણ રાઉન્ડ</b><p>દરેક કોયડામાં ત્રણ રાઉન્ડ છે. દરેક રાઉન્ડમાં ક્રમ થોડો લાંબો થાય છે.</p></div>
+    <div class="tx"><b>ક્રમ તપાસો</b><p>"મારો ક્રમ સાંભળો" દબાવીને તમારો ક્રમ સાંભળો. ક્રમ સાચો હોય તો કોયડો આપોઆપ પૂર્ણ થઈ જશે.</p></div>
   </div>
 
   <button class="got" onclick="closeHelp()">Close</button>
@@ -280,30 +293,25 @@ body{
 
 <script>
 /* =========================================================
-   PUZZLE DATA — sequences are fixed (never random) so a
-   saved game always restores to the exact same round.
-   Numbers are bar indices, 0 = lowest note … 5 = highest.
+   PUZZLE DATA
+   freqs  = the level's notes, ALWAYS listed low → high
+   pool   = fixed scrambled display order; each entry is an
+            index into freqs (its "rank", 0 = lowest)
+   Colour and symbol are assigned by POOL POSITION, never by
+   rank, so the tile's look gives away nothing about pitch.
    ========================================================= */
 const PUZZLES=[
-  {id:'l1', sub_gu:'3 રાઉન્ડ — સહેલી શરૂઆત',
-   seqs:[[0,2,4],[3,1,5,2],[1,4,0,3,5]]},
-  {id:'l2', sub_gu:'3 રાઉન્ડ — થોડું ધ્યાન જોઈશે',
-   seqs:[[2,5,1,3],[0,3,2,5,1],[4,0,5,2,3,1]]},
-  {id:'l3', sub_gu:'3 રાઉન્ડ — છેલ્લો પડકાર',
-   seqs:[[1,3,0,4,2],[5,2,4,1,3,0],[3,0,5,1,4,2]]}
+  {id:'l1', sub_gu:'4 સૂર — સહેલી શરૂઆત',
+   freqs:[261.63,392.00,523.25,783.99], keys:['C4','G4','C5','G5'], pool:[2,0,3,1]},
+  {id:'l2', sub_gu:'5 સૂર — થોડું ધ્યાન જોઈશે',
+   freqs:[261.63,329.63,392.00,523.25,659.25], keys:['C4','E4','G4','C5','E5'], pool:[3,0,4,1,2]},
+  {id:'l3', sub_gu:'6 સૂર — છેલ્લો પડકાર',
+   freqs:[261.63,293.66,329.63,392.00,440.00,523.25], keys:['C4','D4','E4','G4','A4','C5'], pool:[4,1,5,0,3,2]}
 ];
+const PALETTE=['#fa7068','#fbca5f','#a0c95d','#9ddbe6','#f3adc9','#d4ab99'];
+const SYMS=['●','▲','■','◆','✚','✦'];
 
-/* six pentatonic notes — any order stays consonant */
-const NOTES=[
-  {k:'G4',f:392.00,c:'#f3adc9',h:58},
-  {k:'A4',f:440.00,c:'#fa7068',h:66},
-  {k:'C5',f:523.25,c:'#fbca5f',h:74},
-  {k:'D5',f:587.33,c:'#a0c95d',h:83},
-  {k:'E5',f:659.25,c:'#9ddbe6',h:91},
-  {k:'G5',f:783.99,c:'#d4ab99',h:100}
-];
-
-const KEY='dcgs_soundladder_v1';
+const KEY='dcgs_soundorder_v1';
 
 function save(d){try{localStorage.setItem(KEY,JSON.stringify(d))}catch(e){}}
 function load(){try{return JSON.parse(localStorage.getItem(KEY))}catch(e){return null}}
@@ -329,9 +337,9 @@ function markDone(){ _completed=true; activityDone(); pushProgress(); }   /* cal
 window.addEventListener('pagehide',pushProgress);   /* best-effort, where it fires */
 
 /* ---- state ---- */
-let state=load()||{tab:0,celebrated:false,step:[0,0,0]};
-if(!state.step)state.step=[0,0,0];
-while(state.step.length<PUZZLES.length)state.step.push(0);
+let state=load()||{tab:0,celebrated:false,order:[[],[],[]]};
+if(!state.order)state.order=[[],[],[]];
+while(state.order.length<PUZZLES.length)state.order.push([]);
 let cur=state.tab||0;
 if(cur<0||cur>=PUZZLES.length)cur=0;
 
@@ -357,7 +365,7 @@ function playHint(){    playSound('hint');    }
 
 
 /* =========================================================
-   NOTE TONES — soft marimba, synthesised in the browser.
+   NOTE TONES — soft marimba, synthesised in the browser
    ========================================================= */
 let _ctx,_masterGain;
 function AC(){
@@ -382,10 +390,12 @@ function MASTER(){
    ========================================================= */
 const CLIP_BASE='https://dreamchildapp.com/backend/assets/puzzle_sounds/';
 const CLIPS={
+  C4:'note_C4.mp3',
+  D4:'note_D4.mp3',
+  E4:'note_E4.mp3',
   G4:'note_G4.mp3',
   A4:'note_A4.mp3',
   C5:'note_C5.mp3',
-  D5:'note_D5.mp3',
   E5:'note_E5.mp3',
   G5:'note_G5.mp3'
 };
@@ -409,17 +419,16 @@ function fireClip(id,at){
        s.start(at===undefined?c.currentTime+.02:at); return true; }catch(e){ return false; }
 }
 function clipMs(id,fallback){ return (_clip[id]&&_clip[id].duration)?_clip[id].duration*1000:fallback; }
-function playNote(n){
-  if(fireClip(NOTES[n].k)) return;
+function tone(f,at){
   const c=AC(), m=MASTER(); if(!c||!m) return;
-  const f=NOTES[n].f, t=c.currentTime+.02;
+  const t=(at===undefined?c.currentTime+.02:at);
   try{
     const o=c.createOscillator(),g=c.createGain();
     o.type='sine';o.frequency.value=f;
     g.gain.setValueAtTime(.0001,t);
     g.gain.exponentialRampToValueAtTime(.34,t+.008);
-    g.gain.exponentialRampToValueAtTime(.0001,t+.52);
-    o.connect(g);g.connect(m);o.start(t);o.stop(t+.55);
+    g.gain.exponentialRampToValueAtTime(.0001,t+.55);
+    o.connect(g);g.connect(m);o.start(t);o.stop(t+.58);
     const o2=c.createOscillator(),g2=c.createGain();
     o2.type='sine';o2.frequency.value=f*4.02;
     g2.gain.setValueAtTime(.0001,t);
@@ -428,60 +437,73 @@ function playNote(n){
     o2.connect(g2);g2.connect(m);o2.start(t);o2.stop(t+.19);
   }catch(e){}
 }
+function noteAt(k,f,at){ if(fireClip(k,at)) return; tone(f,at); }
+function playRank(r){ noteAt(P().keys[r],P().freqs[r]); }
 
 /* ---- helpers ---- */
-function roundIdx(){ return Math.min(state.step[cur], PUZZLES[cur].seqs.length-1); }
-function curSeq(){ return PUZZLES[cur].seqs[roundIdx()]; }
-function solved(i){ return state.step[i]>=PUZZLES[i].seqs.length; }
-function barEl(n){ return document.querySelector('.bar[data-n="'+n+'"]'); }
+function P(){ return PUZZLES[cur]; }
+function N(){ return P().pool.length; }
+function rankOf(pos){ return P().pool[pos]; }          /* pool position -> pitch rank */
+function strip(){ return state.order[cur]; }            /* array of pool positions */
+function inStrip(pos){ return strip().indexOf(pos)>=0; }
+function solved(i){
+  const p=PUZZLES[i], o=state.order[i];
+  if(!o||o.length<p.pool.length) return false;
+  for(let k=0;k<o.length;k++){ if(p.pool[o[k]]!==k) return false; }
+  return true;
+}
 
 /* ---- render ---- */
 function renderProgress(){document.getElementById('round').textContent=(cur+1)+'/'+PUZZLES.length;}
-function renderHead(){document.getElementById('hsub').innerHTML=PUZZLES[cur].sub_gu+'<br>અવાજ સાંભળીને એ જ ક્રમમાં સૂર દબાવો.';}
-function renderRounds(){
-  const r=document.getElementById('rounds'); r.innerHTML='';
-  const total=PUZZLES[cur].seqs.length, done=Math.min(state.step[cur],total);
-  const lab=document.createElement('span');
-  lab.textContent='રાઉન્ડ '+Math.min(done+1,total)+'/'+total;
-  r.appendChild(lab);
-  for(let i=0;i<total;i++){
-    const p=document.createElement('span');
-    p.className='pip'+(i<done?' on':'');
-    r.appendChild(p);
+function renderHead(){document.getElementById('hsub').innerHTML=P().sub_gu+'<br>સાંભળીને નીચેના સૂરથી ઊંચા સૂર સુધી ગોઠવો.';}
+
+function renderStrip(){
+  const el=document.getElementById('strip'); el.innerHTML='';
+  const s=strip(), win=solved(cur);
+  el.classList.toggle('win',win);
+  for(let k=0;k<N();k++){
+    if(k<s.length){
+      const pos=s[k];
+      const b=document.createElement('button');
+      b.className='tile'+(win?' done':'');
+      b.dataset.k=k;
+      b.style.background=win?'linear-gradient(135deg,var(--brand),var(--brand-deep))':PALETTE[pos];
+      b.textContent=SYMS[pos];
+      b.setAttribute('aria-label','Placed note '+(k+1));
+      if(!win) b.addEventListener('click',function(){ pullBack(k); });
+      el.appendChild(b);
+    } else {
+      const d=document.createElement('div');
+      d.className='slot'+(k===s.length?' next':'');
+      d.textContent=String(k+1);
+      el.appendChild(d);
+    }
   }
 }
-function renderDots(){
-  const d=document.getElementById('dots'); d.innerHTML='';
-  if(solved(cur)) return;
-  const len=curSeq().length;
-  for(let i=0;i<len;i++){
-    const s=document.createElement('span');
-    s.className='dot'+(i<pos?' on':'');
-    s.dataset.i=i;
-    d.appendChild(s);
+function renderPool(){
+  const el=document.getElementById('pool'); el.innerHTML='';
+  const win=solved(cur);
+  for(let pos=0;pos<N();pos++){
+    const b=document.createElement('button');
+    const taken=inStrip(pos);
+    b.className='tile'+(taken?' gone':'');
+    b.dataset.pos=pos;
+    b.style.background=PALETTE[pos];
+    b.textContent=SYMS[pos];
+    b.setAttribute('aria-label','Note '+SYMS[pos]);
+    if(!taken&&!win) b.addEventListener('click',function(){ place(pos); });
+    el.appendChild(b);
   }
-}
-function renderBars(){
-  const b=document.getElementById('bars'); b.innerHTML='';
-  NOTES.forEach(function(nt,i){
-    const el=document.createElement('button');
-    el.className='bar'; el.dataset.n=i;
-    el.style.height=nt.h+'%';
-    el.style.background=nt.c;
-    el.textContent=String(i+1);
-    el.setAttribute('aria-label','Note '+(i+1));
-    el.addEventListener('click',function(){ tapBar(i); });
-    b.appendChild(el);
-  });
 }
 function renderActions(){
   const isLast=cur===PUZZLES.length-1;
   document.getElementById('btnPrev').disabled=(cur===0);
   document.getElementById('btnNext').disabled=!(solved(cur)&&!isLast);
-  document.getElementById('listenBtn').disabled=solved(cur)||playing;
-  document.getElementById('listenTx').textContent=solved(cur)?'કોયડો પૂર્ણ':(pos>0?'ફરી સાંભળો':'સાંભળો');
+  const lb=document.getElementById('listenBtn');
+  lb.disabled=playing||strip().length===0;
+  document.getElementById('listenTx').textContent=solved(cur)?'ક્રમ ફરી સાંભળો':'મારો ક્રમ સાંભળો';
 }
-function renderAll(){renderProgress();renderHead();renderRounds();renderDots();renderBars();renderActions();clearStatus();}
+function renderAll(){renderProgress();renderHead();renderStrip();renderPool();renderActions();clearStatus();}
 
 /* ---- status ---- */
 let stTimer;
@@ -489,64 +511,63 @@ function status(type,msg,sticky){const s=document.getElementById('status');s.cla
 function clearStatus(){document.getElementById('status').className='status';}
 
 /* ---- gameplay ---- */
-let pos=0, playing=false, timers=[];
+let playing=false, timers=[];
 
 function stopAll(){
   timers.forEach(clearTimeout); timers=[];
   playing=false;
-  document.querySelectorAll('.bar').forEach(function(e){ e.classList.remove('lit','hint','shake'); });
-  document.querySelectorAll('.dot').forEach(function(e){ e.classList.remove('live'); });
+  document.querySelectorAll('.tile').forEach(function(e){ e.classList.remove('lit','hint','shake'); });
   renderActions();
 }
 
-/* plays the sequence as AUDIO ONLY — the bars never light up here,
-   only the counter dots pulse, so nothing is given away visually */
-function playSeq(){
-  if(playing||solved(cur)) return;
-  stopAll();
-  pos=0; renderDots();
-  playing=true; renderActions();
-  const seq=curSeq();
-  seq.forEach(function(n,i){
-    timers.push(setTimeout(function(){
-      const d=document.querySelector('.dot[data-i="'+i+'"]');
-      if(d){ d.classList.add('live'); setTimeout(function(){ d.classList.remove('live'); },380); }
-      playNote(n);
-    }, 420+i*580));
-  });
-  timers.push(setTimeout(function(){
-    playing=false; renderActions();
-    status('hint','હવે એ જ ક્રમમાં પટ્ટીઓ દબાવો.');
-  }, 420+seq.length*580+150));
+function place(pos){
+  if(playing||solved(cur)||inStrip(pos)) return;
+  playRank(rankOf(pos));
+  strip().push(pos);
+  save(state);
+  renderStrip(); renderPool(); renderActions();
+  if(strip().length===N()) checkStrip();
 }
 
-function tapBar(n){
+function pullBack(k){
   if(playing||solved(cur)) return;
-  const el=barEl(n);
-  playNote(n);
-  if(el){ el.classList.add('lit'); setTimeout(function(){ el.classList.remove('lit'); },260); }
-  const seq=curSeq();
-  if(n===seq[pos]){
-    pos++;
-    renderDots(); renderActions();
-    if(pos>=seq.length) roundDone();
+  const pos=strip()[k];
+  playRank(rankOf(pos));
+  strip().splice(k,1);
+  save(state);
+  renderStrip(); renderPool(); renderActions();
+  clearStatus();
+}
+
+/* auto-detect: the strip checks itself the moment it is full */
+function checkStrip(){
+  if(solved(cur)){
+    playCorrect();
+    renderStrip(); renderPool(); renderActions();
+    onSolved();
   } else {
     playWrong();
-    if(el){ el.classList.add('shake'); setTimeout(function(){ el.classList.remove('shake'); },320); }
-    pos=0; renderDots(); renderActions();
-    status('bad','ક્રમ ખોટો પડ્યો. ફરી સાંભળીને પ્રયત્ન કરો.');
+    const el=document.getElementById('strip');
+    el.classList.remove('bad'); void el.offsetWidth; el.classList.add('bad');
+    timers.push(setTimeout(function(){ el.classList.remove('bad'); },360));
+    status('bad','ક્રમ હજી બરાબર નથી. કોઈ રંગ ઉપરથી પાછો લઈને બદલો.');
   }
 }
 
-function roundDone(){
-  state.step[cur]++;
-  save(state);
-  pos=0;
-  playCorrect();
-  renderRounds(); renderDots(); renderActions();
-  if(solved(cur)){ onSolved(); return; }
-  status('ok','રાઉન્ડ પૂર્ણ! હવે થોડો લાંબો ક્રમ.');
-  timers.push(setTimeout(function(){ playSeq(); },1600));
+function playStrip(){
+  const s=strip(); if(!s.length||playing) return;
+  stopAll();
+  playing=true; renderActions();
+  const c=AC(); if(!c){ playing=false; return; }
+  const t0=c.currentTime+.1, GAP=.5;
+  s.forEach(function(pos,k){
+    noteAt(P().keys[rankOf(pos)], P().freqs[rankOf(pos)], t0+k*GAP);
+    timers.push(setTimeout(function(){
+      const e=document.querySelector('.strip .tile[data-k="'+k+'"]');
+      if(e){ e.classList.add('lit'); setTimeout(function(){ e.classList.remove('lit'); },300); }
+    }, 100+k*GAP*1000));
+  });
+  timers.push(setTimeout(function(){ playing=false; renderActions(); }, 150+s.length*GAP*1000));
 }
 
 function onSolved(){
@@ -563,23 +584,39 @@ function onSolved(){
   }
 }
 
-/* ---- hint: flash the NEXT correct bar and play its note ---- */
+/* ---- hint ---- */
 function useHint(){
   if(solved(cur)){ status('hint','આ કોયડો પહેલેથી પૂર્ણ છે.'); return; }
   if(playing) return;
-  const n=curSeq()[pos];
-  const el=barEl(n); if(!el) return;
+  const s=strip();
   playHint();
-  status('hint','💡 હવે પછીનો સૂર ઝબકે છે.');
-  el.classList.add('hint');
-  timers.push(setTimeout(function(){ playNote(n); },460));
-  timers.push(setTimeout(function(){ el.classList.remove('hint'); },1400));
+  if(s.length<N()){
+    /* the tile that belongs in the next empty slot */
+    const want=s.length;
+    let pos=-1;
+    for(let p=0;p<N();p++){ if(rankOf(p)===want){ pos=p; break; } }
+    const el=document.querySelector('.pool .tile[data-pos="'+pos+'"]');
+    if(!el) return;
+    status('hint','💡 આ સૂર હવે પછી આવે છે.');
+    el.classList.add('hint');
+    timers.push(setTimeout(function(){ noteAt(P().keys[want],P().freqs[want]); },460));
+    timers.push(setTimeout(function(){ el.classList.remove('hint'); },1400));
+  } else {
+    /* strip is full but wrong — point at the first misplaced slot */
+    let bad=-1;
+    for(let k=0;k<s.length;k++){ if(rankOf(s[k])!==k){ bad=k; break; } }
+    const el=document.querySelector('.strip .tile[data-k="'+bad+'"]');
+    if(!el) return;
+    status('hint','💡 અહીંથી ક્રમ ખોટો પડે છે.');
+    el.classList.add('hint');
+    timers.push(setTimeout(function(){ el.classList.remove('hint'); },1600));
+  }
 }
 
 /* ---- navigation ---- */
-function resetPuzzle(){ stopAll(); state.step[cur]=0; pos=0; save(state); renderAll(); status('hint','આ કોયડો ફરી શરૂ.'); }
-function nextPuzzle(){ if(cur<PUZZLES.length-1&&solved(cur)){ stopAll(); pos=0; cur++; state.tab=cur; save(state); renderAll(); window.scrollTo({top:0,behavior:'smooth'}); } }
-function prevPuzzle(){ if(cur>0){ stopAll(); pos=0; cur--; state.tab=cur; save(state); renderAll(); window.scrollTo({top:0,behavior:'smooth'}); } }
+function resetPuzzle(){ stopAll(); state.order[cur]=[]; save(state); renderAll(); status('hint','આ કોયડો ફરી શરૂ.'); }
+function nextPuzzle(){ if(cur<PUZZLES.length-1&&solved(cur)){ stopAll(); cur++; state.tab=cur; save(state); renderAll(); window.scrollTo({top:0,behavior:'smooth'}); } }
+function prevPuzzle(){ if(cur>0){ stopAll(); cur--; state.tab=cur; save(state); renderAll(); window.scrollTo({top:0,behavior:'smooth'}); } }
 
 /* ---- help sheet ---- */
 function openHelp(){document.getElementById('scrim').classList.add('open');document.getElementById('sheet').classList.add('open');}

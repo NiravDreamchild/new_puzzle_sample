@@ -62,10 +62,6 @@ body{
 .stage{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
   box-shadow:0 8px 28px -10px rgba(78,33,95,.16), 0 2px 8px -3px rgba(78,33,95,.08);padding:14px;margin-bottom:14px;}
 
-.soundnote{display:none;margin:0 0 12px;padding:9px 12px;border-radius:12px;background:var(--accent-soft);
-  color:#9A5A12;font-size:12.5px;font-weight:600;text-align:center;line-height:1.45;}
-.soundnote.show{display:block;}
-
 /* player */
 .player{display:flex;flex-direction:column;align-items:center;gap:11px;padding:10px 0 20px;}
 .playbtn{position:relative;width:104px;height:104px;border-radius:50%;border:none;cursor:pointer;
@@ -205,7 +201,6 @@ body{
       <h1 class="ptitle">અવાજ ઓળખો</h1>
       <div class="hctrls">
         <span class="rpill" id="round"></span>
-        <button class="hbtn" id="soundBtn" onclick="toggleSound()" aria-label="Sound"></button>
         <button class="hbtn info" onclick="openHelp()" aria-label="How to play">
           <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><circle cx="12" cy="8" r="0.6" fill="currentColor" stroke="none"/></svg>
         </button>
@@ -216,7 +211,6 @@ body{
 
   <!-- STAGE -->
   <div class="stage">
-    <div class="soundnote" id="soundnote">🔊 આ કોયડો અવાજથી રમાય છે — ઉપરના બટનથી અવાજ ચાલુ કરો.</div>
     <div class="player">
       <button class="playbtn" id="playbtn" onclick="playQ()" aria-label="Play the sound">
         <svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M16 9a3.5 3.5 0 0 1 0 6"/><path d="M19 7a7 7 0 0 1 0 10"/></svg>
@@ -252,7 +246,7 @@ body{
 
   <div class="step">
     <div class="ic"><svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M16 9a3.5 3.5 0 0 1 0 6"/><path d="M19 7a7 7 0 0 1 0 10"/></svg></div>
-    <div class="tx"><b>અવાજ ચાલુ રાખો</b><p>ઉપરના સ્પીકર બટનથી અવાજ ચાલુ કરો. હેડફોન હોય તો વધુ સારું.</p></div>
+    <div class="tx"><b>અવાજ જરૂરી છે</b><p>આ કોયડો અવાજથી રમાય છે. ફોનનો અવાજ વધારો — હેડફોન હોય તો વધુ સારું.</p></div>
   </div>
 
   <div class="step">
@@ -321,9 +315,9 @@ function markDone(){ _completed=true; activityDone(); pushProgress(); }   /* cal
 window.addEventListener('pagehide',pushProgress);   /* best-effort, where it fires */
 
 /* ---- state ---- */
-let state=load()||{tab:0,sound:false,celebrated:false,answers:{}};
+let state=load()||{tab:0,celebrated:false,answers:{}};
 if(!state.answers)state.answers={};
-let soundOn=!!state.sound, cur=state.tab||0;
+let cur=state.tab||0;
 if(cur<0||cur>=QUESTIONS.length)cur=0;
 let sel=-1;
 
@@ -337,7 +331,6 @@ const SND={
 const _audio={};
 function preloadSounds(){for(const k in SND){try{const a=new Audio(SND[k]);a.preload='auto';_audio[k]=a;}catch(e){}}}
 function playSound(k){
-  if(!soundOn) return;
   const a=_audio[k]; if(!a) return;
   try{ a.pause(); a.currentTime=0; a.play().catch(function(){}); }catch(e){}
 }
@@ -346,15 +339,6 @@ function playWrong(){   playSound('wrong');   }
 function playLevel(){   playSound('level');   }
 function playWin(){     playSound('win');     }
 
-function setSoundIcon(){const b=document.getElementById('soundBtn');b.innerHTML=soundOn
-  ?'<svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M16 9a3.5 3.5 0 0 1 0 6"/><path d="M19 7a7 7 0 0 1 0 10"/></svg>'
-  :'<svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M22 9l-5 6M17 9l5 6"/></svg>';}
-function renderSoundNote(){document.getElementById('soundnote').classList.toggle('show',!soundOn);}
-function toggleSound(){
-  soundOn=!soundOn;state.sound=soundOn;setSoundIcon();renderSoundNote();save(state);
-  if(soundOn){status('ok','અવાજ ચાલુ. હવે વચ્ચેનું બટન દબાવો.');}
-  else{status('hint','અવાજ બંધ. આ કોયડો અવાજ વગર રમી શકાતો નથી.');}
-}
 
 /* =========================================================
    QUESTION SOUNDS — synthesised in the browser (Web Audio)
@@ -370,6 +354,45 @@ function MASTER(){
   if(!_masterGain){ _masterGain=c.createGain(); _masterGain.gain.value=.85; _masterGain.connect(c.destination); }
   return _masterGain;
 }
+
+/* =========================================================
+   REAL RECORDINGS
+   Upload the files listed in CLIPS to the folder below and the
+   puzzle uses them automatically — no code change needed.
+   Any file that is absent falls back to the built-in
+   synthesised stand-in, so the puzzle keeps working while the
+   sound library is still being filled in.
+   NOTE: that folder must send  Access-Control-Allow-Origin: *
+   ========================================================= */
+const CLIP_BASE='https://dreamchildapp.com/backend/assets/puzzle_sounds/';
+const CLIPS={
+  bird:'bird.mp3',
+  drum:'dhol.mp3',
+  rain:'rain.mp3',
+  flute:'flute.mp3',
+  ghungroo:'ghungroo.mp3',
+  drop:'water.mp3'
+};
+const _clip={};
+function loadClips(){
+  const c=AC(); if(!c) return;
+  Object.keys(CLIPS).forEach(function(id){
+    if(_clip[id]!==undefined) return;
+    _clip[id]=null;                                     /* in flight */
+    fetch(CLIP_BASE+CLIPS[id])
+      .then(function(r){ if(!r.ok) throw 0; return r.arrayBuffer(); })
+      .then(function(b){ return c.decodeAudioData(b); })
+      .then(function(buf){ _clip[id]=buf; })
+      .catch(function(){ _clip[id]=false; });            /* missing -> synth */
+  });
+}
+function fireClip(id,at){
+  const c=AC(), m=MASTER();
+  if(!c||!m||!_clip[id]) return false;
+  try{ const s=c.createBufferSource(); s.buffer=_clip[id]; s.connect(m);
+       s.start(at===undefined?c.currentTime+.02:at); return true; }catch(e){ return false; }
+}
+function clipMs(id,fallback){ return (_clip[id]&&_clip[id].duration)?_clip[id].duration*1000:fallback; }
 function noise(c){
   if(_noiseBuf) return _noiseBuf;
   const len=c.sampleRate*2, b=c.createBuffer(1,len,c.sampleRate), d=b.getChannelData(0);
@@ -462,17 +485,16 @@ const TONES={
 
 let playTimer=null;
 function playQ(){
-  if(!soundOn){ status('hint','🔊 પહેલાં ઉપરના બટનથી અવાજ ચાલુ કરો.'); return; }
-  const s=TONES[QUESTIONS[cur].sound]; if(!s) return;
+  const id=QUESTIONS[cur].sound, s=TONES[id]; if(!s) return;
   const c=AC(), m=MASTER(); if(!c||!m) return;
-  try{ s.make(c,m,c.currentTime+.02); }catch(e){}
+  if(!fireClip(id)){ try{ s.make(c,m,c.currentTime+.02); }catch(e){} }
   const btn=document.getElementById('playbtn'), tx=document.getElementById('ptext');
   btn.classList.add('on'); tx.textContent='વાગી રહ્યું છે…';
   clearTimeout(playTimer);
   playTimer=setTimeout(function(){
     btn.classList.remove('on');
     tx.textContent='ફરી સાંભળવા દબાવો';
-  }, s.dur);
+  }, clipMs(id,s.dur));
 }
 
 /* ---- render ---- */
@@ -510,7 +532,7 @@ function renderActions(){
 }
 function renderAll(){
   sel = state.answers[cur] ? state.answers[cur].selected : -1;
-  renderProgress();renderPlayer();renderOptions();renderActions();setSoundIcon();renderSoundNote();clearStatus();
+  renderProgress();renderPlayer();renderOptions();renderActions();clearStatus();
   if(state.answers[cur]){
     const ok=state.answers[cur].correct;
     status(ok?'ok':'bad', ok?'સાચો જવાબ!':'સાચો જવાબ લીલા રંગમાં દર્શાવ્યો છે.', true);
@@ -585,13 +607,16 @@ function closeCelebrate(){
 
 /* ---- init ---- */
 preloadSounds();
+loadClips();
+/* browsers need a user gesture before audio may start — warm the clock on the first one */
+['touchstart','click'].forEach(function(ev){document.addEventListener(ev,function(){AC();},{once:true,passive:true});});
 renderAll();
 if(QUESTIONS.every(function(q,i){ return !!state.answers[i]; })){
   status('done','બધા પ્રશ્નો પૂર્ણ. ખૂબ સરસ! 🌸',true);
   _completed=true;
   pushProgress();
 }
-else if(!soundOn) status('hint','🔊 રમવા માટે ઉપરના બટનથી અવાજ ચાલુ કરો.');
+else status('hint','🔊 ફોનનો અવાજ ચાલુ રાખો — હેડફોન હોય તો વધુ સારું.');
 </script>
 </body>
 </html>

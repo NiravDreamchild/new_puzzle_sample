@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#FBF9FC">
-<title>Dreamchild · Sound Ladder</title>
+<title>Dreamchild · Rhythm Match</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hind+Vadodara:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -62,44 +62,50 @@ body{
 .stage{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
   box-shadow:0 8px 28px -10px rgba(78,33,95,.16), 0 2px 8px -3px rgba(78,33,95,.08);padding:14px;margin-bottom:14px;}
 
-/* round pips */
-.rounds{display:flex;align-items:center;justify-content:center;gap:8px;margin:0 0 11px;
-  font-size:12.5px;font-weight:600;color:var(--muted);}
-.pip{width:9px;height:9px;border-radius:50%;background:var(--line);transition:background .25s ease;}
-.pip.on{background:var(--mint);}
+/* beat-count clue */
+.clue{display:flex;align-items:center;justify-content:center;gap:7px;margin:2px 0 14px;
+  font-size:13px;font-weight:600;color:var(--muted);}
+.clue b{color:var(--brand);font-weight:700;}
+.clue .cnt{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;
+  padding:0 6px;border-radius:7px;background:var(--brand-soft);color:var(--brand);font-size:12px;font-weight:700;}
 
-/* note dots — show HOW MANY notes, never WHICH bar */
-.dots{display:flex;align-items:center;justify-content:center;gap:8px;min-height:14px;margin:0 0 13px;}
-.dot{width:10px;height:10px;border-radius:50%;background:var(--line);
-  transition:background .2s ease,transform .2s ease;}
-.dot.on{background:var(--brand);}
-.dot.live{background:var(--accent);transform:scale(1.45);}
+/* count-in pips */
+.countin{display:flex;align-items:center;justify-content:center;gap:8px;min-height:12px;margin:0 0 12px;}
+.ci{width:8px;height:8px;border-radius:50%;background:var(--line);transition:background .12s ease,transform .12s ease;}
+.ci.on{background:var(--accent);transform:scale(1.5);}
 
-/* pitch ladder */
-.bars{display:flex;align-items:flex-end;justify-content:center;gap:7px;
-  height:clamp(132px,38vw,168px);touch-action:manipulation;}
-.bar{flex:1;min-width:0;border:none;border-radius:12px;cursor:pointer;-webkit-appearance:none;
-  padding:0 0 7px;display:flex;align-items:flex-end;justify-content:center;
-  font-family:'Hind Vadodara',sans-serif;font-weight:700;font-size:12.5px;color:rgba(46,42,50,.5);
-  box-shadow:var(--shadow-sm);transition:transform .1s ease,filter .15s ease,box-shadow .2s ease;}
-.bar:active{transform:translateY(2px) scale(.985);}
-.bar.lit{filter:brightness(1.16) saturate(1.12);
-  box-shadow:0 0 0 3px var(--accent),0 10px 22px -10px rgba(78,33,95,.45);}
-.bar.hint{box-shadow:0 0 0 3px var(--accent),0 12px 26px -10px rgba(242,160,61,.75);
-  animation:pulse 1s ease infinite;}
-@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
-@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
-.shake{animation:shake .3s ease}
+/* 8-step sequencer */
+.steps{display:flex;align-items:stretch;justify-content:center;gap:5px;}
+.gapmid{width:9px;flex:none;}
+.step-pad{flex:1;min-width:0;min-height:clamp(58px,17vw,74px);border-radius:12px;cursor:pointer;
+  -webkit-appearance:none;padding:0 0 6px;border:1px solid var(--line);background:#FAF7FB;
+  display:flex;align-items:flex-end;justify-content:center;
+  font-family:'Hind Vadodara',sans-serif;font-weight:700;font-size:11px;color:#C4B9CC;
+  box-shadow:var(--shadow-sm);
+  transition:background .16s ease,border-color .16s ease,color .16s ease,transform .1s ease,box-shadow .2s ease;}
+.step-pad:active{transform:scale(.95);}
+.step-pad.on{background:linear-gradient(135deg,var(--brand),var(--brand-deep));border-color:transparent;
+  color:rgba(255,255,255,.75);box-shadow:0 7px 16px -9px rgba(110,42,133,.65);}
+.step-pad.hit{box-shadow:0 0 0 3px var(--accent),0 10px 20px -10px rgba(242,160,61,.7);}
+.step-pad.hint{box-shadow:0 0 0 3px var(--accent);animation:pulse 1s ease infinite;}
+.steps.win .step-pad.on{background:linear-gradient(135deg,var(--mint),#227a4b);
+  box-shadow:0 7px 16px -9px rgba(47,155,99,.65);}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
 
-/* listen */
-.listen{width:100%;margin-top:14px;min-height:50px;border-radius:16px;border:none;cursor:pointer;
-  -webkit-appearance:none;background:linear-gradient(135deg,var(--brand),var(--brand-deep));color:#fff;
-  font-family:'Hind Vadodara',sans-serif;font-weight:700;font-size:15px;
-  display:flex;align-items:center;justify-content:center;gap:9px;
-  box-shadow:0 10px 22px -10px rgba(110,42,133,.55);transition:transform .12s ease,opacity .2s ease;}
-.listen:active{transform:scale(.98);}
-.listen svg{width:20px;height:20px;fill:none;stroke:#fff;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;}
-.listen:disabled{opacity:.55;cursor:default;}
+/* transport */
+.prow{display:flex;gap:9px;margin-top:15px;}
+.pbtn{flex:1;min-height:50px;border-radius:16px;cursor:pointer;-webkit-appearance:none;
+  font-family:'Hind Vadodara',sans-serif;font-weight:700;font-size:14px;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:transform .12s ease,opacity .2s ease,background .2s ease,box-shadow .2s ease;}
+.pbtn:active{transform:scale(.98);}
+.pbtn svg{width:19px;height:19px;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;}
+.pbtn.target{background:linear-gradient(135deg,var(--brand),var(--brand-deep));border:none;color:#fff;
+  box-shadow:0 10px 22px -10px rgba(110,42,133,.55);}
+.pbtn.target svg{stroke:#fff;}
+.pbtn.mine{background:var(--surface);border:1px solid var(--line);color:var(--ink);box-shadow:var(--shadow-sm);}
+.pbtn.mine svg{stroke:var(--brand);}
+.pbtn:disabled{opacity:.5;cursor:default;box-shadow:none;}
 
 /* ---- status ---- */
 .status{min-height:24px;text-align:center;font-size:14px;line-height:1.4;font-weight:500;
@@ -201,7 +207,7 @@ body{
   <!-- header -->
   <header class="phead">
     <div class="hrow1">
-      <h1 class="ptitle">સૂરની સીડી</h1>
+      <h1 class="ptitle">તાલ મિલાવો</h1>
       <div class="hctrls">
         <span class="rpill" id="round"></span>
         <button class="hbtn info" onclick="openHelp()" aria-label="How to play">
@@ -214,13 +220,21 @@ body{
 
   <!-- STAGE -->
   <div class="stage">
-    <div class="rounds" id="rounds"></div>
-    <div class="dots" id="dots"></div>
-    <div class="bars" id="bars"></div>
-    <button class="listen" id="listenBtn" onclick="playSeq()">
-      <svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M16 9a3.5 3.5 0 0 1 0 6"/><path d="M19 7a7 7 0 0 1 0 10"/></svg>
-      <span id="listenTx">સાંભળો</span>
-    </button>
+
+    <div class="clue">આ તાલમાં <span class="cnt" id="beatCount">0</span> ટકોરા છે</div>
+    <div class="countin" id="countin"></div>
+    <div class="steps" id="steps"></div>
+
+    <div class="prow">
+      <button class="pbtn target" id="btnTarget" onclick="playTarget()">
+        <svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M16 9a3.5 3.5 0 0 1 0 6"/><path d="M19 7a7 7 0 0 1 0 10"/></svg>
+        <span id="txTarget">તાલ સાંભળો</span>
+      </button>
+      <button class="pbtn mine" id="btnMine" onclick="playMine()">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M10 8.5l6 3.5-6 3.5z"/></svg>
+        <span id="txMine">મારો તાલ</span>
+      </button>
+    </div>
   </div>
 
   <!-- status -->
@@ -245,7 +259,7 @@ body{
 <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="How to play">
   <div class="grab"></div>
   <h3>કેવી રીતે રમવું</h3>
-  <p class="lead">સૂરનો ક્રમ સાંભળો અને એ જ ક્રમમાં પટ્ટીઓ દબાવો. ઉતાવળ નહીં — શાંતિથી.</p>
+  <p class="lead">તાલ સાંભળો અને એ જ તાલ નીચેનાં આઠ ખાનાંમાં ગોઠવો.</p>
 
   <div class="step">
     <div class="ic"><svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M16 9a3.5 3.5 0 0 1 0 6"/><path d="M19 7a7 7 0 0 1 0 10"/></svg></div>
@@ -253,18 +267,18 @@ body{
   </div>
 
   <div class="step">
-    <div class="ic"><svg viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M8 7v10"/><path d="M16 6v12"/><path d="M4 10v4"/><path d="M20 10v4"/></svg></div>
-    <div class="tx"><b>પહેલાં સાંભળો</b><p>"સાંભળો" દબાવો. સૂરનો ક્રમ વાગશે — કઈ પટ્ટી વાગી તે દેખાશે નહીં, ફક્ત સંભળાશે. ઉપરના ટપકાં ગણતરી બતાવે છે.</p></div>
+    <div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+    <div class="tx"><b>પહેલાં ચાર ટકોરા</b><p>"તાલ સાંભળો" દબાવો. પહેલાં ચાર હળવા ટકોરા ગતિ બતાવશે, પછી તાલ વાગશે. કયું ખાનું વાગ્યું તે દેખાશે નહીં — ફક્ત સંભળાશે.</p></div>
   </div>
 
   <div class="step">
-    <div class="ic"><svg viewBox="0 0 24 24"><path d="M4 20V15"/><path d="M9 20V11"/><path d="M14 20V8"/><path d="M19 20V5"/></svg></div>
-    <div class="tx"><b>એ જ ક્રમમાં દબાવો</b><p>ડાબેથી જમણે સૂર નીચેથી ઊંચે જાય છે. જે ક્રમમાં સાંભળ્યું તે જ ક્રમમાં પટ્ટીઓ દબાવો. ભૂલ થાય તો એ જ રાઉન્ડ ફરી શરૂ થશે.</p></div>
+    <div class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="4" height="10" rx="1.5"/><rect x="10" y="7" width="4" height="10" rx="1.5"/><rect x="17" y="7" width="4" height="10" rx="1.5"/></svg></div>
+    <div class="tx"><b>ખાનાં ભરો</b><p>જે ખાના પર ટકોરો પડે તે દબાવીને ચાલુ કરો. ફરી દબાવવાથી બંધ થાય. ઉપર લખેલી સંખ્યા કેટલા ટકોરા છે તે જણાવે છે.</p></div>
   </div>
 
   <div class="step">
-    <div class="ic"><svg viewBox="0 0 24 24"><path d="M4 7h10M4 12h10M4 17h6"/><path d="M16.5 16.5l2 2 3.5-3.5"/></svg></div>
-    <div class="tx"><b>ત્રણ રાઉન્ડ</b><p>દરેક કોયડામાં ત્રણ રાઉન્ડ છે. દરેક રાઉન્ડમાં ક્રમ થોડો લાંબો થાય છે.</p></div>
+    <div class="ic"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></div>
+    <div class="tx"><b>સરખાવો</b><p>"મારો તાલ" દબાવીને તમારો તાલ સાંભળો અને સરખાવો. બંને તાલ મળી જાય કે તરત કોયડો પૂર્ણ.</p></div>
   </div>
 
   <button class="got" onclick="closeHelp()">Close</button>
@@ -280,30 +294,19 @@ body{
 
 <script>
 /* =========================================================
-   PUZZLE DATA — sequences are fixed (never random) so a
-   saved game always restores to the exact same round.
-   Numbers are bar indices, 0 = lowest note … 5 = highest.
+   PUZZLE DATA — each target is 8 steps, 1 = a beat.
+   Every pattern starts on step 1 so the ear has an anchor.
    ========================================================= */
 const PUZZLES=[
-  {id:'l1', sub_gu:'3 રાઉન્ડ — સહેલી શરૂઆત',
-   seqs:[[0,2,4],[3,1,5,2],[1,4,0,3,5]]},
-  {id:'l2', sub_gu:'3 રાઉન્ડ — થોડું ધ્યાન જોઈશે',
-   seqs:[[2,5,1,3],[0,3,2,5,1],[4,0,5,2,3,1]]},
-  {id:'l3', sub_gu:'3 રાઉન્ડ — છેલ્લો પડકાર',
-   seqs:[[1,3,0,4,2],[5,2,4,1,3,0],[3,0,5,1,4,2]]}
+  {id:'l1', sub_gu:'સહેલી શરૂઆત', target:[1,0,0,1,0,0,1,0]},
+  {id:'l2', sub_gu:'થોડું ધ્યાન જોઈશે', target:[1,0,1,1,0,1,0,0]},
+  {id:'l3', sub_gu:'છેલ્લો પડકાર',    target:[1,1,0,1,0,1,1,0]}
 ];
+const STEPS=8;
+const STEP_S=0.38;        /* seconds per step */
+const COUNT_IN=4;
 
-/* six pentatonic notes — any order stays consonant */
-const NOTES=[
-  {k:'G4',f:392.00,c:'#f3adc9',h:58},
-  {k:'A4',f:440.00,c:'#fa7068',h:66},
-  {k:'C5',f:523.25,c:'#fbca5f',h:74},
-  {k:'D5',f:587.33,c:'#a0c95d',h:83},
-  {k:'E5',f:659.25,c:'#9ddbe6',h:91},
-  {k:'G5',f:783.99,c:'#d4ab99',h:100}
-];
-
-const KEY='dcgs_soundladder_v1';
+const KEY='dcgs_soundrhythm_v1';
 
 function save(d){try{localStorage.setItem(KEY,JSON.stringify(d))}catch(e){}}
 function load(){try{return JSON.parse(localStorage.getItem(KEY))}catch(e){return null}}
@@ -329,9 +332,10 @@ function markDone(){ _completed=true; activityDone(); pushProgress(); }   /* cal
 window.addEventListener('pagehide',pushProgress);   /* best-effort, where it fires */
 
 /* ---- state ---- */
-let state=load()||{tab:0,celebrated:false,step:[0,0,0]};
-if(!state.step)state.step=[0,0,0];
-while(state.step.length<PUZZLES.length)state.step.push(0);
+function blank(){ return [0,0,0,0,0,0,0,0]; }
+let state=load()||{tab:0,celebrated:false,pat:[blank(),blank(),blank()]};
+if(!state.pat)state.pat=[blank(),blank(),blank()];
+while(state.pat.length<PUZZLES.length)state.pat.push(blank());
 let cur=state.tab||0;
 if(cur<0||cur>=PUZZLES.length)cur=0;
 
@@ -357,9 +361,9 @@ function playHint(){    playSound('hint');    }
 
 
 /* =========================================================
-   NOTE TONES — soft marimba, synthesised in the browser.
+   RHYTHM SOUNDS — scheduled on the audio clock for accuracy
    ========================================================= */
-let _ctx,_masterGain;
+let _ctx,_masterGain,_noiseBuf;
 function AC(){
   if(!_ctx){ try{ _ctx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return null; } }
   if(_ctx.state==='suspended'){ try{_ctx.resume();}catch(e){} }
@@ -382,12 +386,8 @@ function MASTER(){
    ========================================================= */
 const CLIP_BASE='https://dreamchildapp.com/backend/assets/puzzle_sounds/';
 const CLIPS={
-  G4:'note_G4.mp3',
-  A4:'note_A4.mp3',
-  C5:'note_C5.mp3',
-  D5:'note_D5.mp3',
-  E5:'note_E5.mp3',
-  G5:'note_G5.mp3'
+  beat:'beat.mp3',
+  tick:'tick.mp3'
 };
 const _clip={};
 function loadClips(){
@@ -409,144 +409,168 @@ function fireClip(id,at){
        s.start(at===undefined?c.currentTime+.02:at); return true; }catch(e){ return false; }
 }
 function clipMs(id,fallback){ return (_clip[id]&&_clip[id].duration)?_clip[id].duration*1000:fallback; }
-function playNote(n){
-  if(fireClip(NOTES[n].k)) return;
-  const c=AC(), m=MASTER(); if(!c||!m) return;
-  const f=NOTES[n].f, t=c.currentTime+.02;
-  try{
-    const o=c.createOscillator(),g=c.createGain();
-    o.type='sine';o.frequency.value=f;
-    g.gain.setValueAtTime(.0001,t);
-    g.gain.exponentialRampToValueAtTime(.34,t+.008);
-    g.gain.exponentialRampToValueAtTime(.0001,t+.52);
-    o.connect(g);g.connect(m);o.start(t);o.stop(t+.55);
-    const o2=c.createOscillator(),g2=c.createGain();
-    o2.type='sine';o2.frequency.value=f*4.02;
-    g2.gain.setValueAtTime(.0001,t);
-    g2.gain.exponentialRampToValueAtTime(.055,t+.005);
-    g2.gain.exponentialRampToValueAtTime(.0001,t+.16);
-    o2.connect(g2);g2.connect(m);o2.start(t);o2.stop(t+.19);
-  }catch(e){}
+function noise(c){
+  if(_noiseBuf) return _noiseBuf;
+  const len=c.sampleRate*2, b=c.createBuffer(1,len,c.sampleRate), d=b.getChannelData(0);
+  for(let i=0;i<len;i++) d[i]=Math.random()*2-1;
+  _noiseBuf=b; return b;
+}
+/* a beat: low pitched thump + short click */
+function hit(c,m,t){
+  if(fireClip('beat',t)) return;
+  const o=c.createOscillator(),g=c.createGain();
+  o.type='sine';
+  o.frequency.setValueAtTime(190,t);
+  o.frequency.exponentialRampToValueAtTime(54,t+.15);
+  g.gain.setValueAtTime(.0001,t);
+  g.gain.exponentialRampToValueAtTime(.52,t+.007);
+  g.gain.exponentialRampToValueAtTime(.0001,t+.28);
+  o.connect(g);g.connect(m);o.start(t);o.stop(t+.3);
+  const n=c.createBufferSource();n.buffer=noise(c);
+  const bp=c.createBiquadFilter();bp.type='bandpass';bp.frequency.value=1900;bp.Q.value=1;
+  const ng=c.createGain();
+  ng.gain.setValueAtTime(.2,t);ng.gain.exponentialRampToValueAtTime(.0001,t+.045);
+  n.connect(bp);bp.connect(ng);ng.connect(m);n.start(t);n.stop(t+.06);
+}
+/* count-in: a quiet high woodblock tick, clearly not a beat */
+function tick(c,m,t){
+  if(fireClip('tick',t)) return;
+  const o=c.createOscillator(),g=c.createGain();
+  o.type='square';o.frequency.value=1500;
+  g.gain.setValueAtTime(.0001,t);
+  g.gain.exponentialRampToValueAtTime(.085,t+.003);
+  g.gain.exponentialRampToValueAtTime(.0001,t+.045);
+  o.connect(g);g.connect(m);o.start(t);o.stop(t+.06);
 }
 
 /* ---- helpers ---- */
-function roundIdx(){ return Math.min(state.step[cur], PUZZLES[cur].seqs.length-1); }
-function curSeq(){ return PUZZLES[cur].seqs[roundIdx()]; }
-function solved(i){ return state.step[i]>=PUZZLES[i].seqs.length; }
-function barEl(n){ return document.querySelector('.bar[data-n="'+n+'"]'); }
+function target(){ return PUZZLES[cur].target; }
+function pat(){ return state.pat[cur]; }
+function beats(i){ return PUZZLES[i].target.reduce(function(a,b){return a+b;},0); }
+function solved(i){
+  const t=PUZZLES[i].target, p=state.pat[i];
+  if(!p) return false;
+  for(let k=0;k<STEPS;k++){ if((p[k]?1:0)!==t[k]) return false; }
+  return true;
+}
 
 /* ---- render ---- */
 function renderProgress(){document.getElementById('round').textContent=(cur+1)+'/'+PUZZLES.length;}
-function renderHead(){document.getElementById('hsub').innerHTML=PUZZLES[cur].sub_gu+'<br>અવાજ સાંભળીને એ જ ક્રમમાં સૂર દબાવો.';}
-function renderRounds(){
-  const r=document.getElementById('rounds'); r.innerHTML='';
-  const total=PUZZLES[cur].seqs.length, done=Math.min(state.step[cur],total);
-  const lab=document.createElement('span');
-  lab.textContent='રાઉન્ડ '+Math.min(done+1,total)+'/'+total;
-  r.appendChild(lab);
-  for(let i=0;i<total;i++){
-    const p=document.createElement('span');
-    p.className='pip'+(i<done?' on':'');
-    r.appendChild(p);
+function renderHead(){document.getElementById('hsub').innerHTML=PUZZLES[cur].sub_gu+'<br>તાલ સાંભળીને એ જ તાલ ખાનાંમાં ગોઠવો.';}
+function renderClue(){document.getElementById('beatCount').textContent=String(beats(cur));}
+function renderCountIn(){
+  const el=document.getElementById('countin'); el.innerHTML='';
+  for(let i=0;i<COUNT_IN;i++){
+    const d=document.createElement('span'); d.className='ci'; d.dataset.i=i; el.appendChild(d);
   }
 }
-function renderDots(){
-  const d=document.getElementById('dots'); d.innerHTML='';
-  if(solved(cur)) return;
-  const len=curSeq().length;
-  for(let i=0;i<len;i++){
-    const s=document.createElement('span');
-    s.className='dot'+(i<pos?' on':'');
-    s.dataset.i=i;
-    d.appendChild(s);
+function renderSteps(){
+  const el=document.getElementById('steps'); el.innerHTML='';
+  const win=solved(cur), p=pat();
+  el.classList.toggle('win',win);
+  for(let i=0;i<STEPS;i++){
+    if(i===4){ const g=document.createElement('div'); g.className='gapmid'; el.appendChild(g); }
+    const b=document.createElement('button');
+    b.className='step-pad'+(p[i]?' on':'');
+    b.dataset.i=i;
+    b.textContent=String(i+1);
+    b.setAttribute('aria-label','Step '+(i+1));
+    if(!win) b.addEventListener('click',function(){ toggleStep(i); });
+    el.appendChild(b);
   }
-}
-function renderBars(){
-  const b=document.getElementById('bars'); b.innerHTML='';
-  NOTES.forEach(function(nt,i){
-    const el=document.createElement('button');
-    el.className='bar'; el.dataset.n=i;
-    el.style.height=nt.h+'%';
-    el.style.background=nt.c;
-    el.textContent=String(i+1);
-    el.setAttribute('aria-label','Note '+(i+1));
-    el.addEventListener('click',function(){ tapBar(i); });
-    b.appendChild(el);
-  });
 }
 function renderActions(){
   const isLast=cur===PUZZLES.length-1;
   document.getElementById('btnPrev').disabled=(cur===0);
   document.getElementById('btnNext').disabled=!(solved(cur)&&!isLast);
-  document.getElementById('listenBtn').disabled=solved(cur)||playing;
-  document.getElementById('listenTx').textContent=solved(cur)?'કોયડો પૂર્ણ':(pos>0?'ફરી સાંભળો':'સાંભળો');
+  document.getElementById('btnTarget').disabled=playing;
+  const anyOn=pat().some(function(v){return !!v;});
+  document.getElementById('btnMine').disabled=playing||!anyOn;
 }
-function renderAll(){renderProgress();renderHead();renderRounds();renderDots();renderBars();renderActions();clearStatus();}
+function renderAll(){renderProgress();renderHead();renderClue();renderCountIn();renderSteps();renderActions();clearStatus();}
 
 /* ---- status ---- */
 let stTimer;
 function status(type,msg,sticky){const s=document.getElementById('status');s.className='status show '+type;s.textContent=msg;clearTimeout(stTimer);if(!sticky)stTimer=setTimeout(clearStatus,2300);}
 function clearStatus(){document.getElementById('status').className='status';}
 
-/* ---- gameplay ---- */
-let pos=0, playing=false, timers=[];
+/* ---- playback ---- */
+let playing=false, timers=[];
 
 function stopAll(){
   timers.forEach(clearTimeout); timers=[];
   playing=false;
-  document.querySelectorAll('.bar').forEach(function(e){ e.classList.remove('lit','hint','shake'); });
-  document.querySelectorAll('.dot').forEach(function(e){ e.classList.remove('live'); });
+  document.querySelectorAll('.ci').forEach(function(e){ e.classList.remove('on'); });
+  document.querySelectorAll('.step-pad').forEach(function(e){ e.classList.remove('hit','hint'); });
+  document.getElementById('txTarget').textContent='તાલ સાંભળો';
+  document.getElementById('txMine').textContent='મારો તાલ';
   renderActions();
 }
 
-/* plays the sequence as AUDIO ONLY — the bars never light up here,
-   only the counter dots pulse, so nothing is given away visually */
-function playSeq(){
-  if(playing||solved(cur)) return;
+/* showSteps=false for the target (audio only — nothing is given away)
+   showSteps=true  for the user's own pattern (they already know it) */
+function playPattern(p,showSteps,label){
+  if(playing) return;
+  const c=AC(), m=MASTER(); if(!c||!m) return;
   stopAll();
-  pos=0; renderDots();
   playing=true; renderActions();
-  const seq=curSeq();
-  seq.forEach(function(n,i){
-    timers.push(setTimeout(function(){
-      const d=document.querySelector('.dot[data-i="'+i+'"]');
-      if(d){ d.classList.add('live'); setTimeout(function(){ d.classList.remove('live'); },380); }
-      playNote(n);
-    }, 420+i*580));
-  });
-  timers.push(setTimeout(function(){
-    playing=false; renderActions();
-    status('hint','હવે એ જ ક્રમમાં પટ્ટીઓ દબાવો.');
-  }, 420+seq.length*580+150));
-}
+  document.getElementById(label).textContent='વાગી રહ્યું છે…';
 
-function tapBar(n){
-  if(playing||solved(cur)) return;
-  const el=barEl(n);
-  playNote(n);
-  if(el){ el.classList.add('lit'); setTimeout(function(){ el.classList.remove('lit'); },260); }
-  const seq=curSeq();
-  if(n===seq[pos]){
-    pos++;
-    renderDots(); renderActions();
-    if(pos>=seq.length) roundDone();
-  } else {
-    playWrong();
-    if(el){ el.classList.add('shake'); setTimeout(function(){ el.classList.remove('shake'); },320); }
-    pos=0; renderDots(); renderActions();
-    status('bad','ક્રમ ખોટો પડ્યો. ફરી સાંભળીને પ્રયત્ન કરો.');
+  const t0=c.currentTime+.15;
+  /* count-in */
+  for(let i=0;i<COUNT_IN;i++){
+    tick(c,m,t0+i*STEP_S);
+    (function(i){
+      timers.push(setTimeout(function(){
+        const d=document.querySelector('.ci[data-i="'+i+'"]');
+        if(d){ d.classList.add('on'); setTimeout(function(){ d.classList.remove('on'); },200); }
+      }, 150+i*STEP_S*1000));
+    })(i);
   }
+  /* pattern */
+  const pStart=t0+COUNT_IN*STEP_S;
+  for(let i=0;i<STEPS;i++){
+    if(p[i]){
+      hit(c,m,pStart+i*STEP_S);
+      if(showSteps){
+        (function(i){
+          timers.push(setTimeout(function(){
+            const e=document.querySelector('.step-pad[data-i="'+i+'"]');
+            if(e){ e.classList.add('hit'); setTimeout(function(){ e.classList.remove('hit'); },200); }
+          }, 150+(COUNT_IN+i)*STEP_S*1000));
+        })(i);
+      }
+    }
+  }
+  const total=150+(COUNT_IN+STEPS)*STEP_S*1000+150;
+  timers.push(setTimeout(function(){
+    playing=false;
+    document.getElementById('txTarget').textContent='તાલ સાંભળો';
+    document.getElementById('txMine').textContent='મારો તાલ';
+    renderActions();
+  }, total));
 }
 
-function roundDone(){
-  state.step[cur]++;
+function playTarget(){ playPattern(target(),false,'txTarget'); }
+function playMine(){   playPattern(pat(),true,'txMine'); }
+
+/* ---- gameplay ---- */
+function toggleStep(i){
+  if(playing||solved(cur)) return;
+  const p=pat();
+  p[i]=p[i]?0:1;
   save(state);
-  pos=0;
+  if(p[i]){ const c=AC(),m=MASTER(); if(c&&m){ try{ hit(c,m,c.currentTime+.01); }catch(e){} } }
+  renderSteps(); renderActions();
+  checkPattern();
+}
+
+/* auto-detect: the board checks itself after every toggle */
+function checkPattern(){
+  if(!solved(cur)) return;
   playCorrect();
-  renderRounds(); renderDots(); renderActions();
-  if(solved(cur)){ onSolved(); return; }
-  status('ok','રાઉન્ડ પૂર્ણ! હવે થોડો લાંબો ક્રમ.');
-  timers.push(setTimeout(function(){ playSeq(); },1600));
+  renderSteps(); renderActions();
+  onSolved();
 }
 
 function onSolved(){
@@ -563,23 +587,31 @@ function onSolved(){
   }
 }
 
-/* ---- hint: flash the NEXT correct bar and play its note ---- */
+/* ---- hint: fix one wrong step ---- */
 function useHint(){
   if(solved(cur)){ status('hint','આ કોયડો પહેલેથી પૂર્ણ છે.'); return; }
   if(playing) return;
-  const n=curSeq()[pos];
-  const el=barEl(n); if(!el) return;
+  const t=target(), p=pat(), wrong=[];
+  for(let i=0;i<STEPS;i++){ if((p[i]?1:0)!==t[i]) wrong.push(i); }
+  if(!wrong.length) return;
+  const i=wrong[Math.floor(Math.random()*wrong.length)];
   playHint();
-  status('hint','💡 હવે પછીનો સૂર ઝબકે છે.');
-  el.classList.add('hint');
-  timers.push(setTimeout(function(){ playNote(n); },460));
-  timers.push(setTimeout(function(){ el.classList.remove('hint'); },1400));
+  p[i]=t[i];
+  save(state);
+  renderSteps(); renderActions();
+  status('hint','💡 એક ખાનું સુધારી આપ્યું.');
+  const el=document.querySelector('.step-pad[data-i="'+i+'"]');
+  if(el){
+    el.classList.add('hint');
+    timers.push(setTimeout(function(){ el.classList.remove('hint'); },1500));
+  }
+  checkPattern();
 }
 
 /* ---- navigation ---- */
-function resetPuzzle(){ stopAll(); state.step[cur]=0; pos=0; save(state); renderAll(); status('hint','આ કોયડો ફરી શરૂ.'); }
-function nextPuzzle(){ if(cur<PUZZLES.length-1&&solved(cur)){ stopAll(); pos=0; cur++; state.tab=cur; save(state); renderAll(); window.scrollTo({top:0,behavior:'smooth'}); } }
-function prevPuzzle(){ if(cur>0){ stopAll(); pos=0; cur--; state.tab=cur; save(state); renderAll(); window.scrollTo({top:0,behavior:'smooth'}); } }
+function resetPuzzle(){ stopAll(); state.pat[cur]=blank(); save(state); renderAll(); status('hint','આ કોયડો ફરી શરૂ.'); }
+function nextPuzzle(){ if(cur<PUZZLES.length-1&&solved(cur)){ stopAll(); cur++; state.tab=cur; save(state); renderAll(); window.scrollTo({top:0,behavior:'smooth'}); } }
+function prevPuzzle(){ if(cur>0){ stopAll(); cur--; state.tab=cur; save(state); renderAll(); window.scrollTo({top:0,behavior:'smooth'}); } }
 
 /* ---- help sheet ---- */
 function openHelp(){document.getElementById('scrim').classList.add('open');document.getElementById('sheet').classList.add('open');}

@@ -63,10 +63,6 @@ body{
   box-shadow:0 8px 28px -10px rgba(78,33,95,.16), 0 2px 8px -3px rgba(78,33,95,.08);padding:14px;margin-bottom:14px;}
 
 /* sound-required note (this puzzle cannot be played muted) */
-.soundnote{display:none;margin:0 0 12px;padding:9px 12px;border-radius:12px;background:var(--accent-soft);
-  color:#9A5A12;font-size:12.5px;font-weight:600;text-align:center;line-height:1.45;}
-.soundnote.show{display:block;}
-
 /* card grid */
 .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
 .card{position:relative;aspect-ratio:1/1;border:1px solid var(--line);border-radius:12px;background:#FAF7FB;
@@ -223,7 +219,6 @@ body{
       <h1 class="ptitle">સૂરની જોડી</h1>
       <div class="hctrls">
         <span class="rpill" id="round"></span>
-        <button class="hbtn" id="soundBtn" onclick="toggleSound()" aria-label="Sound"></button>
         <button class="hbtn info" onclick="openHelp()" aria-label="How to play">
           <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><circle cx="12" cy="8" r="0.6" fill="currentColor" stroke="none"/></svg>
         </button>
@@ -234,7 +229,6 @@ body{
 
   <!-- STAGE -->
   <div class="stage">
-    <div class="soundnote" id="soundnote">🔊 આ કોયડો અવાજથી રમાય છે — ઉપરના બટનથી અવાજ ચાલુ કરો.</div>
     <div class="grid" id="grid"></div>
     <div class="chips" id="chips"></div>
   </div>
@@ -265,7 +259,7 @@ body{
 
   <div class="step">
     <div class="ic"><svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M16 9a3.5 3.5 0 0 1 0 6"/><path d="M19 7a7 7 0 0 1 0 10"/></svg></div>
-    <div class="tx"><b>અવાજ ચાલુ રાખો</b><p>ઉપરના સ્પીકર બટનથી અવાજ ચાલુ કરો. હેડફોન હોય તો વધુ સારું.</p></div>
+    <div class="tx"><b>અવાજ જરૂરી છે</b><p>આ કોયડો અવાજથી રમાય છે. ફોનનો અવાજ વધારો — હેડફોન હોય તો વધુ સારું.</p></div>
   </div>
 
   <div class="step">
@@ -335,10 +329,10 @@ function markDone(){ _completed=true; activityDone(); pushProgress(); }   /* cal
 window.addEventListener('pagehide',pushProgress);   /* best-effort, where it fires */
 
 /* ---- state ---- */
-let state=load()||{tab:0,sound:false,celebrated:false,matched:[[],[],[]]};
+let state=load()||{tab:0,celebrated:false,matched:[[],[],[]]};
 if(!state.matched)state.matched=[[],[],[]];
 while(state.matched.length<PUZZLES.length)state.matched.push([]);
-let soundOn=!!state.sound, cur=state.tab||0;
+let cur=state.tab||0;
 if(cur<0||cur>=PUZZLES.length)cur=0;
 
 /* ---- feedback sound (hosted MP3s) ---- */
@@ -352,7 +346,6 @@ const SND={
 const _audio={};
 function preloadSounds(){for(const k in SND){try{const a=new Audio(SND[k]);a.preload='auto';_audio[k]=a;}catch(e){}}}
 function playSound(k){
-  if(!soundOn) return;
   const a=_audio[k]; if(!a) return;
   try{ a.pause(); a.currentTime=0; a.play().catch(function(){}); }catch(e){}
 }
@@ -362,15 +355,6 @@ function playLevel(){   playSound('level');   }
 function playWin(){     playSound('win');     }
 function playHint(){    playSound('hint');    }
 
-function setSoundIcon(){const b=document.getElementById('soundBtn');b.innerHTML=soundOn
-  ?'<svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M16 9a3.5 3.5 0 0 1 0 6"/><path d="M19 7a7 7 0 0 1 0 10"/></svg>'
-  :'<svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M22 9l-5 6M17 9l5 6"/></svg>';}
-function renderSoundNote(){document.getElementById('soundnote').classList.toggle('show',!soundOn);}
-function toggleSound(){
-  soundOn=!soundOn;state.sound=soundOn;setSoundIcon();renderSoundNote();save(state);
-  if(soundOn){status('ok','અવાજ ચાલુ. હવે કાર્ડ દબાવો.');}
-  else{closeOpen();status('hint','અવાજ બંધ. આ કોયડો અવાજ વગર રમી શકાતો નથી.');}
-}
 
 /* =========================================================
    CARD TONES  —  synthesised in the browser (Web Audio).
@@ -388,6 +372,47 @@ function MASTER(){
   if(!_masterGain){ _masterGain=c.createGain(); _masterGain.gain.value=.85; _masterGain.connect(c.destination); }
   return _masterGain;
 }
+
+/* =========================================================
+   REAL RECORDINGS
+   Upload the files listed in CLIPS to the folder below and the
+   puzzle uses them automatically — no code change needed.
+   Any file that is absent falls back to the built-in
+   synthesised stand-in, so the puzzle keeps working while the
+   sound library is still being filled in.
+   NOTE: that folder must send  Access-Control-Allow-Origin: *
+   ========================================================= */
+const CLIP_BASE='https://dreamchildapp.com/backend/assets/puzzle_sounds/';
+const CLIPS={
+  bird:'bird.mp3',
+  rain:'rain.mp3',
+  flute:'flute.mp3',
+  bell:'bell.mp3',
+  drum:'dhol.mp3',
+  drop:'water.mp3',
+  wind:'wind.mp3',
+  pluck:'veena.mp3'
+};
+const _clip={};
+function loadClips(){
+  const c=AC(); if(!c) return;
+  Object.keys(CLIPS).forEach(function(id){
+    if(_clip[id]!==undefined) return;
+    _clip[id]=null;                                     /* in flight */
+    fetch(CLIP_BASE+CLIPS[id])
+      .then(function(r){ if(!r.ok) throw 0; return r.arrayBuffer(); })
+      .then(function(b){ return c.decodeAudioData(b); })
+      .then(function(buf){ _clip[id]=buf; })
+      .catch(function(){ _clip[id]=false; });            /* missing -> synth */
+  });
+}
+function fireClip(id,at){
+  const c=AC(), m=MASTER();
+  if(!c||!m||!_clip[id]) return false;
+  try{ const s=c.createBufferSource(); s.buffer=_clip[id]; s.connect(m);
+       s.start(at===undefined?c.currentTime+.02:at); return true; }catch(e){ return false; }
+}
+function clipMs(id,fallback){ return (_clip[id]&&_clip[id].duration)?_clip[id].duration*1000:fallback; }
 function noise(c){
   if(_noiseBuf) return _noiseBuf;
   const len=c.sampleRate*2, b=c.createBuffer(1,len,c.sampleRate), d=b.getChannelData(0);
@@ -503,11 +528,11 @@ const TONES={
 
 function playTone(id,el){
   const s=TONES[id]; if(!s) return;
-  if(soundOn){
+  if(!fireClip(id)){
     const c=AC(), m=MASTER();
     if(c&&m){ try{ s.make(c,m,c.currentTime+.02); }catch(e){} }
   }
-  if(el){ el.classList.add('playing'); setTimeout(function(){ el.classList.remove('playing'); }, s.dur); }
+  if(el){ el.classList.add('playing'); setTimeout(function(){ el.classList.remove('playing'); }, clipMs(id,s.dur)); }
 }
 
 /* ---- helpers ---- */
@@ -550,7 +575,7 @@ function renderActions(){
   document.getElementById('btnPrev').disabled=(cur===0);
   document.getElementById('btnNext').disabled=!(solved(cur)&&!isLast);
 }
-function renderAll(){renderProgress();renderHead();renderBoard();renderChips();renderActions();setSoundIcon();renderSoundNote();clearStatus();}
+function renderAll(){renderProgress();renderHead();renderBoard();renderChips();renderActions();clearStatus();}
 
 /* ---- status ---- */
 let stTimer;
@@ -570,7 +595,6 @@ function resetTurn(){
 }
 
 function tapCard(i){
-  if(!soundOn){ status('hint','🔊 પહેલાં ઉપરના બટનથી અવાજ ચાલુ કરો.'); return; }
   if(busy||solved(cur)||isMatched(i)) return;
   const el=cardEl(i); if(!el) return;
   if(open.length===1&&open[0]===i){ playTone(layout()[i],el); return; }   /* replay the open card */
@@ -610,7 +634,7 @@ function evaluate(){
         open=[]; busy=false;
       },900);
     }
-  }, TONES[idb].dur+200);
+  }, clipMs(idb,TONES[idb].dur)+200);
 }
 
 function onSolved(){
@@ -629,7 +653,6 @@ function onSolved(){
 
 /* ---- hint ---- */
 function useHint(){
-  if(!soundOn){ status('hint','🔊 પહેલાં ઉપરના બટનથી અવાજ ચાલુ કરો.'); return; }
   if(solved(cur)){ status('hint','આ કોયડો પહેલેથી પૂર્ણ છે.'); return; }
   if(busy) return;
   const rem=PUZZLES[cur].pairs.filter(function(id){ return state.matched[cur].indexOf(id)<0; });
@@ -669,6 +692,9 @@ function closeCelebrate(){
 
 /* ---- init ---- */
 preloadSounds();
+loadClips();
+/* browsers need a user gesture before audio may start — warm the clock on the first one */
+['touchstart','click'].forEach(function(ev){document.addEventListener(ev,function(){AC();},{once:true,passive:true});});
 renderAll();
 if(PUZZLES.every(function(p,i){ return solved(i); })){
   status('done','બધા કોયડા પૂર્ણ. ખૂબ સરસ! 🌸',true);
@@ -676,7 +702,7 @@ if(PUZZLES.every(function(p,i){ return solved(i); })){
   pushProgress();
 }
 else if(solved(cur)) status('done','આ કોયડો પૂર્ણ. તૈયાર હો ત્યારે આગળ વધો.',true);
-else if(!soundOn) status('hint','🔊 રમવા માટે ઉપરના બટનથી અવાજ ચાલુ કરો.');
+else status('hint','🔊 ફોનનો અવાજ ચાલુ રાખો — હેડફોન હોય તો વધુ સારું.');
 </script>
 </body>
 </html>
