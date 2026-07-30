@@ -68,8 +68,8 @@ body{
 .clue{background:var(--brand-soft);border-radius:var(--r-md);padding:13px 14px;
   text-align:center;font-weight:600;font-size:15.5px;line-height:1.55;color:var(--brand-deep);}
 
-/* slots + tile pool share one cell size, derived from the slot count */
-.slots,.tiles{--n:4;--gap:8px;
+/* the answer row: one cell size, derived from the letter count */
+.slots{--n:4;--gap:8px;
   --cell:min(60px, calc((100% - (var(--n) - 1) * var(--gap)) / var(--n)));}
 .slots{display:flex;justify-content:center;flex-wrap:nowrap;gap:var(--gap);margin:18px 0 4px;}
 .slot{width:clamp(40px,12vw,60px);height:clamp(40px,12vw,60px);
@@ -89,11 +89,13 @@ body{
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
 .shake{animation:shake .3s ease}
 
-/* tile pool, held in a dashed tray */
+/* the letter bank: a dashed tray holding a fixed grid of choices */
 .tray{margin-top:16px;padding:13px 10px;border:1.5px dashed #E7DBEF;border-radius:18px;background:#FDFAFE;}
-.tiles{display:flex;flex-wrap:wrap;justify-content:center;gap:var(--gap);}
-.tile{width:clamp(40px,12vw,60px);height:clamp(40px,12vw,60px);
-  width:var(--cell);height:var(--cell);flex:none;border-radius:12px;
+.tiles{--cols:4;--tgap:8px;--tcell:clamp(40px,12.5vw,54px);
+  display:grid;grid-template-columns:repeat(var(--cols),var(--tcell));
+  justify-content:center;gap:var(--tgap);}
+.tile{width:clamp(40px,12vw,54px);height:clamp(40px,12vw,54px);
+  width:var(--tcell);height:var(--tcell);border-radius:12px;
   border:1px solid var(--line);background:var(--surface);box-shadow:var(--shadow-sm);
   display:flex;align-items:center;justify-content:center;line-height:1;padding:0;
   -webkit-appearance:none;cursor:grab;touch-action:none;-webkit-user-select:none;user-select:none;
@@ -269,7 +271,7 @@ body{
 
   <div class="step">
     <div class="ic"><svg viewBox="0 0 24 24"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/><circle cx="12" cy="12" r="3"/></svg></div>
-    <div class="tx"><b>વધારાનો અક્ષર</b><p>અઘરા કોયડામાં એક અક્ષર વધારાનો હોય છે — તે શબ્દમાં વપરાતો નથી, નીચે જ બાકી રહેશે.</p></div>
+    <div class="tx"><b>વધારાના અક્ષરો</b><p>નીચેની થાળીમાં જરૂર કરતાં ઘણા વધારે અક્ષરો છે. તેમાંથી ફક્ત જરૂરી અક્ષરો પસંદ કરો — બાકીના વપરાયા વગર રહેશે.</p></div>
   </div>
 
   <div class="step">
@@ -303,34 +305,34 @@ const PUZZLES=[
   {id:'dhabkar', word:'ધબકાર',
    clue:'માના પેટમાં બાળકનો સૌથી પહેલો સંભળાતો અવાજ.',
    letters:['ધ','બ','કા','ર'],
-   pool:['ર','કા','બ','ધ']},
+   pool:['ધા','કિ','ર','બ','ધ','રી','બા','બિ','રા','ધી','ક','કા']},
 
   {id:'mamtalu', word:'મમતાળુ',
    clue:'જેના હૈયામાં માતા જેવો પ્રેમ છલકાય તેવું.',
    letters:['મ','મ','તા','ળુ'],
-   pool:['તા','ળુ','મ','મ']},
+   pool:['ળ','તા','મ','તી','ળા','મિ','મ','લુ','મા','ત','ણ','ળુ']},
 
   {id:'kilkari', word:'કિલકારી',
    clue:'બાળકના મુખેથી છલકતો હાસ્યનો મીઠો રણકાર.',
    letters:['કિ','લ','કા','રી'],
-   pool:['રી','કા','કિ','લ']},
+   pool:['કુ','રિ','ળ','રા','કિ','કા','લી','લ','લા','કી','ક','રી']},
 
   {id:'vahalsoyu', word:'વહાલસોયું',
    clue:'જેને સૌ કોઈ હેતથી ચાહે તેવું.',
    letters:['વ','હા','લ','સો','યું'],
-   pool:['સો','ળ','યું','વ','હા','લ']},
+   pool:['યું','લા','વ','લ','સ','સો','યુ','હી','ય','હા','વી','ળ','સૌ','વા','હ']},
 
   {id:'khilkhilat', word:'ખિલખિલાટ',
    clue:'નાના બાળકના ખુલ્લા દિલના હાસ્યનો અવાજ.',
    letters:['ખિ','લ','ખિ','લા','ટ'],
-   pool:['લા','ટ','ખ','ખિ','લ','ખિ']},
+   pool:['ખી','લી','ટા','ખ','લા','ખિ','ળ','ખિ','લ','ડ','ટ','ઠ','ળા','ટી','ખા']},
 
-  {id:'sahanshilta', word:'સહનશીલતા',
-   clue:'ધીરજથી બધું સહી લેવાનો ગુણ.',
-   letters:['સ','હ','ન','શી','લ','તા'],
-   pool:['લ','શ','તા','સ','શી','હ','ન']}
+  {id:'vatavaran', word:'વાતાવરણ',
+   clue:'ઘરની આજુબાજુનો માહોલ — બાળક તેને ઝીલે છે.',
+   letters:['વા','તા','વ','ર','ણ'],
+   pool:['હ','વુ','રા','ણ','વ','ર','ત','વા','ણા','રી','ળ','વી','તી','તા','ન']}
 ];
-const KEY='dcgs_jumbled_v2';
+const KEY='dcgs_jumbled_v3';
 
 /* tile id = index into pool */
 const TILES=PUZZLES.map(function(p){return p.pool.map(function(ch,k){return {id:k,ch:ch};});});
@@ -413,8 +415,9 @@ function isCorrect(p){const L=letters(p),s=slots(p);
 /* ---- render ---- */
 function renderProgress(){document.getElementById('round').textContent=(cur+1)+'/'+PUZZLES.length;}
 function renderHead(){
-  let t='નીચે આપેલા અક્ષરોને સાચા ક્રમમાં ગોઠવીને શબ્દ બનાવો.';
-  if(hasExtra(cur)) t+='<br>ધ્યાન રાખો — એક અક્ષર વધારાનો છે.';
+  const extra=PUZZLES[cur].pool.length-letters(cur).length;
+  let t='નીચેના અક્ષરોમાંથી સાચા અક્ષરો પસંદ કરી, ક્રમમાં ગોઠવીને શબ્દ બનાવો.';
+  t+='<br>ધ્યાન રાખો — '+extra+' અક્ષર વધારાના છે.';
   document.getElementById('hsub').innerHTML=t;
 }
 function renderClue(){document.getElementById('clue').textContent=PUZZLES[cur].clue;}
@@ -427,13 +430,23 @@ function setCellVars(){
   const row=document.getElementById('slots');
   const avail=row?row.clientWidth:0;
   const cell=avail>0?Math.min(60,Math.floor((avail-(n-1)*gap)/n)):0;
-  ['slots','tiles'].forEach(function(id){
-    const el=document.getElementById(id);
-    el.style.setProperty('--n',n);
-    el.style.setProperty('--gap',gap+'px');
-    if(cell>0) el.style.setProperty('--cell',cell+'px');
-    else el.style.removeProperty('--cell');   /* fall back to the CSS min()/calc */
-  });
+  row.style.setProperty('--n',n);
+  row.style.setProperty('--gap',gap+'px');
+  if(cell>0) row.style.setProperty('--cell',cell+'px');
+  else row.style.removeProperty('--cell');     /* fall back to the CSS min()/calc */
+
+  /* the bank: column count is pinned by pool size so the grid looks the same on
+     every phone (12 -> 4x3, 15 -> 5x3); only the tile size adapts */
+  const pool=PUZZLES[cur].pool.length;
+  const cols=(pool%5===0)?5:4;
+  const tgap=(cols>=5)?7:8;
+  const bank=document.getElementById('tiles');
+  const bavail=bank?bank.clientWidth:0;
+  const tcell=bavail>0?Math.max(36,Math.min(54,Math.floor((bavail-(cols-1)*tgap)/cols))):0;
+  bank.style.setProperty('--cols',cols);
+  bank.style.setProperty('--tgap',tgap+'px');
+  if(tcell>0) bank.style.setProperty('--tcell',tcell+'px');
+  else bank.style.removeProperty('--tcell');
 }
 window.addEventListener('resize',setCellVars);
 window.addEventListener('orientationchange',function(){setTimeout(setCellVars,120);});
