@@ -63,9 +63,43 @@ body{
 .stage{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
   box-shadow:0 8px 28px -10px rgba(78,33,95,.16), 0 2px 8px -3px rgba(78,33,95,.08);padding:14px;margin-bottom:14px;}
 
+/* ---- timer pill (v3.5, in-flow — never overlaps the board) ---- */
+.tmrbar{display:flex;justify-content:flex-end;margin-bottom:10px;}
+.timer{display:inline-flex;align-items:center;gap:6px;
+  background:var(--brand-soft);color:var(--brand);
+  border:1px solid transparent;border-radius:999px;
+  padding:5px 12px 5px 10px;
+  font-family:'Hind Vadodara',sans-serif;font-weight:700;font-size:14px;
+  font-variant-numeric:tabular-nums;letter-spacing:.02em;line-height:1;
+  box-shadow:var(--shadow-sm);
+  transition:background .3s ease,color .3s ease,border-color .3s ease;}
+.timer svg{width:15px;height:15px;fill:none;stroke:currentColor;
+  stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.timer .t{min-width:44px;text-align:right;}
+.timer.over{background:var(--rose-soft);color:var(--rose);border-color:rgba(199,92,114,.25);}
+.stage.overtime{background-color:#FDF3F5;}
+
+/* ---- start overlay (covers the play area until the player begins) ---- */
+.startlayer{position:absolute;inset:0;z-index:6;display:flex;align-items:center;justify-content:center;
+  background:rgba(251,249,252,.1);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);
+  text-align:center;padding:22px;}
+.startlayer.hide{display:none;}
+.startcard .em{font-size:38px;line-height:1;margin-bottom:8px;}
+.startcard h3{font-size:18px;font-weight:700;color:var(--brand);margin:0 0 4px;}
+.startcard p{font-size:13px;color:var(--ink);margin:0 0 16px;line-height:1.5;
+  text-shadow:0 1px 3px rgba(255,255,255,.9);}
+.startbtn{min-width:152px;min-height:46px;border-radius:14px;border:none;cursor:pointer;
+  background:linear-gradient(135deg,var(--brand),var(--brand-deep));color:#fff;
+  font-family:'Hind Vadodara',sans-serif;font-weight:700;font-size:16px;
+  box-shadow:0 10px 22px -10px rgba(110,42,133,.6);
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  transition:transform .12s ease;}
+.startbtn:active{transform:scale(.97);}
+.startbtn svg{width:17px;height:17px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+
 /* picture viewport (pinch / drag to zoom) */
 .viewport{position:relative;overflow:hidden;border-radius:12px;background:#F4EFF6;border:1px solid var(--line);
-  touch-action:none;user-select:none;-webkit-user-select:none;aspect-ratio:3/2;}
+  touch-action:pan-y;user-select:none;-webkit-user-select:none;aspect-ratio:3/2;}
 .canvas{position:absolute;left:0;top:0;width:100%;transform-origin:0 0;}
 .canvas img{display:block;width:100%;height:auto;pointer-events:none;-webkit-user-drag:none;}
 .layer{position:absolute;inset:0;--mw:2.4px;--iz:1;}
@@ -200,7 +234,7 @@ body{
   <!-- header -->
   <header class="phead">
     <div class="hrow1">
-      <h1 class="ptitle">વિચિત્ર શોધો</h1>
+      <h1 class="ptitle">Find Silly Things</h1>
       <div class="hctrls">
         <span class="rpill" id="round"></span>
         <button class="hbtn" id="soundBtn" onclick="toggleSound()" aria-label="Sound"></button>
@@ -214,6 +248,12 @@ body{
 
   <!-- STAGE -->
   <div class="stage">
+    <div class="tmrbar">
+      <div class="timer" id="timer" aria-label="Time">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6"/></svg>
+        <span class="t" id="timeVal">5:00</span>
+      </div>
+    </div>
     <div class="viewport" id="vp">
       <div class="canvas" id="canvas">
         <img id="scene" alt="">
@@ -223,6 +263,17 @@ body{
         <button class="zb" onclick="zoomBy(1.5)" aria-label="Zoom in"><svg viewBox="0 0 24 24"><path d="M12 6v12M6 12h12"/></svg></button>
         <button class="zb" onclick="zoomBy(1/1.5)" aria-label="Zoom out"><svg viewBox="0 0 24 24"><path d="M6 12h12"/></svg></button>
         <button class="zb" onclick="resetView()" aria-label="Reset zoom"><svg viewBox="0 0 24 24"><path d="M4 9V5h4M20 15v4h-4M20 9V5h-4M4 15v4h4"/></svg></button>
+      </div>
+      <div class="startlayer" id="startLayer">
+        <div class="startcard">
+          <div class="em">🔍</div>
+          <h3>Are you ready?</h3>
+          <p>Start દબાવતાં જ સમય શરૂ થશે.</p>
+          <button class="startbtn" onclick="startPuzzle()">
+            <svg viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></svg>
+            Start
+          </button>
+        </div>
       </div>
     </div>
     <div class="pcount" id="pcount"></div>
@@ -289,28 +340,12 @@ body{
    PUZZLE DATA  →  paste the array exported by silly_picker.html
    x, y, w, h are PERCENTAGES of the image (from the picker).
    ========================================================= */
-// const PUZZLES = [
-//   {
-//     "id": "fair",
-//     "img": "https://dreamchild.s3.ap-south-1.amazonaws.com/Live/Data_Master_New/File_8359/1785309818_379709151.jpg",
-//     "title_gu": "",
-//     "sub_gu": "આ મેળાના ચિત્રમાં કઈ કઈ વસ્તુ વિચિત્ર છે?",
-//     "items": [
-//       {"name":"સ્કેટબોર્ડ પર વાંદરો","x":10.5,"y":13.5,"w":9,"h":13},
-//       {"name":"લટકતી ડોલ્ફિન","x":25.5,"y":15.5,"w":11,"h":10},
-//       {"name":"સીલ પર બેઠેલું પક્ષી","x":51.5,"y":9.5,"w":7,"h":9},
-//       {"name":"કેળાંનું ઝાડ સ્ટૉલમાં","x":62.5,"y":15,"w":9,"h":14},
-//       {"name":"ઢોલ વગાડતું રમકડું","x":68,"y":58,"w":9,"h":11},
-//       {"name":"સ્કી પહેરેલો છોકરો","x":6,"y":66,"w":16,"h":25}
-//     ]
-//   }
-// ];
 const PUZZLES = [
   {
     "id": "fair",
     "img": "https://dreamchild.s3.ap-south-1.amazonaws.com/Live/Data_Master_New/File_8359/1785309818_379709151.jpg",
     "title_gu": "",
-    "sub_gu": "આ મેળાના ચિત્રમાં કઈ કઈ વસ્તુ વિચિત્ર છે?",
+    "sub_gu": "આ ચિત્રમાં કઈ કઈ વસ્તુ વિચિત્ર છે?",
     "items": [
       {
         "name": "તંબુ ઉપર એક છોકરો સ્કેટબોર્ડ પર સ્કેટિંગ કરે છે.",
@@ -351,7 +386,7 @@ const PUZZLES = [
   }
 ];
 
-const KEY='dcgs_silly_v1';
+const KEY='dcgs_silly_v2';   /* bumped: state shape changed (timer added) */
 
 /* ---- storage ---- */
 function save(d){try{localStorage.setItem(KEY,JSON.stringify(d))}catch(e){}}
@@ -378,12 +413,96 @@ function markDone(){ _completed=true; activityDone(); pushProgress(); }   /* cal
 window.addEventListener('pagehide',pushProgress);   /* best-effort, where it fires */
 
 /* ---- state ---- */
-let state=load()||{tab:0,sound:false,celebrated:false,found:[]};
+let state=load()||{tab:0,sound:true,celebrated:false,found:[]};
 if(!Array.isArray(state.found)) state.found=[];
 for(let i=0;i<PUZZLES.length;i++){ if(!Array.isArray(state.found[i])) state.found[i]=[]; }
-let soundOn=!!state.sound;
+let soundOn=(state.sound===undefined)?true:!!state.sound;   /* ON by default; saved preference wins */
+state.sound=soundOn;
 let cur=(state.tab&&state.tab<PUZZLES.length)?state.tab:0;
 const MULTI=PUZZLES.length>1;
+
+/* =========================================================
+   TIMER MODULE v3.5 — countdown that never ends (overtime)
+   ========================================================= */
+const LIMIT_SEC = 300;                 // <-- per-puzzle knob (300 = 5:00)
+
+if(!state.timer) state.timer = {elapsed:0, started:false, frozen:false};
+let _tmrInt = null;
+let _tmrSince = 0;
+
+function formatTime(sec){
+  const over = sec < 0;
+  const s = Math.abs(sec);
+  const m = Math.floor(s/60), ss = s%60;
+  return (over?'+':'') + m + ':' + (ss<10?'0':'') + ss;
+}
+function remainingSec(){ return LIMIT_SEC - state.timer.elapsed; }
+
+function paintTimer(){
+  const rem = remainingSec();
+  const el  = document.getElementById('timeVal');
+  const pill= document.getElementById('timer');
+  const stage = document.querySelector('.stage');
+  if(el) el.textContent = formatTime(rem);
+  const over = rem < 0;
+  if(pill)  pill.classList.toggle('over', over);
+  if(stage) stage.classList.toggle('overtime', over);
+}
+function _tmrTick(){
+  if(!state.timer.started || state.timer.frozen) return;
+  if(document.hidden) return;
+  const now = Date.now();
+  state.timer.elapsed += Math.round((now - _tmrSince)/1000);
+  _tmrSince = now;
+  save(state);
+  paintTimer();
+}
+function _tmrStartInterval(){
+  if(_tmrInt) return;
+  _tmrSince = Date.now();
+  _tmrInt = setInterval(_tmrTick, 1000);
+}
+function _tmrStopInterval(){
+  if(_tmrInt){ clearInterval(_tmrInt); _tmrInt = null; }
+}
+/* HOOK A — first real interaction */
+function startTimer(){
+  if(state.timer.started || state.timer.frozen) return;
+  state.timer.started = true;
+  save(state);
+  _tmrStartInterval();
+  paintTimer();
+}
+/* HOOK B — puzzle solved */
+function freezeTimer(){
+  if(state.timer.frozen) return;
+  _tmrTick();
+  state.timer.frozen = true;
+  _tmrStopInterval();
+  save(state);
+  paintTimer();
+}
+/* HOOK C — reset */
+function resetTimer(){
+  _tmrStopInterval();
+  state.timer = {elapsed:0, started:false, frozen:false};
+  save(state);
+  paintTimer();
+}
+document.addEventListener('visibilitychange', function(){
+  if(document.hidden){
+    _tmrTick();
+    _tmrStopInterval();
+  } else if(state.timer.started && !state.timer.frozen){
+    _tmrStartInterval();
+  }
+});
+function initTimer(){
+  paintTimer();
+  if(state.timer.started && !state.timer.frozen){
+    _tmrStartInterval();
+  }
+}
 
 /* ---- sound (mp3 assets) ---- */
 const SND={
@@ -408,7 +527,39 @@ function playHint(){    playSound('hint');    }
 function setSoundIcon(){const b=document.getElementById('soundBtn');b.innerHTML=soundOn
   ?'<svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M16 9a3.5 3.5 0 0 1 0 6"/><path d="M19 7a7 7 0 0 1 0 10"/></svg>'
   :'<svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M22 9l-5 6M17 9l5 6"/></svg>';}
-function toggleSound(){soundOn=!soundOn;state.sound=soundOn;setSoundIcon();save(state);}
+function toggleSound(){soundOn=!soundOn;state.sound=soundOn;if(soundOn)unlockAudio();setSoundIcon();save(state);}
+
+/* =========================================================
+   START OVERLAY v3.6 — gate the board until the player taps Start
+   ========================================================= */
+function hasStarted(){  return state.timer.started; }
+function hasFinished(){ return state.timer.frozen;  }
+
+let _audioUnlocked=false;
+function unlockAudio(){
+  if(_audioUnlocked) return;
+  _audioUnlocked=true;
+  for(const k in _audio){
+    const a=_audio[k]; if(!a) continue;
+    try{
+      a.muted=true;
+      const done=function(){ try{ a.pause(); a.currentTime=0; }catch(e){} a.muted=false; };
+      const p=a.play();
+      if(p && p.then) p.then(done).catch(done); else done();
+    }catch(e){ try{ a.muted=false; }catch(_){} }
+  }
+}
+function startPuzzle(){
+  unlockAudio();
+  document.getElementById('startLayer').classList.add('hide');
+  startTimer();
+}
+function initStartLayer(){
+  const show = !hasStarted() && !hasFinished();
+  document.getElementById('startLayer').classList.toggle('hide', !show);
+}
+['pointerdown','pointerup','pointermove','click','wheel'].forEach(t=>
+  document.getElementById('startLayer').addEventListener(t,e=>e.stopPropagation()));
 
 /* ---- helpers ---- */
 function items(){return PUZZLES[cur].items;}
@@ -422,6 +573,7 @@ function applyView(){
   canvas.style.transform='translate('+tx+'px,'+ty+'px) scale('+s+')';
   layer.style.setProperty('--mw',(2.4/s)+'px');
   layer.style.setProperty('--iz',(1/s));
+  vp.style.touchAction = s>1 ? 'none' : 'pan-y';   /* page scrolls freely until zoomed in */
 }
 function clampView(){
   const vw=vp.clientWidth, vh=vp.clientHeight, cw=vw*s, ch=vh*s;
@@ -441,11 +593,13 @@ const pts=new Map();
 let dn=null, pinch=null;
 vp.addEventListener('pointerdown',e=>{
   if(e.target.closest('.zb'))return;
-  e.preventDefault();
-  try{vp.setPointerCapture(e.pointerId);}catch(_){}
   pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
   if(pts.size===1){ dn={x:e.clientX,y:e.clientY,t:Date.now(),moved:0,tx:tx,ty:ty}; }
   else if(pts.size===2){ dn=null; startPinch(); }
+  if(s>1||pts.size>=2){                       /* only take over the gesture when zoomed */
+    e.preventDefault();
+    try{vp.setPointerCapture(e.pointerId);}catch(_){}
+  }
 });
 function startPinch(){
   const a=[...pts.values()];
@@ -456,9 +610,9 @@ function startPinch(){
 function dist(a,b){return Math.hypot(a.x-b.x,a.y-b.y);}
 vp.addEventListener('pointermove',e=>{
   if(!pts.has(e.pointerId))return;
-  e.preventDefault();
   pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
   if(pts.size>=2&&pinch){
+    e.preventDefault();
     const a=[...pts.values()];
     const k=dist(a[0],a[1])/(pinch.d||1);
     const ns=Math.min(5,Math.max(1,pinch.s0*k)), kk=ns/pinch.s0;
@@ -468,7 +622,7 @@ vp.addEventListener('pointermove',e=>{
   if(dn){
     const dx=e.clientX-dn.x, dy=e.clientY-dn.y;
     dn.moved=Math.max(dn.moved,Math.hypot(dx,dy));
-    if(s>1){ tx=dn.tx+dx; ty=dn.ty+dy; clampView(); applyView(); }
+    if(s>1){ e.preventDefault(); tx=dn.tx+dx; ty=dn.ty+dy; clampView(); applyView(); }
   }
 });
 function endPointer(e){
@@ -484,11 +638,16 @@ function endPointer(e){
   }
 }
 vp.addEventListener('pointerup',endPointer);
-vp.addEventListener('pointercancel',endPointer);
+vp.addEventListener('pointercancel',e=>{      /* the page took the gesture (scroll) — not a tap */
+  pts.delete(e.pointerId);
+  if(pts.size<2) pinch=null;
+  if(pts.size===0) dn=null;
+});
 
 /* ---- tap → hit test ---- */
 function handleTap(cx,cy){
   if(solved(cur))return;
+  startTimer();                 /* no-op once started — safety net if the gate is removed */
   const r=canvas.getBoundingClientRect();
   const px=(cx-r.left)/r.width*100, py=(cy-r.top)/r.height*100;
   let hit=-1, area=1e9;
@@ -575,6 +734,7 @@ function onSolved(){
   const all=PUZZLES.every((p,i)=>solved(i));
   if(all){
     status('done',(MULTI?'બધા કોયડા પૂર્ણ.':'કોયડો પૂર્ણ.')+' ખૂબ સરસ! 🌸',true);
+    freezeTimer();
     playWin();
     if(!state.celebrated){ state.celebrated=true; save(state); showCelebrate(); }
     markDone();
@@ -586,6 +746,7 @@ function onSolved(){
 
 /* ---- hint ---- */
 function useHint(){
+  if(!hasStarted()){ status('hint','પહેલાં Start દબાવો.'); return; }
   if(solved(cur)){ status('hint','આ કોયડો પહેલેથી પૂર્ણ છે.'); return; }
   const rem=[]; items().forEach((it,i)=>{ if(!state.found[cur].includes(i)) rem.push(i); });
   if(!rem.length) return;
@@ -629,6 +790,8 @@ if(MULTI) document.getElementById('celeh').textContent='બધા કોયડ�
 
 preloadSounds();
 renderAll();
+initTimer();
+initStartLayer();
 if(PUZZLES.every((p,i)=>solved(i))){
   status('done',(MULTI?'બધા કોયડા પૂર્ણ.':'કોયડો પૂર્ણ.')+' ખૂબ સરસ! 🌸',true);
   _completed=true;
