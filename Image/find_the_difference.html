@@ -378,7 +378,7 @@ function markDone(){ _completed=true; activityDone(); pushProgress(); }   /* cal
 window.addEventListener('pagehide',pushProgress);   /* best-effort, where it fires */
 
 /* ---- state ---- */
-let state = load() || {tab:0, sound:false, celebrated:false, found:[]};
+let state = load() || {tab:0, sound:true, celebrated:false, found:[]};
 if(!Array.isArray(state.found)) state.found=[];
 while(state.found.length < PUZZLES.length) state.found.push([]);
 let soundOn = !!state.sound;
