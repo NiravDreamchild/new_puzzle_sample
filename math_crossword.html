@@ -264,26 +264,26 @@ body{
 <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="How to play">
   <div class="grab"></div>
   <h3>કેવી રીતે રમવું</h3>
-  <p class="lead">ખાલી ખાનાંમાં યોગ્ય અંક ભરો જેથી દરેક આડી અને ઊભી હરોળનું ગણિત સાચું બને.</p>
+  <p class="lead">ખાલી ખાનાંઓમાં એવા અંક મૂકો કે દરેક આડી અને ઊભી હરોળનું ગણિત સાચું પડે.</p>
 
   <div class="step">
     <div class="ic"><svg viewBox="0 0 24 24"><path d="M5 9L2 12l3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3"/><path d="M2 12h20M12 2v20"/></svg></div>
-    <div class="tx"><b>ખેંચીને મૂકો</b><p>નીચેના અંકોમાંથી કોઈ અંક ખેંચીને ખાલી ખાનામાં મૂકો અથવા પહેલાં ખાનું પસંદ કરીને અંક દબાવો.</p></div>
+    <div class="tx"><b>ખેંચીને મૂકો</b><p>નીચેના કીપૅડમાંથી અંક આંગળીથી ખેંચીને ખાલી ખાનામાં મૂકો, અથવા ખાનું પસંદ કરી અંક દબાવો.</p></div>
   </div>
 
   <div class="step">
     <div class="ic"><svg viewBox="0 0 24 24"><path d="M4 7h9M4 12h9M4 17h6"/><path d="M17 8v8M17 8l-2 2M17 8l2 2"/></svg></div>
-    <div class="tx"><b>દરેક હરોળ એક દાખલો</b><p>દરેક આડી અને ઊભી હરોળમાં ગણિત સાચું આવવું જોઈએ. જેમ કે 2 + 5 − 3 = 4.</p></div>
+    <div class="tx"><b>દરેક હરોળ એક દાખલો</b><p>દરેક આડી અને ઊભી હરોળ ડાબેથી જમણે ગણો — જેમ કે 2 + 5 − 3 = 4. બધા દાખલા સાચા પડવા જોઈએ.</p></div>
   </div>
 
   <div class="step">
     <div class="ic"><svg viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h11a6 6 0 0 1 0 12h-4"/></svg></div>
-    <div class="tx"><b>પાછું / આગળ</b><p>ભૂલ થાય તો “પાછું” દબાવો. “આગળ” દબાવી છેલ્લો ફેરફાર ફરી મેળવી શકો છો.</p></div>
+    <div class="tx"><b>પાછું / આગળ</b><p>ભૂલ થાય તો "પાછું" દબાવો — છેલ્લો ફેરફાર રદ થશે. "આગળ" દબાવવાથી તે ફેરફાર ફરી આવી જશે.</p></div>
   </div>
 
   <div class="step">
     <div class="ic"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></div>
-    <div class="tx"><b>પૂરું કરો</b><p>બધા અંક સાચા ભરાય એટલે કોયડો પૂર્ણ થશે. ખોટો અંક લાલ રંગમાં દેખાશે.</p></div>
+    <div class="tx"><b>પૂરું કરો</b><p>બધા ખાનાં સાચાં ભરાય ત્યારે કોયડો પૂર્ણ. કોઈ દાખલો ખોટો પડે તો તે અંક લાલ રંગમાં દેખાશે.</p></div>
   </div>
 
   <button class="got" onclick="closeHelp()">Close</button>
@@ -350,7 +350,7 @@ function markDone(){ _completed=true; activityDone(); pushProgress(); }   /* who
 window.addEventListener('pagehide',pushProgress);
 
 /* ---- state ---- */
-let state = load() || {tab:0, sound:false, celebrated:false, entries:[{},{},{}]};
+let state = load() || {tab:0, sound:true, celebrated:false, entries:[{},{},{}]};
 if(!state.entries) state.entries=[{},{},{}];
 let soundOn = !!state.sound;
 let cur = state.tab||0;
@@ -414,7 +414,7 @@ function solved(){ return solvedIdx(cur); }
 function renderProgress(){document.getElementById('round').textContent=(cur+1)+'/'+PUZZLES.length;}
 function renderHead(){
   document.getElementById('hsub').innerHTML=
-    'ખાલી ખાનાંમાં યોગ્ય અંક ભરો<br>જેથી દરેક આડી અને ઊભી હરોળનું ગણિત સાચું પડે.';
+    'ખાલી ખાનાંમાં યોગ્ય અંકો ભરો જેથી દરેક આડી અને ઊભી હરોળમાં ગણિતનું સમીકરણ સાચું બને.';
 }
 function cellEl(i){return document.querySelector('.cell.num[data-i="'+i+'"]');}
 /* display 7x7: number cells at even/even -> logical (r/2,c/2); horizontal ops at even/odd;
