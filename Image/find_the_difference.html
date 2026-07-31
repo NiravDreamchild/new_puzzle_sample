@@ -1,660 +1,729 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="gu">
-  <head>
-    <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-    />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="theme-color" content="#FBF9FC" />
-    <meta name="referrer" content="strict-origin-when-cross-origin" />
-    <title>Dreamchild · Find the Difference</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Hind+Vadodara:wght@400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <style>
-      :root{
-        --bg:#FBF9FC;
-        --surface:#FFFFFF;
-        --ink:#2E2A32;
-        --muted:#8C8794;
-        --line:#ECE7F0;
-        --brand:#752886;
-        --brand-deep:#561F69;
-        --brand-soft:#F3E9F8;
-        --accent:#F2A03D;
-        --accent-soft:#FCEFDC;
-        --mint:#2F9B63;
-        --mint-soft:#E5F4EC;
-        --rose:#C75C72;
-        --rose-soft:#FAEAEE;
-        --shadow:0 10px 30px -12px rgba(78,33,95,.18);
-        --shadow-sm:0 4px 14px -8px rgba(78,33,95,.20);
-        --r-lg:22px; --r-md:16px; --r-sm:12px;
-      }
-      *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-      html,body{margin:0;padding:0;}
-      body{
-        background:var(--bg);color:var(--ink);
-        font-family:'Hind Vadodara',sans-serif;
-        -webkit-font-smoothing:antialiased;
-        min-height:100vh;
-        background-image:radial-gradient(120% 60% at 50% -10%, var(--brand-soft) 0%, rgba(243,233,248,0) 60%);
-      }
-      .wrap{max-width:460px;margin:0 auto;padding:16px 16px 28px;position:relative;z-index:1;}
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#FBF9FC">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Dreamchild · Spot The Difference</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Vadodara:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FBF9FC;
+  --surface:#FFFFFF;
+  --ink:#2E2A32;
+  --muted:#8C8794;
+  --line:#ECE7F0;
+  --brand:#752886;
+  --brand-deep:#561F69;
+  --brand-soft:#F3E9F8;
+  --accent:#F2A03D;
+  --accent-soft:#FCEFDC;
+  --mint:#2F9B63;
+  --mint-soft:#E5F4EC;
+  --rose:#C75C72;
+  --rose-soft:#FAEAEE;
+  --shadow:0 10px 30px -12px rgba(78,33,95,.18);
+  --shadow-sm:0 4px 14px -8px rgba(78,33,95,.20);
+  --r-lg:22px; --r-md:16px; --r-sm:12px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg);color:var(--ink);
+  font-family:'Hind Vadodara',sans-serif;
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+  background-image:radial-gradient(120% 60% at 50% -10%, var(--brand-soft) 0%, rgba(243,233,248,0) 60%);
+}
+.wrap{max-width:460px;margin:0 auto;padding:16px 16px 28px;position:relative;z-index:1;}
 
-      /* ---- header ---- */
-      .phead{background:var(--surface);border:1px solid var(--line);border-radius:18px;
-        box-shadow:0 6px 20px -12px rgba(78,33,95,.16);padding:15px 16px;margin-bottom:14px;}
-      .hrow1{display:flex;align-items:center;justify-content:space-between;gap:12px;}
-      .ptitle{font-weight:700;font-size:23px;line-height:1.05;color:var(--brand);margin:0;letter-spacing:-.01em;}
-      .hctrls{display:flex;align-items:center;gap:8px;flex:none;}
-      .rpill{display:flex;align-items:center;justify-content:center;min-width:50px;height:38px;padding:0 12px;
-        border:1px solid var(--line);border-radius:11px;background:var(--surface);
-        font-weight:600;font-size:16px;color:var(--ink);letter-spacing:.01em;}
-      .hbtn{width:40px;height:38px;border:1px solid var(--line);border-radius:11px;background:var(--surface);
-        display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-appearance:none;padding:0;
-        transition:background .15s ease;}
-      .hbtn:active{background:var(--brand-soft);}
-      .hbtn svg{width:20px;height:20px;fill:none;stroke:var(--muted);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
-      .hbtn.info{width:38px;background:var(--brand-soft);border-color:transparent;}
-      .hbtn.info svg{stroke:var(--brand);}
-      .hsub{text-align:center;font-weight:600;font-size:15px;line-height:1.5;color:var(--ink);margin:13px 0 1px;}
+/* ---- header ---- */
+.phead{background:var(--surface);border:1px solid var(--line);border-radius:18px;
+  box-shadow:0 6px 20px -12px rgba(78,33,95,.16);padding:15px 16px;margin-bottom:14px;}
+.hrow1{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.ptitle{font-weight:700;font-size:23px;line-height:1.05;color:var(--brand);margin:0;letter-spacing:-.01em;}
+.hctrls{display:flex;align-items:center;gap:8px;flex:none;}
+.rpill{display:flex;align-items:center;justify-content:center;min-width:50px;height:38px;padding:0 12px;
+  border:1px solid var(--line);border-radius:11px;background:var(--surface);
+  font-weight:600;font-size:16px;color:var(--ink);letter-spacing:.01em;}
+.hbtn{width:40px;height:38px;border:1px solid var(--line);border-radius:11px;background:var(--surface);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-appearance:none;padding:0;
+  transition:background .15s ease;}
+.hbtn:active{background:var(--brand-soft);}
+.hbtn svg{width:20px;height:20px;fill:none;stroke:var(--muted);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.hbtn.info{width:38px;background:var(--brand-soft);border-color:transparent;}
+.hbtn.info svg{stroke:var(--brand);}
+.hsub{text-align:center;font-weight:600;font-size:15px;line-height:1.5;color:var(--ink);margin:13px 0 1px;}
 
-      /* ---- stage card ---- */
-      .stage{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
-        box-shadow:0 8px 28px -10px rgba(78,33,95,.16), 0 2px 8px -3px rgba(78,33,95,.08);
-        padding:14px;margin-bottom:14px;}
+/* ---- stage card ---- */
+.stage{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
+  box-shadow:0 8px 28px -10px rgba(78,33,95,.16), 0 2px 8px -3px rgba(78,33,95,.08);
+  padding:14px;margin-bottom:14px;}
 
-      /* found tracker */
-      .track{display:flex;align-items:center;justify-content:center;gap:9px;margin-bottom:12px;}
-      .track .lbl{font-size:13px;font-weight:600;color:var(--muted);}
-      .dots{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;}
-      .dot{width:11px;height:11px;border-radius:50%;background:var(--line);transition:background .25s ease,transform .25s ease;}
-      .dot.on{background:var(--brand);transform:scale(1.12);}
+/* ---- timer pill (v3.5, in-flow — never overlaps the board) ---- */
+.tmrbar{display:flex;justify-content:flex-end;margin-bottom:10px;}  /* own row at top of stage */
+.timer{display:inline-flex;align-items:center;gap:6px;
+  background:var(--brand-soft);color:var(--brand);
+  border:1px solid transparent;border-radius:999px;
+  padding:5px 12px 5px 10px;
+  font-family:'Hind Vadodara',sans-serif;font-weight:700;font-size:14px;
+  font-variant-numeric:tabular-nums;letter-spacing:.02em;line-height:1;
+  box-shadow:var(--shadow-sm);
+  transition:background .3s ease,color .3s ease,border-color .3s ease;}
+.timer svg{width:15px;height:15px;fill:none;stroke:currentColor;
+  stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.timer .t{min-width:44px;text-align:right;}   /* tabular + min-width stops digit jitter */
 
-      /* image boards */
-      .boards{display:flex;flex-direction:column;gap:10px;}
-      .imgbox{position:relative;border:1px solid var(--line);border-radius:12px;overflow:hidden;
-        background:#FAF7FB;touch-action:manipulation;user-select:none;-webkit-user-select:none;cursor:pointer;}
-      .imgbox img{display:block;width:100%;height:auto;pointer-events:none;}
-      .imgbox .ph{aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;
-        font-size:13px;color:var(--muted);font-weight:500;}
-      .imgbox.shake{animation:shake .3s ease;}
-      @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+/* overtime: pill turns rose, whole stage gets a faint red wash */
+.timer.over{background:var(--rose-soft);color:var(--rose);border-color:rgba(199,92,114,.25);}
+.stage.overtime{background-color:#FDF3F5;}     /* ~8% rose over white — board stays readable */
 
-      /* markers */
-      .ring{position:absolute;border-radius:50%;transform:translate(-50%,-50%);aspect-ratio:1/1;
-        pointer-events:none;border:3px solid var(--brand);background:rgba(117,40,134,.13);
-        animation:pop .34s cubic-bezier(.22,1,.36,1);}
-      @keyframes pop{from{transform:translate(-50%,-50%) scale(.5);opacity:0}to{transform:translate(-50%,-50%) scale(1);opacity:1}}
-      .ring.hint{border-color:var(--accent);background:rgba(242,160,61,.22);animation:hintpulse .9s ease infinite;}
-      @keyframes hintpulse{0%,100%{transform:translate(-50%,-50%) scale(1);opacity:.9}
-        50%{transform:translate(-50%,-50%) scale(1.14);opacity:1}}
-      .miss{position:absolute;width:34px;height:34px;border-radius:50%;transform:translate(-50%,-50%);
-        border:2.5px solid var(--rose);pointer-events:none;animation:fade .55s ease forwards;}
-      @keyframes fade{from{opacity:.95;transform:translate(-50%,-50%) scale(.5)}
-        to{opacity:0;transform:translate(-50%,-50%) scale(1.5)}}
+/* found tracker */
+.track{display:flex;align-items:center;justify-content:center;gap:9px;margin-bottom:12px;}
+.track .lbl{font-size:13px;font-weight:600;color:var(--muted);}
+.dots{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;}
+.dot{width:11px;height:11px;border-radius:50%;background:var(--line);transition:background .25s ease,transform .25s ease;}
+.dot.on{background:var(--brand);transform:scale(1.12);}
 
-      /* ---- status ---- */
-      .status{min-height:24px;text-align:center;font-size:14px;line-height:1.4;font-weight:500;
-        color:var(--muted);padding:2px 8px;margin:6px 0;opacity:0;transition:opacity .25s ease;}
-      .status.show{opacity:1;}
-      .status.ok{color:var(--mint);}
-      .status.bad{color:var(--rose);}
-      .status.hint{color:#B5781E;}
-      .status.done{color:var(--brand);font-weight:600;}
+/* image boards */
+.boards{display:flex;flex-direction:column;gap:10px;position:relative;}
 
-      /* ---- action bar ---- */
-      .actionbar{margin-top:14px;}
-      .actionbar .inner{display:flex;flex-direction:row;align-items:center;justify-content:space-between;
-        flex-wrap:wrap;gap:6px;row-gap:8px;}
-      .actionbar .inner.single{justify-content:center;}
-      .cmid{display:flex;align-items:center;gap:6px;}
-      .cbtn{font-family:'Hind Vadodara',sans-serif;cursor:pointer;-webkit-appearance:none;
-        display:flex;align-items:center;justify-content:center;gap:5px;
-        transition:transform .12s ease,opacity .2s ease,background .2s ease,box-shadow .2s ease;}
-      .cbtn:active{transform:scale(.97);}
-      .cbtn svg{width:16px;height:16px;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;}
-      .cbtn.hint{min-height:36px;border-radius:12px;padding:0 22px;background:var(--surface);border:1px solid var(--line);
-        color:var(--ink);font-weight:600;font-size:13px;box-shadow:var(--shadow-sm);}
-      .cbtn.hint svg{stroke:var(--brand);}
-      .cbtn.prev,.cbtn.next{min-height:36px;border-radius:12px;padding:0 20px;background:var(--brand);border:none;color:#fff;
-        font-weight:700;font-size:13.5px;box-shadow:0 8px 20px -8px rgba(110,42,133,.5);}
-      .cbtn.prev svg,.cbtn.next svg{stroke:#fff;}
-      .cbtn:disabled{cursor:default;}
-      .cbtn.prev:disabled,.cbtn.next:disabled{background:var(--surface);border:1px solid var(--line);
-        color:var(--muted);box-shadow:none;font-weight:600;}
-      .cbtn.prev:disabled svg,.cbtn.next:disabled svg{stroke:var(--muted);}
+/* ---- start overlay (covers the play area until the player begins) ---- */
+.startlayer{position:absolute;inset:0;z-index:6;display:flex;align-items:center;justify-content:center;
+  background:rgba(251,249,252,.1);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);
+  text-align:center;padding:22px;}
+.startlayer.hide{display:none;}
+.startcard .em{font-size:38px;line-height:1;margin-bottom:8px;}
+.startcard h3{font-size:18px;font-weight:700;color:var(--brand);margin:0 0 4px;}
+.startcard p{font-size:13px;color:var(--ink);margin:0 0 16px;line-height:1.5;
+  text-shadow:0 1px 3px rgba(255,255,255,.9);}
+.startbtn{min-width:152px;min-height:46px;border-radius:14px;border:none;cursor:pointer;
+  background:linear-gradient(135deg,var(--brand),var(--brand-deep));color:#fff;
+  font-family:'Hind Vadodara',sans-serif;font-weight:700;font-size:16px;
+  box-shadow:0 10px 22px -10px rgba(110,42,133,.6);
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  transition:transform .12s ease;}
+.startbtn:active{transform:scale(.97);}
+.startbtn svg{width:17px;height:17px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.imgbox{position:relative;border:1px solid var(--line);border-radius:12px;overflow:hidden;
+  background:#FAF7FB;touch-action:manipulation;user-select:none;-webkit-user-select:none;cursor:pointer;}
+.imgbox img{display:block;width:100%;height:auto;pointer-events:none;}
+.imgbox .ph{aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;
+  font-size:13px;color:var(--muted);font-weight:500;}
+.imgbox.shake{animation:shake .3s ease;}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
 
-      /* ---- footer ---- */
-      .foot{text-align:center;font-size:11px;color:var(--muted);letter-spacing:.03em;margin-top:18px;}
-      .foot b{font-weight:600;color:#a79bb0;}
+/* markers */
+.ring{position:absolute;border-radius:50%;transform:translate(-50%,-50%);aspect-ratio:1/1;
+  pointer-events:none;border:3px solid var(--brand);background:rgba(117,40,134,.13);
+  animation:pop .34s cubic-bezier(.22,1,.36,1);}
+@keyframes pop{from{transform:translate(-50%,-50%) scale(.5);opacity:0}to{transform:translate(-50%,-50%) scale(1);opacity:1}}
+.ring.hint{border-color:var(--accent);background:rgba(242,160,61,.22);animation:hintpulse .9s ease infinite;}
+@keyframes hintpulse{0%,100%{transform:translate(-50%,-50%) scale(1);opacity:.9}
+  50%{transform:translate(-50%,-50%) scale(1.14);opacity:1}}
+.miss{position:absolute;width:34px;height:34px;border-radius:50%;transform:translate(-50%,-50%);
+  border:2.5px solid var(--rose);pointer-events:none;animation:fade .55s ease forwards;}
+@keyframes fade{from{opacity:.95;transform:translate(-50%,-50%) scale(.5)}
+  to{opacity:0;transform:translate(-50%,-50%) scale(1.5)}}
 
-      /* ---- help sheet ---- */
-      .scrim{position:fixed;inset:0;background:rgba(46,42,50,.42);backdrop-filter:blur(2px);z-index:40;
-        opacity:0;pointer-events:none;transition:opacity .28s ease;}
-      .scrim.open{opacity:1;pointer-events:auto;}
-      .sheet{position:fixed;left:0;right:0;bottom:0;z-index:41;background:var(--surface);
-        border-radius:26px 26px 0 0;box-shadow:0 -16px 40px -16px rgba(46,42,50,.3);
-        max-width:460px;margin:0 auto;padding:10px 22px calc(26px + env(safe-area-inset-bottom));
-        transform:translateY(110%);transition:transform .34s cubic-bezier(.22,1,.36,1);}
-      .sheet.open{transform:translateY(0);}
-      .grab{width:42px;height:5px;border-radius:999px;background:var(--line);margin:6px auto 16px;}
-      .sheet h3{font-weight:700;font-size:20px;margin:0 0 4px;}
-      .sheet .lead{font-size:14px;color:var(--muted);margin:0 0 18px;line-height:1.5;}
-      .step{display:flex;gap:14px;align-items:flex-start;margin-bottom:16px;}
-      .step .ic{flex:none;width:46px;height:46px;border-radius:14px;background:var(--brand-soft);
-        display:flex;align-items:center;justify-content:center;}
-      .step .ic svg{width:26px;height:26px;stroke:var(--brand);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
-      .step .tx b{display:block;font-weight:600;font-size:15px;color:var(--ink);margin-bottom:2px;}
-      .step .tx p{margin:0;font-size:13.5px;color:var(--muted);line-height:1.5;}
-      .sheet .got{width:100%;margin-top:6px;background:var(--brand);color:#fff;border:none;cursor:pointer;
-        font-family:'Hind Vadodara',sans-serif;border-radius:14px;min-height:48px;font-weight:700;font-size:15px;}
+/* ---- status ---- */
+.status{min-height:24px;text-align:center;font-size:14px;line-height:1.4;font-weight:500;
+  color:var(--muted);padding:2px 8px;margin:6px 0;opacity:0;transition:opacity .25s ease;}
+.status.show{opacity:1;}
+.status.ok{color:var(--mint);}
+.status.bad{color:var(--rose);}
+.status.hint{color:#B5781E;}
+.status.done{color:var(--brand);font-weight:600;}
 
-      /* ---- celebration ---- */
-      .celebrate{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;
-        background:rgba(251,249,252,.86);backdrop-filter:blur(3px);text-align:center;padding:30px;}
-      .celebrate.show{display:flex;flex-direction:column;}
-      .celebrate .em{font-size:54px;margin-bottom:6px;animation:rise .6s cubic-bezier(.22,1,.36,1);}
-      .celebrate h2{font-weight:700;font-size:24px;color:var(--brand);margin:0 0 8px;}
-      .celebrate p{font-size:15px;color:var(--ink);font-weight:500;margin:0 0 22px;max-width:280px;line-height:1.5;}
-      .celebrate .btn{min-width:200px;background:var(--brand);color:#fff;border:none;cursor:pointer;
-        font-family:'Hind Vadodara',sans-serif;border-radius:14px;min-height:55px;font-weight:700;font-size:18px;}
-      @keyframes rise{from{transform:translateY(16px) scale(.8);opacity:0}to{transform:none;opacity:1}}
-      .petal{position:fixed;top:-24px;z-index:49;font-size:18px;animation:drift linear forwards;pointer-events:none;}
-      @keyframes drift{to{transform:translateY(106vh) rotate(360deg);opacity:0}}
+/* ---- action bar ---- */
+.actionbar{margin-top:14px;}
+.actionbar .inner{display:flex;flex-direction:row;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:6px;row-gap:8px;}
+.actionbar .inner.single{justify-content:center;}
+.cmid{display:flex;align-items:center;gap:6px;}
+.cbtn{font-family:'Hind Vadodara',sans-serif;cursor:pointer;-webkit-appearance:none;
+  display:flex;align-items:center;justify-content:center;gap:5px;
+  transition:transform .12s ease,opacity .2s ease,background .2s ease,box-shadow .2s ease;}
+.cbtn:active{transform:scale(.97);}
+.cbtn svg{width:16px;height:16px;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;}
+.cbtn.hint{min-height:36px;border-radius:12px;padding:0 22px;background:var(--surface);border:1px solid var(--line);
+  color:var(--ink);font-weight:600;font-size:13px;box-shadow:var(--shadow-sm);}
+.cbtn.hint svg{stroke:var(--brand);}
+.cbtn.prev,.cbtn.next{min-height:36px;border-radius:12px;padding:0 20px;background:var(--brand);border:none;color:#fff;
+  font-weight:700;font-size:13.5px;box-shadow:0 8px 20px -8px rgba(110,42,133,.5);}
+.cbtn.prev svg,.cbtn.next svg{stroke:#fff;}
+.cbtn:disabled{cursor:default;}
+.cbtn.prev:disabled,.cbtn.next:disabled{background:var(--surface);border:1px solid var(--line);
+  color:var(--muted);box-shadow:none;font-weight:600;}
+.cbtn.prev:disabled svg,.cbtn.next:disabled svg{stroke:var(--muted);}
 
-      /* ---- ambient puzzle-piece background ---- */
-      .bg{position:fixed;top:0;left:0;right:0;height:100vh;height:100lvh;overflow:hidden;pointer-events:none;z-index:0;}
-      .piece{position:absolute;transform:rotate(var(--rot,0deg));opacity:.2;}
-      .piece svg{display:block;width:100%;height:auto;fill:currentColor;}
-      .piece.f1{top:-30px;left:-46px;width:150px;color:#fa7068;--rot:-14deg;}
-      .piece.f2{top:78px;right:-52px;width:150px;color:#fbca5f;--rot:18deg;}
-      .piece.f3{top:46%;right:-58px;width:110px;color:#a0c95d;--rot:26deg;}
-      .piece.f4{bottom:-40px;right:-30px;width:170px;color:#9ddbe6;--rot:-18deg;}
-      .piece.f5{bottom:46px;left:-56px;width:150px;color:#f3adc9;--rot:8deg;}
-      .piece.f6{top:36%;left:-70px;width:100px;color:#d4ab99;--rot:30deg;}
+/* ---- footer ---- */
+.foot{text-align:center;font-size:11px;color:var(--muted);letter-spacing:.03em;margin-top:18px;}
+.foot b{font-weight:600;color:#a79bb0;}
 
-      @media (prefers-reduced-motion:reduce){
-        *{animation-duration:.001ms !important;transition-duration:.05ms !important;}
-      }
-      :focus-visible{outline:2.5px solid var(--brand);outline-offset:2px;border-radius:6px;}
-    </style>
-  </head>
-  <body>
-    <div class="bg" aria-hidden="true">
-      <div class="piece f1">
-        <svg viewBox="0 0 100 100">
-          <path
-            d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"
-          />
-        </svg>
-      </div>
-      <div class="piece f2">
-        <svg viewBox="0 0 100 100">
-          <path
-            d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"
-          />
-        </svg>
-      </div>
-      <div class="piece f3">
-        <svg viewBox="0 0 100 100">
-          <path
-            d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"
-          />
-        </svg>
-      </div>
-      <div class="piece f4">
-        <svg viewBox="0 0 100 100">
-          <path
-            d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"
-          />
-        </svg>
-      </div>
-      <div class="piece f5">
-        <svg viewBox="0 0 100 100">
-          <path
-            d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"
-          />
-        </svg>
-      </div>
-      <div class="piece f6">
-        <svg viewBox="0 0 100 100">
-          <path
-            d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"
-          />
-        </svg>
+/* ---- help sheet ---- */
+.scrim{position:fixed;inset:0;background:rgba(46,42,50,.42);backdrop-filter:blur(2px);z-index:40;
+  opacity:0;pointer-events:none;transition:opacity .28s ease;}
+.scrim.open{opacity:1;pointer-events:auto;}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:41;background:var(--surface);
+  border-radius:26px 26px 0 0;box-shadow:0 -16px 40px -16px rgba(46,42,50,.3);
+  max-width:460px;margin:0 auto;padding:10px 22px calc(26px + env(safe-area-inset-bottom));
+  transform:translateY(110%);transition:transform .34s cubic-bezier(.22,1,.36,1);}
+.sheet.open{transform:translateY(0);}
+.grab{width:42px;height:5px;border-radius:999px;background:var(--line);margin:6px auto 16px;}
+.sheet h3{font-weight:700;font-size:20px;margin:0 0 4px;}
+.sheet .lead{font-size:14px;color:var(--muted);margin:0 0 18px;line-height:1.5;}
+.step{display:flex;gap:14px;align-items:flex-start;margin-bottom:16px;}
+.step .ic{flex:none;width:46px;height:46px;border-radius:14px;background:var(--brand-soft);
+  display:flex;align-items:center;justify-content:center;}
+.step .ic svg{width:26px;height:26px;stroke:var(--brand);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
+.step .tx b{display:block;font-weight:600;font-size:15px;color:var(--ink);margin-bottom:2px;}
+.step .tx p{margin:0;font-size:13.5px;color:var(--muted);line-height:1.5;}
+.sheet .got{width:100%;margin-top:6px;background:var(--brand);color:#fff;border:none;cursor:pointer;
+  font-family:'Hind Vadodara',sans-serif;border-radius:14px;min-height:48px;font-weight:700;font-size:15px;}
+
+/* ---- celebration ---- */
+.celebrate{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;
+  background:rgba(251,249,252,.86);backdrop-filter:blur(3px);text-align:center;padding:30px;}
+.celebrate.show{display:flex;flex-direction:column;}
+.celebrate .em{font-size:54px;margin-bottom:6px;animation:rise .6s cubic-bezier(.22,1,.36,1);}
+.celebrate h2{font-weight:700;font-size:24px;color:var(--brand);margin:0 0 8px;}
+.celebrate p{font-size:15px;color:var(--ink);font-weight:500;margin:0 0 22px;max-width:280px;line-height:1.5;}
+.celebrate .btn{min-width:200px;background:var(--brand);color:#fff;border:none;cursor:pointer;
+  font-family:'Hind Vadodara',sans-serif;border-radius:14px;min-height:55px;font-weight:700;font-size:18px;}
+@keyframes rise{from{transform:translateY(16px) scale(.8);opacity:0}to{transform:none;opacity:1}}
+.petal{position:fixed;top:-24px;z-index:49;font-size:18px;animation:drift linear forwards;pointer-events:none;}
+@keyframes drift{to{transform:translateY(106vh) rotate(360deg);opacity:0}}
+
+/* ---- ambient puzzle-piece background ---- */
+.bg{position:fixed;top:0;left:0;right:0;height:100vh;height:100lvh;overflow:hidden;pointer-events:none;z-index:0;}
+.piece{position:absolute;transform:rotate(var(--rot,0deg));opacity:.2;}
+.piece svg{display:block;width:100%;height:auto;fill:currentColor;}
+.piece.f1{top:-30px;left:-46px;width:150px;color:#fa7068;--rot:-14deg;}
+.piece.f2{top:78px;right:-52px;width:150px;color:#fbca5f;--rot:18deg;}
+.piece.f3{top:46%;right:-58px;width:110px;color:#a0c95d;--rot:26deg;}
+.piece.f4{bottom:-40px;right:-30px;width:170px;color:#9ddbe6;--rot:-18deg;}
+.piece.f5{bottom:46px;left:-56px;width:150px;color:#f3adc9;--rot:8deg;}
+.piece.f6{top:36%;left:-70px;width:100px;color:#d4ab99;--rot:30deg;}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001ms !important;transition-duration:.05ms !important;}
+}
+:focus-visible{outline:2.5px solid var(--brand);outline-offset:2px;border-radius:6px;}
+</style>
+</head>
+<body>
+<div class="bg" aria-hidden="true">
+  <div class="piece f1"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece f2"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece f3"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece f4"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece f5"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+  <div class="piece f6"><svg viewBox="0 0 100 100"><path d="M20,8 h18 a3,3 0 0 1 3,3 v6 a8,8 0 1 0 16,0 v-6 a3,3 0 0 1 3,-3 h18 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-6 a8,8 0 1 0 0,16 h6 a3,3 0 0 1 3,3 v18 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-6 a8,8 0 1 0 -16,0 v6 a3,3 0 0 1 -3,3 h-18 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 h6 a8,8 0 1 0 0,-16 h-6 a3,3 0 0 1 -3,-3 v-18 a3,3 0 0 1 3,-3 z"/></svg></div>
+</div>
+
+<div class="wrap">
+  <!-- header -->
+  <header class="phead">
+    <div class="hrow1">
+      <h1 class="ptitle">Spot The Difference</h1>
+      <div class="hctrls">
+        <span class="rpill" id="round"></span>
+        <button class="hbtn" id="soundBtn" onclick="toggleSound()" aria-label="Sound"></button>
+        <button class="hbtn info" onclick="openHelp()" aria-label="How to play">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><circle cx="12" cy="8" r="0.6" fill="currentColor" stroke="none"/></svg>
+        </button>
       </div>
     </div>
+    <p class="hsub" id="hsub"></p>
+  </header>
 
-    <div class="wrap">
-      <!-- header -->
-      <header class="phead">
-        <div class="hrow1">
-          <h1 class="ptitle">તફાવત શોધો</h1>
-          <div class="hctrls">
-            <span class="rpill" id="round"></span>
-            <button
-              class="hbtn"
-              id="soundBtn"
-              onclick="toggleSound()"
-              aria-label="Sound"
-            ></button>
-            <button
-              class="hbtn info"
-              onclick="openHelp()"
-              aria-label="How to play"
-            >
-              <svg viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="9" />
-                <path d="M12 11v5" />
-                <circle
-                  cx="12"
-                  cy="8"
-                  r="0.6"
-                  fill="currentColor"
-                  stroke="none"
-                />
-              </svg>
-            </button>
-          </div>
-        </div>
-        <p class="hsub" id="hsub"></p>
-      </header>
-
-      <!-- stage -->
-      <div class="stage">
-        <div class="track">
-          <span class="lbl" id="trackLbl"></span>
-          <span class="dots" id="dots"></span>
-        </div>
-        <div class="boards">
-          <div class="imgbox" id="boxA"></div>
-          <div class="imgbox" id="boxB"></div>
-        </div>
+  <!-- stage -->
+  <div class="stage">
+    <div class="tmrbar">
+      <div class="timer" id="timer" aria-label="Time">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6"/></svg>
+        <span class="t" id="timeVal">5:00</span>
       </div>
-
-      <!-- status -->
-      <div class="status" id="status"></div>
-
-      <!-- action bar -->
-      <div class="actionbar">
-        <div class="inner" id="abInner">
-          <button class="cbtn prev" id="btnPrev" onclick="prevPuzzle()">
-            <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" /></svg>Back
-          </button>
-          <div class="cmid">
-            <button class="cbtn hint" onclick="useHint()">
-              <svg viewBox="0 0 24 24">
-                <path d="M9 18h6M10 21h4" />
-                <path
-                  d="M12 3a6 6 0 0 1 4 10.5c-.7.6-1 1.2-1 2v.5H9v-.5c0-.8-.3-1.4-1-2A6 6 0 0 1 12 3z"
-                /></svg
-              >Hint
-            </button>
-          </div>
-          <button class="cbtn next" id="btnNext" onclick="nextPuzzle()">
-            Next<svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" /></svg>
+    </div>
+    <div class="track">
+      <span class="lbl" id="trackLbl"></span>
+      <span class="dots" id="dots"></span>
+    </div>
+    <div class="boards">
+      <div class="imgbox" id="boxA"></div>
+      <div class="imgbox" id="boxB"></div>
+      <div class="startlayer" id="startLayer">
+        <div class="startcard">
+          <div class="em">🔍</div>
+          <h3>Are you ready?</h3>
+          <p>Start દબાવતાં જ સમય શરૂ થશે.</p>
+          <button class="startbtn" onclick="startPuzzle()">
+            <svg viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></svg>
+            Start
           </button>
         </div>
       </div>
-
-      <div class="foot">© <b>Dreamchild Garbhsanskar</b></div>
     </div>
+  </div>
 
-    <!-- help sheet -->
-    <div class="scrim" id="scrim" onclick="closeHelp()"></div>
-    <div
-      class="sheet"
-      id="sheet"
-      role="dialog"
-      aria-modal="true"
-      aria-label="How to play"
-    >
-      <div class="grab"></div>
-      <h3>કેવી રીતે રમવું</h3>
-      <p class="lead">
-        બંને ચિત્રો જુઓ. તે લગભગ સરખાં છે, પણ થોડા ફેરફાર છુપાયેલા છે. ઉતાવળ
-        નહીં — શાંતિથી.
-      </p>
+  <!-- status -->
+  <div class="status" id="status"></div>
 
-      <div class="step">
-        <div class="ic">
-          <svg viewBox="0 0 24 24">
-            <circle cx="11" cy="11" r="7" />
-            <path d="M16.5 16.5L21 21" />
-          </svg>
-        </div>
-        <div class="tx">
-          <b>ધ્યાનથી સરખાવો</b>
-          <p>
-            ઉપર અને નીચેનાં ચિત્ર એકબીજા સાથે સરખાવો — રંગ, આકાર કે કોઈ વસ્તુ
-            ગુમ છે કે નહીં તે જુઓ.
-          </p>
-        </div>
+  <!-- action bar -->
+  <div class="actionbar">
+    <div class="inner" id="abInner">
+      <button class="cbtn prev" id="btnPrev" onclick="prevPuzzle()"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>Back</button>
+      <div class="cmid">
+        <button class="cbtn hint" onclick="useHint()"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 1 4 10.5c-.7.6-1 1.2-1 2v.5H9v-.5c0-.8-.3-1.4-1-2A6 6 0 0 1 12 3z"/></svg>Hint</button>
       </div>
-
-      <div class="step">
-        <div class="ic">
-          <svg viewBox="0 0 24 24">
-            <path d="M8 3v10" />
-            <path d="M8 13l3 8 2-4 4 1z" />
-            <circle cx="8" cy="3" r="0.6" fill="currentColor" stroke="none" />
-          </svg>
-        </div>
-        <div class="tx">
-          <b>ફેરફાર પર ટૅપ કરો</b>
-          <p>
-            જ્યાં ફેરફાર દેખાય ત્યાં આંગળી અડાડો. સાચું હોય તો બંને ચિત્રમાં
-            જાંબલી કૂંડાળું આવી જશે.
-          </p>
-        </div>
-      </div>
-
-      <div class="step">
-        <div class="ic">
-          <svg viewBox="0 0 24 24">
-            <path d="M9 18h6M10 21h4" />
-            <path
-              d="M12 3a6 6 0 0 1 4 10.5c-.7.6-1 1.2-1 2v.5H9v-.5c0-.8-.3-1.4-1-2A6 6 0 0 1 12 3z"
-            />
-          </svg>
-        </div>
-        <div class="tx">
-          <b>અટકી જાઓ તો</b>
-          <p>"Hint" દબાવો — બાકી રહેલો એક ફેરફાર થોડી વાર ઝબકશે.</p>
-        </div>
-      </div>
-
-      <div class="step">
-        <div class="ic">
-          <svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" /></svg>
-        </div>
-        <div class="tx">
-          <b>બધા શોધી લો</b>
-          <p>ઉપર આપેલા બધા ટપકાં ભરાઈ જાય ત્યારે કોયડો પૂર્ણ.</p>
-        </div>
-      </div>
-
-      <button class="got" onclick="closeHelp()">Close</button>
+      <button class="cbtn next" id="btnNext" onclick="nextPuzzle()">Next<svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
     </div>
+  </div>
 
-    <!-- celebration -->
-    <div class="celebrate" id="celebrate">
-      <div class="em">🌸</div>
-      <h2>કોયડો પૂર્ણ</h2>
-      <p>ખૂબ સરસ! તમારી એકાગ્રતા કમાલની છે.</p>
-      <button class="btn" onclick="closeCelebrate()">Congratulations</button>
-    </div>
+  <div class="foot">© <b>Dreamchild Garbhsanskar</b></div>
+</div>
 
-    <script>
-            /* ============================================================
-               PUZZLE DATA  —  paste the blocks from coord_picker.html here
-               x, y  = % of image width / height   ·   r = % of image width
-               Add more objects to the array for a multi-puzzle set.
-               ============================================================ */
-            const PUZZLES = [
-                  {
-                    id: "d1",
-                    title_gu: "તફાવત શોધો",
-                    sub_gu:   "બંને ચિત્રો વચ્ચેના 10 તફાવત શોધો",
-                    a: "https://dreamchild.s3.ap-south-1.amazonaws.com/Live/Data_Master_New/File_8359/1785222662_1246787264.png",
-                    b: "https://dreamchild.s3.ap-south-1.amazonaws.com/Live/Data_Master_New/File_8359/1785222662_334908386.png",
-                    diffs: [{x:41.8,y:25.6,r:4.5},{x:71.2,y:10.0,r:6.0},{x:9.5,y:45.1,r:6.0},{x:32.3,y:42.0,r:5.0},{x:60.7,y:33.4,r:6.0},{x:78.3,y:31.5,r:4.0},{x:22.8,y:65.7,r:5.0},{x:40.0,y:69.0,r:5.0},{x:68.1,y:54.2,r:5.0},{x:87.7,y:67.7,r:3.5}]
-                  },
-                  {
-                    id: "d2",
-                    title_gu: "તફાવત શોધો",
-                    sub_gu:   "બંને ચિત્રો વચ્ચેના 10 તફાવત શોધો",
-                    a: "https://dreamchild.s3.ap-south-1.amazonaws.com/Live/Data_Master_New/File_8359/1785222662_1965028536.png",
-                    b: "https://dreamchild.s3.ap-south-1.amazonaws.com/Live/Data_Master_New/File_8359/1785222661_372152017.png",
-                    diffs: [{x:36.6,y:9.0,r:3.5},{x:47.3,y:11.1,r:4.5},{x:23.2,y:34.0,r:5.5},{x:55.1,y:48.5,r:4.0},{x:91.9,y:35.1,r:5.0},{x:17.1,y:74.3,r:4.0},{x:24.4,y:84.0,r:5.5},{x:66.5,y:75.9,r:3.5},{x:75.0,y:72.8,r:4.5},{x:91.9,y:69.5,r:3.5}]
-                  }
-            ];
+<!-- help sheet -->
+<div class="scrim" id="scrim" onclick="closeHelp()"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="How to play">
+  <div class="grab"></div>
+  <h3>કેવી રીતે રમવું</h3>
+  <p class="lead">બંને ચિત્રો જુઓ. તે લગભગ સરખાં છે, પણ થોડા ફેરફાર છુપાયેલા છે. ઉતાવળ નહીં — શાંતિથી.</p>
 
-            const KEY='dcgs_finddiff_v1';
-            const MULTI = PUZZLES.length > 1;
+  <div class="step">
+    <div class="ic"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M16.5 16.5L21 21"/></svg></div>
+    <div class="tx"><b>ધ્યાનથી સરખાવો</b><p>ઉપર અને નીચેનાં ચિત્ર એકબીજા સાથે સરખાવો — રંગ, આકાર કે કોઈ વસ્તુ ગુમ છે કે નહીં તે જુઓ.</p></div>
+  </div>
 
-            function save(d){try{localStorage.setItem(KEY,JSON.stringify(d))}catch(e){}}
-            function load(){try{return JSON.parse(localStorage.getItem(KEY))}catch(e){return null}}
+  <div class="step">
+    <div class="ic"><svg viewBox="0 0 24 24"><path d="M8 3v10"/><path d="M8 13l3 8 2-4 4 1z"/><circle cx="8" cy="3" r="0.6" fill="currentColor" stroke="none"/></svg></div>
+    <div class="tx"><b>ફેરફાર પર ટૅપ કરો</b><p>જ્યાં ફેરફાર દેખાય ત્યાં આંગળી અડાડો. સાચું હોય તો બંને ચિત્રમાં જાંબલી કૂંડાળું આવી જશે.</p></div>
+  </div>
 
-            /* ---- app bridge (RN WebView) ---- */
-            function postToApp(m){try{window.ReactNativeWebView&&window.ReactNativeWebView.postMessage(JSON.stringify(m));}catch(e){}}
-            function activityDone(){postToApp({type:'ACTIVITY_DONE'});}   /* -> onWebActivityComplete in the app */
+  <div class="step">
+    <div class="ic"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 1 4 10.5c-.7.6-1 1.2-1 2v.5H9v-.5c0-.8-.3-1.4-1-2A6 6 0 0 1 12 3z"/></svg></div>
+    <div class="tx"><b>અટકી જાઓ તો</b><p>"Hint" દબાવો — બાકી રહેલો એક ફેરફાર થોડી વાર ઝબકશે.</p></div>
+  </div>
 
-            /* active time only (pauses while the app is backgrounded) */
-            let _active=0,_since=Date.now(),_completed=false;
-            document.addEventListener('visibilitychange',function(){
-              if(document.hidden){_active+=Date.now()-_since;}else{_since=Date.now();}
-              pushProgress();
-            });
-            function timeSpentSec(){return Math.round((_active+(document.hidden?0:Date.now()-_since))/1000);}
+  <div class="step">
+    <div class="ic"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></div>
+    <div class="tx"><b>બધા શોધી લો</b><p>ઉપર આપેલા બધા ટપકાં ભરાઈ જાય ત્યારે આ સ્તર પૂર્ણ. પછી "Next" દબાવીને આગળના સ્તર પર જાઓ.</p></div>
+  </div>
 
-            /* heartbeat: keep native updated so it can fire puzzle_exited on unmount (back press) */
-            function pushProgress(){postToApp({type:'PROGRESS',time_spent_sec:timeSpentSec(),completed:_completed});}
-            setInterval(pushProgress,3000);
-            pushProgress();
+  <button class="got" onclick="closeHelp()">Close</button>
+</div>
 
-            function markDone(){ _completed=true; activityDone(); pushProgress(); }   /* call when the whole set is solved */
-            window.addEventListener('pagehide',pushProgress);   /* best-effort, where it fires */
+<!-- celebration -->
+<div class="celebrate" id="celebrate">
+  <div class="em">🌸</div>
+  <h2>બધા કોયડા પૂર્ણ</h2>
+  <p>ખૂબ સરસ! તમારી એકાગ્રતા કમાલની છે.</p>
+  <button class="btn" onclick="closeCelebrate()">Congratulations</button>
+</div>
 
-            /* ---- state ---- */
-            let state = load() || {tab:0, sound:false, celebrated:false, found:[]};
-            if(!Array.isArray(state.found)) state.found=[];
-            while(state.found.length < PUZZLES.length) state.found.push([]);
-            let soundOn = !!state.sound;
-            let cur = Math.min(state.tab||0, PUZZLES.length-1);
+<script>
+/* ============================================================
+   PUZZLE DATA  —  paste the blocks from coord_picker.html here
+   x, y  = % of image width / height   ·   r = % of image width
+   Add more objects to the array for a multi-puzzle set.
+   ============================================================ */
+const PUZZLES = [
+  {
+    id: "d1",
+    title_gu: "તફાવત શોધો",
+    sub_gu:   "બંને ચિત્રો વચ્ચેના 10 તફાવત શોધો",
+    a: "https://dreamchild.s3.ap-south-1.amazonaws.com/Live/Data_Master_New/File_8359/1785222662_1246787264.png",
+    b: "https://dreamchild.s3.ap-south-1.amazonaws.com/Live/Data_Master_New/File_8359/1785222662_334908386.png",
+    diffs: [{x:41.8,y:25.6,r:4.5},{x:71.2,y:10.0,r:6.0},{x:9.5,y:45.1,r:6.0},{x:32.3,y:42.0,r:5.0},{x:60.7,y:33.4,r:6.0},{x:78.3,y:31.5,r:4.0},{x:22.8,y:65.7,r:5.0},{x:40.0,y:69.0,r:5.0},{x:68.1,y:54.2,r:5.0},{x:87.7,y:67.7,r:3.5}]
+  },
+  {
+    id: "d2",
+    title_gu: "તફાવત શોધો",
+    sub_gu:   "બંને ચિત્રો વચ્ચેના 10 તફાવત શોધો",
+    a: "https://dreamchild.s3.ap-south-1.amazonaws.com/Live/Data_Master_New/File_8359/1785222662_1965028536.png",
+    b: "https://dreamchild.s3.ap-south-1.amazonaws.com/Live/Data_Master_New/File_8359/1785222661_372152017.png",
+    diffs: [{x:36.6,y:9.0,r:3.5},{x:47.3,y:11.1,r:4.5},{x:23.2,y:34.0,r:5.5},{x:55.1,y:48.5,r:4.0},{x:91.9,y:35.1,r:5.0},{x:17.1,y:74.3,r:4.0},{x:24.4,y:84.0,r:5.5},{x:66.5,y:75.9,r:3.5},{x:75.0,y:72.8,r:4.5},{x:91.9,y:69.5,r:3.5}]
+  }
+];
 
-            /* ---- sound (mp3 assets) ---- */
-            const SND={
-              correct : 'https://dreamchildapp.com/backend/assets/acitivty_sounds/Right.mp3',
-              wrong   : 'https://dreamchildapp.com/backend/assets/acitivty_sounds/Wrong.mp3',
-              level   : 'https://dreamchildapp.com/backend/assets/acitivty_sounds/Level.mp3',
-              win     : 'https://dreamchildapp.com/backend/assets/acitivty_sounds/Complete.mp3',
-              hint    : 'https://dreamchildapp.com/backend/assets/acitivty_sounds/Hint.mp3'
-            };
-            const _audio={};
-            function preloadSounds(){for(const k in SND){try{const a=new Audio(SND[k]);a.preload='auto';_audio[k]=a;}catch(e){}}}
-            function playSound(k){
-              if(!soundOn) return;
-              const a=_audio[k]; if(!a) return;
-              try{ a.pause(); a.currentTime=0; a.play().catch(function(){}); }catch(e){}
-            }
-            function playCorrect(){ playSound('correct'); }
-            function playWrong(){   playSound('wrong');   }
-            function playLevel(){   playSound('level');   }
-            function playWin(){     playSound('win');     }
-            function playHint(){    playSound('hint');    }
-            function setSoundIcon(){const b=document.getElementById('soundBtn');b.innerHTML=soundOn
-              ?'<svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M16 9a3.5 3.5 0 0 1 0 6"/><path d="M19 7a7 7 0 0 1 0 10"/></svg>'
-              :'<svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M22 9l-5 6M17 9l5 6"/></svg>';}
-            function toggleSound(){soundOn=!soundOn;state.sound=soundOn;setSoundIcon();save(state);}
+const KEY='dcgs_finddiff_v2';           /* v2 — state shape changed (timer added) */
+const MULTI = PUZZLES.length > 1;
 
-            /* ---- helpers ---- */
-            function P(){ return PUZZLES[cur]; }
-            function foundList(i){ return state.found[i] || (state.found[i]=[]); }
-            function isFound(i){ return foundList(cur).indexOf(i) >= 0; }
-            function solved(p){ return foundList(p).length >= PUZZLES[p].diffs.length; }
-            function allSolved(){ return PUZZLES.every((p,i)=>solved(i)); }
+function save(d){try{localStorage.setItem(KEY,JSON.stringify(d))}catch(e){}}
+function load(){try{return JSON.parse(localStorage.getItem(KEY))}catch(e){return null}}
 
-            /* ---- render ---- */
-            function renderProgress(){
-              const el=document.getElementById('round');
-              if(!MULTI){ el.style.display='none'; return; }
-              el.textContent=(cur+1)+'/'+PUZZLES.length;
-            }
-            function renderHead(){
-              document.getElementById('hsub').textContent =
-                P().sub_gu + ' — કુલ ' + P().diffs.length + ' તફાવત.';
-            }
-            function renderTrack(){
-              const n=P().diffs.length, f=foundList(cur).length;
-              document.getElementById('trackLbl').textContent='મળ્યાં '+f+'/'+n;
-              const d=document.getElementById('dots'); d.innerHTML='';
-              for(let i=0;i<n;i++){
-                const s=document.createElement('span');
-                s.className='dot'+(isFound(i)?' on':'');
-                d.appendChild(s);
-              }
-            }
-            function renderBoards(){
-              [['boxA',P().a],['boxB',P().b]].forEach(function(pair){
-                const box=document.getElementById(pair[0]);
-                box.innerHTML='';
-                const img=document.createElement('img');
-                img.src=pair[1]; img.alt='';
-                img.addEventListener('error',function(){
-                  box.innerHTML='<div class="ph">ચિત્ર લોડ થઈ શક્યું નથી</div>';
-                });
-                box.appendChild(img);
-                P().diffs.forEach(function(d,i){ if(isFound(i)) box.appendChild(ring(d,'')); });
-              });
-            }
-            function ring(d,extra){
-              const el=document.createElement('div');
-              el.className='ring'+(extra?' '+extra:'');
-              el.style.left=d.x+'%'; el.style.top=d.y+'%';
-              el.style.width=(d.r*2)+'%';
-              return el;
-            }
-            function renderActions(){
-              const inner=document.getElementById('abInner');
-              const prev=document.getElementById('btnPrev'), next=document.getElementById('btnNext');
-              if(!MULTI){
-                prev.style.display='none'; next.style.display='none';
-                inner.classList.add('single');
-                return;
-              }
-              const isLast = cur===PUZZLES.length-1;
-              prev.disabled = (cur===0);
-              next.disabled = !(solved(cur) && !isLast);
-            }
-            function renderAll(){
-              renderProgress(); renderHead(); renderTrack(); renderBoards(); renderActions();
-              setSoundIcon(); clearStatus();
-            }
+/* ---- app bridge (RN WebView) ---- */
+function postToApp(m){try{window.ReactNativeWebView&&window.ReactNativeWebView.postMessage(JSON.stringify(m));}catch(e){}}
+function activityDone(){postToApp({type:'ACTIVITY_DONE'});}   /* -> onWebActivityComplete in the app */
 
-            /* ---- status ---- */
-            let stTimer;
-            function status(type,msg,sticky){const s=document.getElementById('status');s.className='status show '+type;s.textContent=msg;clearTimeout(stTimer);if(!sticky)stTimer=setTimeout(clearStatus,2300);}
-            function clearStatus(){document.getElementById('status').className='status';}
+/* active time only (pauses while the app is backgrounded) */
+let _active=0,_since=Date.now(),_completed=false;
+document.addEventListener('visibilitychange',function(){
+  if(document.hidden){_active+=Date.now()-_since;}else{_since=Date.now();}
+  pushProgress();
+});
+function timeSpentSec(){return Math.round((_active+(document.hidden?0:Date.now()-_since))/1000);}
 
-            /* ---- tapping ---- */
-            function hitTest(box, e){
-              const r=box.getBoundingClientRect();
-              if(!r.width || !r.height) return -1;
-              const px=(e.clientX-r.left)/r.width*100, py=(e.clientY-r.top)/r.height*100;
-              let best=-1, bestD=Infinity;
-              P().diffs.forEach(function(d,i){
-                const dx=(px-d.x)/100*r.width, dy=(py-d.y)/100*r.height;
-                const rad=Math.max(d.r/100*r.width, 18);          // 18px minimum touch target
-                const dist=Math.sqrt(dx*dx+dy*dy);
-                if(dist<=rad && dist<bestD){ bestD=dist; best=i; }
-              });
-              return best;
-            }
-            function onTap(box,e){
-              if(solved(cur)) return;
-              const i=hitTest(box,e);
-              if(i>=0 && isFound(i)) return;                       // already found — ignore, no penalty
-              if(i>=0){ foundOne(i); }
-              else{ missed(box,e); }
-            }
-            function foundOne(i){
-              foundList(cur).push(i);
-              save(state);
-              renderTrack(); renderBoards();
-              if(solved(cur)){ onSolved(); }
-              else{ playCorrect(); status('ok','મળી ગયું! બાકી '+(P().diffs.length-foundList(cur).length)+'.'); }
-            }
-            function missed(box,e){
-              const r=box.getBoundingClientRect();
-              const m=document.createElement('div');
-              m.className='miss';
-              m.style.left=((e.clientX-r.left)/r.width*100)+'%';
-              m.style.top=((e.clientY-r.top)/r.height*100)+'%';
-              box.appendChild(m);
-              setTimeout(function(){ m.remove(); },560);
-              box.classList.remove('shake'); void box.offsetWidth; box.classList.add('shake');
-              playWrong();
-              status('bad','અહીં કંઈ નથી. ફરી જુઓ.');
-            }
-            ['boxA','boxB'].forEach(function(id){
-              document.getElementById(id).addEventListener('click',function(e){ onTap(this,e); });
-            });
+/* heartbeat: keep native updated so it can fire puzzle_exited on unmount (back press) */
+function pushProgress(){postToApp({type:'PROGRESS',time_spent_sec:timeSpentSec(),completed:_completed});}
+setInterval(pushProgress,3000);
+pushProgress();
 
-            /* ---- solved ---- */
-            function onSolved(){
-              renderActions();
-              if(allSolved()){
-                status('done','બધા તફાવત મળી ગયા. ખૂબ સરસ! 🌸',true);
-                playWin();
-                if(!state.celebrated){ state.celebrated=true; save(state); showCelebrate(); }
-                markDone();
-              }else{
-                status('done','આ કોયડો પૂર્ણ. તૈયાર હો ત્યારે આગળ વધો.',true);
-                playLevel();
-              }
-            }
+function markDone(){ _completed=true; activityDone(); pushProgress(); }   /* call when the whole set is solved */
+window.addEventListener('pagehide',pushProgress);   /* best-effort, where it fires */
 
-            /* ---- hint ---- */
-            function useHint(){
-              if(solved(cur)){ status('hint','આ કોયડો પહેલેથી પૂર્ણ છે.'); return; }
-              const rem=[];
-              P().diffs.forEach(function(d,i){ if(!isFound(i)) rem.push(i); });
-              if(!rem.length) return;
-              const pick=rem[Math.floor(Math.random()*rem.length)];
-              const d=P().diffs[pick];
-              const els=[];
-              ['boxA','boxB'].forEach(function(id){
-                const box=document.getElementById(id);
-                const el=ring(d,'hint'); box.appendChild(el); els.push(el);
-              });
-              setTimeout(function(){ els.forEach(function(el){ el.remove(); }); },1800);
-              playHint();
-              status('hint','💡 અહીં ધ્યાનથી જુઓ.');
-            }
+/* ---- state ---- */
+let state = load() || {tab:0, sound:false, celebrated:false, found:[]};
+if(!Array.isArray(state.found)) state.found=[];
+while(state.found.length < PUZZLES.length) state.found.push([]);
+let soundOn = !!state.sound;
+let cur = Math.min(state.tab||0, PUZZLES.length-1);
 
-            /* ---- navigation ---- */
-            function nextPuzzle(){
-              if(cur<PUZZLES.length-1 && solved(cur)){
-                cur++; state.tab=cur; save(state); renderAll();
-                window.scrollTo({top:0,behavior:'smooth'});
-              }
-            }
-            function prevPuzzle(){
-              if(cur>0){
-                cur--; state.tab=cur; save(state); renderAll();
-                window.scrollTo({top:0,behavior:'smooth'});
-              }
-            }
+/* =========================================================
+   TIMER MODULE v3.5 — countdown that never ends (overtime)
+   ========================================================= */
+const LIMIT_SEC = 300;                 // <-- per-puzzle knob (300 = 5:00)
 
-            /* ---- help sheet ---- */
-            function openHelp(){document.getElementById('scrim').classList.add('open');document.getElementById('sheet').classList.add('open');}
-            function closeHelp(){document.getElementById('scrim').classList.remove('open');document.getElementById('sheet').classList.remove('open');}
+if(!state.timer) state.timer = {elapsed:0, started:false, frozen:false};
+let _tmrInt = null;                    // ticking interval id
+let _tmrSince = 0;                     // ms timestamp of the current running span
 
-            /* ---- celebration ---- */
-            function showCelebrate(){const c=document.getElementById('celebrate');c.classList.add('show');const ems=['🌸','🌼','✨','🍃','💜'];for(let i=0;i<16;i++){const p=document.createElement('div');p.className='petal';p.textContent=ems[i%ems.length];p.style.left=(Math.random()*100)+'%';p.style.animationDuration=(2.4+Math.random()*1.6)+'s';p.style.animationDelay=(Math.random()*.6)+'s';document.body.appendChild(p);setTimeout(()=>p.remove(),4600);}}
-            function closeCelebrate(){
-              document.getElementById('celebrate').classList.remove('show');
-              postToApp({type:'GO_BACK'});
-            }
+function formatTime(sec){
+  const over = sec < 0;
+  const s = Math.abs(sec);
+  const m = Math.floor(s/60), ss = s%60;
+  return (over?'+':'') + m + ':' + (ss<10?'0':'') + ss;
+}
+function remainingSec(){ return LIMIT_SEC - state.timer.elapsed; }  // negative => overtime
 
-            /* ---- init ---- */
-            preloadSounds();
-            renderAll();
-            if(allSolved()){
-              status('done','બધા તફાવત મળી ગયા. ખૂબ સરસ! 🌸',true);
-              _completed=true;
-              pushProgress();
-            }else if(solved(cur)){
-              status('done','આ કોયડો પૂર્ણ. તૈયાર હો ત્યારે આગળ વધો.',true);
-            }
-    </script>
-  </body>
+function paintTimer(){
+  const rem = remainingSec();
+  const el  = document.getElementById('timeVal');
+  const pill= document.getElementById('timer');
+  const stage = document.querySelector('.stage');
+  if(el) el.textContent = formatTime(rem);
+  const over = rem < 0;
+  if(pill)  pill.classList.toggle('over', over);
+  if(stage) stage.classList.toggle('overtime', over);
+}
+
+/* advance elapsed by the active span since we last ticked */
+function _tmrTick(){
+  if(!state.timer.started || state.timer.frozen) return;
+  if(document.hidden) return;                 // paused in background
+  const now = Date.now();
+  state.timer.elapsed += Math.round((now - _tmrSince)/1000);
+  _tmrSince = now;
+  save(state);
+  paintTimer();
+}
+function _tmrStartInterval(){
+  if(_tmrInt) return;
+  _tmrSince = Date.now();
+  _tmrInt = setInterval(_tmrTick, 1000);
+}
+function _tmrStopInterval(){
+  if(_tmrInt){ clearInterval(_tmrInt); _tmrInt = null; }
+}
+
+/* HOOK A — first real interaction (first tap on either image) */
+function startTimer(){
+  if(state.timer.started || state.timer.frozen) return;
+  state.timer.started = true;
+  save(state);
+  _tmrStartInterval();
+  paintTimer();
+}
+
+/* HOOK B — whole set solved (freeze + show final time) */
+function freezeTimer(){
+  if(state.timer.frozen) return;
+  _tmrTick();                        // capture the final partial second
+  state.timer.frozen = true;
+  _tmrStopInterval();
+  save(state);
+  paintTimer();
+}
+
+/* HOOK C — Reset button (none in this file; kept for parity) */
+function resetTimer(){
+  _tmrStopInterval();
+  state.timer = {elapsed:0, started:false, frozen:false};
+  save(state);
+  paintTimer();
+}
+
+/* background pause/resume */
+document.addEventListener('visibilitychange', function(){
+  if(document.hidden){
+    _tmrTick();              // bank the active span, then stop advancing
+    _tmrStopInterval();
+  } else if(state.timer.started && !state.timer.frozen){
+    _tmrStartInterval();     // resume; _tmrSince resets so the gap isn't counted
+  }
+});
+
+/* init — called once after renderAll() */
+function initTimer(){
+  paintTimer();
+  if(state.timer.started && !state.timer.frozen){
+    _tmrStartInterval();     // an in-progress timer keeps running after reload
+  }
+}
+
+/* =========================================================
+   START OVERLAY v3.6 — gate the board until the player taps Start
+   ========================================================= */
+function hasStarted(){  return state.timer.started; }   /* timer present */
+function hasFinished(){ return state.timer.frozen;  }
+
+/* browsers block audio until a real gesture — prime the clips on Start */
+let _audioUnlocked=false;
+function unlockAudio(){
+  if(_audioUnlocked) return;
+  _audioUnlocked=true;
+  for(const k in _audio){
+    const a=_audio[k]; if(!a) continue;
+    try{
+      a.muted=true;
+      const done=function(){ try{ a.pause(); a.currentTime=0; }catch(e){} a.muted=false; };
+      const p=a.play();
+      if(p && p.then) p.then(done).catch(done); else done();
+    }catch(e){ try{ a.muted=false; }catch(_){} }
+  }
+}
+
+/* the one gesture that begins everything */
+function startPuzzle(){
+  unlockAudio();
+  document.getElementById('startLayer').classList.add('hide');
+  startTimer();                 /* v3.5 HOOK A */
+}
+
+/* init — hidden if already started, or if restoring a solved puzzle */
+function initStartLayer(){
+  const show = !hasStarted() && !hasFinished();
+  document.getElementById('startLayer').classList.toggle('hide', !show);
+}
+
+/* the overlay must swallow its own taps, or they reach the board underneath */
+['pointerdown','pointerup','pointermove','click','wheel'].forEach(t=>
+  document.getElementById('startLayer').addEventListener(t,e=>e.stopPropagation()));
+
+/* ---- sound (mp3 assets) ---- */
+const SND={
+  correct : 'https://dreamchildapp.com/backend/assets/acitivty_sounds/Right.mp3',
+  wrong   : 'https://dreamchildapp.com/backend/assets/acitivty_sounds/Wrong.mp3',
+  level   : 'https://dreamchildapp.com/backend/assets/acitivty_sounds/Level.mp3',
+  win     : 'https://dreamchildapp.com/backend/assets/acitivty_sounds/Complete.mp3',
+  hint    : 'https://dreamchildapp.com/backend/assets/acitivty_sounds/Hint.mp3'
+};
+const _audio={};
+function preloadSounds(){for(const k in SND){try{const a=new Audio(SND[k]);a.preload='auto';_audio[k]=a;}catch(e){}}}
+function playSound(k){
+  if(!soundOn) return;
+  const a=_audio[k]; if(!a) return;
+  try{ a.pause(); a.currentTime=0; a.play().catch(function(){}); }catch(e){}
+}
+function playCorrect(){ playSound('correct'); }
+function playWrong(){   playSound('wrong');   }
+function playLevel(){   playSound('level');   }
+function playWin(){     playSound('win');     }
+function playHint(){    playSound('hint');    }
+function setSoundIcon(){const b=document.getElementById('soundBtn');b.innerHTML=soundOn
+  ?'<svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M16 9a3.5 3.5 0 0 1 0 6"/><path d="M19 7a7 7 0 0 1 0 10"/></svg>'
+  :'<svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M22 9l-5 6M17 9l5 6"/></svg>';}
+function toggleSound(){soundOn=!soundOn;state.sound=soundOn;if(soundOn)unlockAudio();setSoundIcon();save(state);}
+
+/* ---- helpers ---- */
+function P(){ return PUZZLES[cur]; }
+function foundList(i){ return state.found[i] || (state.found[i]=[]); }
+function isFound(i){ return foundList(cur).indexOf(i) >= 0; }
+function solved(p){ return foundList(p).length >= PUZZLES[p].diffs.length; }
+function allSolved(){ return PUZZLES.every((p,i)=>solved(i)); }
+
+/* ---- render ---- */
+function renderProgress(){
+  const el=document.getElementById('round');
+  if(!MULTI){ el.style.display='none'; return; }
+  el.textContent=(cur+1)+'/'+PUZZLES.length;
+}
+function renderHead(){
+  document.getElementById('hsub').textContent = P().sub_gu;
+}
+function renderTrack(){
+  const n=P().diffs.length, f=foundList(cur).length;
+  document.getElementById('trackLbl').textContent='મળ્યાં '+f+'/'+n;
+  const d=document.getElementById('dots'); d.innerHTML='';
+  for(let i=0;i<n;i++){
+    const s=document.createElement('span');
+    s.className='dot'+(isFound(i)?' on':'');
+    d.appendChild(s);
+  }
+}
+function renderBoards(){
+  [['boxA',P().a],['boxB',P().b]].forEach(function(pair){
+    const box=document.getElementById(pair[0]);
+    box.innerHTML='';
+    const img=document.createElement('img');
+    img.src=pair[1]; img.alt='';
+    img.addEventListener('error',function(){
+      box.innerHTML='<div class="ph">ચિત્ર લોડ થઈ શક્યું નથી</div>';
+    });
+    box.appendChild(img);
+    P().diffs.forEach(function(d,i){ if(isFound(i)) box.appendChild(ring(d,'')); });
+  });
+}
+function ring(d,extra){
+  const el=document.createElement('div');
+  el.className='ring'+(extra?' '+extra:'');
+  el.style.left=d.x+'%'; el.style.top=d.y+'%';
+  el.style.width=(d.r*2)+'%';
+  return el;
+}
+function renderActions(){
+  const inner=document.getElementById('abInner');
+  const prev=document.getElementById('btnPrev'), next=document.getElementById('btnNext');
+  if(!MULTI){
+    prev.style.display='none'; next.style.display='none';
+    inner.classList.add('single');
+    return;
+  }
+  const isLast = cur===PUZZLES.length-1;
+  prev.disabled = (cur===0);
+  next.disabled = !(solved(cur) && !isLast);
+}
+function renderAll(){
+  renderProgress(); renderHead(); renderTrack(); renderBoards(); renderActions();
+  setSoundIcon(); clearStatus();
+}
+
+/* ---- status ---- */
+let stTimer;
+function status(type,msg,sticky){const s=document.getElementById('status');s.className='status show '+type;s.textContent=msg;clearTimeout(stTimer);if(!sticky)stTimer=setTimeout(clearStatus,2300);}
+function clearStatus(){document.getElementById('status').className='status';}
+
+/* ---- tapping ---- */
+function hitTest(box, e){
+  const r=box.getBoundingClientRect();
+  if(!r.width || !r.height) return -1;
+  const px=(e.clientX-r.left)/r.width*100, py=(e.clientY-r.top)/r.height*100;
+  let best=-1, bestD=Infinity;
+  P().diffs.forEach(function(d,i){
+    const dx=(px-d.x)/100*r.width, dy=(py-d.y)/100*r.height;
+    const rad=Math.max(d.r/100*r.width, 18);          // 18px minimum touch target
+    const dist=Math.sqrt(dx*dx+dy*dy);
+    if(dist<=rad && dist<bestD){ bestD=dist; best=i; }
+  });
+  return best;
+}
+function onTap(box,e){
+  if(solved(cur)) return;
+  startTimer();                                        // HOOK A — first real interaction
+  const i=hitTest(box,e);
+  if(i>=0 && isFound(i)) return;                       // already found — ignore, no penalty
+  if(i>=0){ foundOne(i); }
+  else{ missed(box,e); }
+}
+function foundOne(i){
+  foundList(cur).push(i);
+  save(state);
+  renderTrack(); renderBoards();
+  if(solved(cur)){ onSolved(); }
+  else{ playCorrect(); status('ok','મળી ગયું! બાકી '+(P().diffs.length-foundList(cur).length)+'.'); }
+}
+function missed(box,e){
+  const r=box.getBoundingClientRect();
+  const m=document.createElement('div');
+  m.className='miss';
+  m.style.left=((e.clientX-r.left)/r.width*100)+'%';
+  m.style.top=((e.clientY-r.top)/r.height*100)+'%';
+  box.appendChild(m);
+  setTimeout(function(){ m.remove(); },560);
+  box.classList.remove('shake'); void box.offsetWidth; box.classList.add('shake');
+  playWrong();
+  status('bad','અહીં કંઈ નથી. ફરી જુઓ.');
+}
+['boxA','boxB'].forEach(function(id){
+  document.getElementById(id).addEventListener('click',function(e){ onTap(this,e); });
+});
+
+/* ---- solved ---- */
+function onSolved(){
+  renderActions();
+  if(allSolved()){
+    freezeTimer();                                     // HOOK B — stop at the final value
+    status('done','બધા તફાવત મળી ગયા. ખૂબ સરસ! 🌸',true);
+    playWin();
+    if(!state.celebrated){ state.celebrated=true; save(state); showCelebrate(); }
+    markDone();
+  }else{
+    status('done','આ કોયડો પૂર્ણ. તૈયાર હો ત્યારે આગળ વધો.',true);
+    playLevel();
+  }
+}
+
+/* ---- hint ---- */
+function useHint(){
+  if(!hasStarted()){ status('hint','પહેલાં Start દબાવો.'); return; }
+  if(solved(cur)){ status('hint','આ કોયડો પહેલેથી પૂર્ણ છે.'); return; }
+  const rem=[];
+  P().diffs.forEach(function(d,i){ if(!isFound(i)) rem.push(i); });
+  if(!rem.length) return;
+  const pick=rem[Math.floor(Math.random()*rem.length)];
+  const d=P().diffs[pick];
+  const els=[];
+  ['boxA','boxB'].forEach(function(id){
+    const box=document.getElementById(id);
+    const el=ring(d,'hint'); box.appendChild(el); els.push(el);
+  });
+  setTimeout(function(){ els.forEach(function(el){ el.remove(); }); },1800);
+  playHint();
+  status('hint','💡 અહીં ધ્યાનથી જુઓ.');
+}
+
+/* ---- navigation ---- */
+function nextPuzzle(){
+  if(cur<PUZZLES.length-1 && solved(cur)){
+    cur++; state.tab=cur; save(state); renderAll();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+}
+function prevPuzzle(){
+  if(cur>0){
+    cur--; state.tab=cur; save(state); renderAll();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+}
+
+/* ---- help sheet ---- */
+function openHelp(){document.getElementById('scrim').classList.add('open');document.getElementById('sheet').classList.add('open');}
+function closeHelp(){document.getElementById('scrim').classList.remove('open');document.getElementById('sheet').classList.remove('open');}
+
+/* ---- celebration ---- */
+function showCelebrate(){const c=document.getElementById('celebrate');c.classList.add('show');const ems=['🌸','🌼','✨','🍃','💜'];for(let i=0;i<16;i++){const p=document.createElement('div');p.className='petal';p.textContent=ems[i%ems.length];p.style.left=(Math.random()*100)+'%';p.style.animationDuration=(2.4+Math.random()*1.6)+'s';p.style.animationDelay=(Math.random()*.6)+'s';document.body.appendChild(p);setTimeout(()=>p.remove(),4600);}}
+function closeCelebrate(){
+  document.getElementById('celebrate').classList.remove('show');
+  postToApp({type:'GO_BACK'});
+}
+
+/* ---- init ---- */
+preloadSounds();
+renderAll();
+initTimer();                                           // HOOK D — after the first render
+initStartLayer();                                      // v3.6 — after initTimer()
+if(allSolved()){
+  status('done','બધા તફાવત મળી ગયા. ખૂબ સરસ! 🌸',true);
+  _completed=true;
+  pushProgress();
+}else if(solved(cur)){
+  status('done','આ કોયડો પૂર્ણ. તૈયાર હો ત્યારે આગળ વધો.',true);
+}
+</script>
+</body>
 </html>
