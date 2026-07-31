@@ -68,6 +68,42 @@ body{
 .stage{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
   box-shadow:0 8px 28px -10px rgba(78,33,95,.16), 0 2px 8px -3px rgba(78,33,95,.08);padding:20px;margin-bottom:14px;}
 
+/* ---- timer pill (v3.5, in-flow — never overlaps the board) ---- */
+.tmrbar{display:flex;justify-content:flex-end;margin-bottom:10px;}  /* own row at top of stage */
+.timer{display:inline-flex;align-items:center;gap:6px;
+  background:var(--brand-soft);color:var(--brand);
+  border:1px solid transparent;border-radius:999px;
+  padding:5px 12px 5px 10px;
+  font-family:'Hind Vadodara',sans-serif;font-weight:700;font-size:14px;
+  font-variant-numeric:tabular-nums;letter-spacing:.02em;line-height:1;
+  box-shadow:var(--shadow-sm);
+  transition:background .3s ease,color .3s ease,border-color .3s ease;}
+.timer svg{width:15px;height:15px;fill:none;stroke:currentColor;
+  stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.timer .t{min-width:44px;text-align:right;}   /* tabular + min-width stops digit jitter */
+
+/* overtime: pill turns rose, whole stage gets a faint red wash */
+.timer.over{background:var(--rose-soft);color:var(--rose);border-color:rgba(199,92,114,.25);}
+.stage.overtime{background-color:#FDF3F5;}     /* ~8% rose over white — board stays readable */
+
+/* ---- start overlay (covers the play area until the player begins) ---- */
+.board-wrap{position:relative;}
+.startlayer{position:absolute;inset:0;z-index:6;display:flex;align-items:center;justify-content:center;
+  background:rgba(251,249,252,.1);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);
+  text-align:center;padding:22px;}
+.startlayer.hide{display:none;}
+.startcard .em{font-size:38px;line-height:1;margin-bottom:8px;}
+.startcard h3{font-size:18px;font-weight:700;color:var(--brand);margin:0 0 4px;}
+.startcard p{font-size:13px;color:var(--ink);margin:0 0 16px;line-height:1.5;}
+.startbtn{min-width:152px;min-height:46px;border-radius:14px;border:none;cursor:pointer;
+  background:linear-gradient(135deg,var(--brand),var(--brand-deep));color:#fff;
+  font-family:'Hind Vadodara',sans-serif;font-weight:700;font-size:16px;
+  box-shadow:0 10px 22px -10px rgba(110,42,133,.6);
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  transition:transform .12s ease;}
+.startbtn:active{transform:scale(.97);}
+.startbtn svg{width:17px;height:17px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+
 /* number grid (Rise) */
 .board{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;background:transparent;
   touch-action:manipulation;user-select:none;-webkit-user-select:none;}
@@ -203,7 +239,26 @@ body{
 
   <!-- STAGE -->
   <div class="stage">
-    <div class="board" id="board"></div>
+    <div class="tmrbar">
+      <div class="timer" id="timer" aria-label="Time">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6"/></svg>
+        <span class="t" id="timeVal">8:00</span>
+      </div>
+    </div>
+    <div class="board-wrap">
+      <div class="board" id="board"></div>
+      <div class="startlayer" id="startLayer">
+        <div class="startcard">
+          <div class="em">🔢</div>
+          <h3>Are you ready?</h3>
+          <p>Start દબાવતાં જ સમય શરૂ થશે.</p>
+          <button class="startbtn" onclick="startPuzzle()">
+            <svg viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></svg>
+            Start
+          </button>
+        </div>
+      </div>
+    </div>
     <div class="prog" id="prog"></div>
   </div>
 
@@ -273,7 +328,7 @@ const PUZZLES = RAW.map(p=>{
 });
 PUZZLES.forEach((p,i)=>{ p.sub_gu = 'રાઉન્ડ '+(i+1)+' — '+p.count+' અંક'; });
 
-const KEY='dcgs_rise_v1';
+const KEY='dcgs_rise_v2';   /* v2: state.timer added (v3.5) — bumped per spec */
 
 function save(d){try{localStorage.setItem(KEY,JSON.stringify(d))}catch(e){}}
 function load(){try{return JSON.parse(localStorage.getItem(KEY))}catch(e){return null}}
@@ -298,8 +353,9 @@ pushProgress();
 function markDone(){ _completed=true; activityDone(); pushProgress(); }   /* call when the whole set is solved */
 window.addEventListener('pagehide',pushProgress);   /* best-effort, where it fires */
 
-let state=load()||{tab:0,sound:false,celebrated:false,progress:[0,0,0]};
+let state=load()||{tab:0,sound:true,celebrated:false,progress:[0,0,0]};
 if(!state.progress)state.progress=[0,0,0];
+if(state.sound===undefined)state.sound=true;   /* [v3.6 §13] sound ON by default; a saved preference wins */
 let soundOn=!!state.sound, cur=state.tab||0;
 
 /* sound (mp3 files) */
@@ -322,7 +378,141 @@ function playHint(){playSound('hint');}
 function setSoundIcon(){const b=document.getElementById('soundBtn');b.innerHTML=soundOn
   ?'<svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M16 9a3.5 3.5 0 0 1 0 6"/><path d="M19 7a7 7 0 0 1 0 10"/></svg>'
   :'<svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M22 9l-5 6M17 9l5 6"/></svg>';}
-function toggleSound(){soundOn=!soundOn;state.sound=soundOn;setSoundIcon();save(state);}
+function toggleSound(){soundOn=!soundOn;state.sound=soundOn;setSoundIcon();save(state);if(soundOn)unlockAudio();}
+
+/* =========================================================
+   TIMER MODULE v3.5 — countdown that never ends (overtime)
+   Requires in state: state.timer = {elapsed, started, frozen}
+   Reuses the shell's active-time model (pauses when backgrounded).
+   ========================================================= */
+const LIMIT_SEC = 480;                 // <-- per-puzzle knob (480 = 8:00)
+
+if(!state.timer) state.timer = {elapsed:0, started:false, frozen:false};
+let _tmrInt = null;                    // ticking interval id
+let _tmrSince = 0;                     // ms timestamp of the current running span
+
+function formatTime(sec){
+  const over = sec < 0;
+  const s = Math.abs(sec);
+  const m = Math.floor(s/60), ss = s%60;
+  return (over?'+':'') + m + ':' + (ss<10?'0':'') + ss;
+}
+function remainingSec(){ return LIMIT_SEC - state.timer.elapsed; }  // negative => overtime
+
+function paintTimer(){
+  const rem = remainingSec();
+  const el  = document.getElementById('timeVal');
+  const pill= document.getElementById('timer');
+  const stage = document.querySelector('.stage');
+  if(el) el.textContent = formatTime(rem);
+  const over = rem < 0;
+  if(pill)  pill.classList.toggle('over', over);
+  if(stage) stage.classList.toggle('overtime', over);
+}
+
+/* advance elapsed by the active span since we last ticked */
+function _tmrTick(){
+  if(!state.timer.started || state.timer.frozen) return;
+  if(document.hidden) return;                 // paused in background
+  const now = Date.now();
+  state.timer.elapsed += Math.round((now - _tmrSince)/1000);
+  _tmrSince = now;
+  save(state);
+  paintTimer();
+}
+function _tmrStartInterval(){
+  if(_tmrInt) return;
+  _tmrSince = Date.now();
+  _tmrInt = setInterval(_tmrTick, 1000);
+}
+function _tmrStopInterval(){
+  if(_tmrInt){ clearInterval(_tmrInt); _tmrInt = null; }
+}
+
+/* HOOK A — first real interaction (moved into startPuzzle by the v3.6 gate) */
+function startTimer(){
+  if(state.timer.started || state.timer.frozen) return;
+  state.timer.started = true;
+  save(state);
+  _tmrStartInterval();
+  paintTimer();
+}
+
+/* HOOK B — puzzle solved (freeze + show final time) */
+function freezeTimer(){
+  if(state.timer.frozen) return;
+  _tmrTick();                        // capture the final partial second
+  state.timer.frozen = true;
+  _tmrStopInterval();
+  save(state);
+  paintTimer();
+}
+
+/* HOOK C — Reset button (back to full, wait for first tap) */
+function resetTimer(){
+  _tmrStopInterval();
+  state.timer = {elapsed:0, started:false, frozen:false};
+  save(state);
+  paintTimer();
+}
+
+/* background pause/resume */
+document.addEventListener('visibilitychange', function(){
+  if(document.hidden){
+    _tmrTick();              // bank the active span, then stop advancing
+    _tmrStopInterval();
+  } else if(state.timer.started && !state.timer.frozen){
+    _tmrStartInterval();     // resume; _tmrSince resets so the gap isn't counted
+  }
+});
+
+/* init — call once after render() in the file's init block */
+function initTimer(){
+  paintTimer();
+  if(state.timer.started && !state.timer.frozen){
+    _tmrStartInterval();     // an in-progress timer keeps running after reload
+  }
+}
+
+/* =========================================================
+   START OVERLAY v3.6 — gate the board until the player taps Start
+   Pairs with the v3.5 timer above.
+   ========================================================= */
+function hasStarted(){  return state.timer.started; }
+function hasFinished(){ return state.timer.frozen;  }
+
+/* browsers block audio until a real gesture — prime the clips on Start */
+let _audioUnlocked=false;
+function unlockAudio(){
+  if(_audioUnlocked) return;
+  _audioUnlocked=true;
+  for(const k in _audio){
+    const a=_audio[k]; if(!a) continue;
+    try{
+      a.muted=true;
+      const done=function(){ try{ a.pause(); a.currentTime=0; }catch(e){} a.muted=false; };
+      const p=a.play();
+      if(p && p.then) p.then(done).catch(done); else done();
+    }catch(e){ try{ a.muted=false; }catch(_){} }
+  }
+}
+
+/* the one gesture that begins everything */
+function startPuzzle(){
+  unlockAudio();
+  document.getElementById('startLayer').classList.add('hide');
+  startTimer();                 /* v3.5 HOOK A */
+}
+
+/* init — hidden if already started, or if restoring a solved puzzle */
+function initStartLayer(){
+  const show = !hasStarted() && !hasFinished();
+  document.getElementById('startLayer').classList.toggle('hide', !show);
+}
+
+/* the overlay must swallow its own taps, or they reach the board underneath */
+['pointerdown','pointerup','pointermove','click','wheel'].forEach(t=>
+  document.getElementById('startLayer').addEventListener(t,e=>e.stopPropagation()));
 
 function solved(i){return state.progress[i]>=PUZZLES[i].count;}
 function nextExpected(){const p=PUZZLES[cur];const n=state.progress[cur];return n<p.count?p.sorted[n]:null;}
@@ -354,6 +544,7 @@ function clearStatus(){document.getElementById('status').className='status';}
 /* ---- interaction ---- */
 function tapCell(idx){
   if(solved(cur))return;
+  startTimer();                                        /* no-op once started — safety net if the gate is removed */
   const p=PUZZLES[cur];const v=p.grid[idx];const el=cellAt(idx);
   if(!el||el.classList.contains('found'))return;      // already locked
   const exp=nextExpected();
@@ -376,6 +567,7 @@ function onSolved(){
   renderActions();
   const all=PUZZLES.every((p,i)=>solved(i));
   if(all){
+    freezeTimer();                                      /* v3.5 HOOK B */
     status('done','બધા કોયડા પૂર્ણ. ખૂબ સરસ! 🌸',true);
     if(soundOn)playWin();
     if(!state.celebrated){state.celebrated=true;save(state);showCelebrate();}
@@ -387,6 +579,7 @@ function onSolved(){
 }
 
 function useHint(){
+  if(!hasStarted()){status('hint','પહેલાં Start દબાવો.');return;}   /* v3.6 §4 — no free reveal before the clock */
   if(solved(cur)){status('hint','આ રાઉન્ડ પહેલેથી પૂર્ણ છે.');return;}
   const exp=nextExpected();if(exp===null)return;
   const p=PUZZLES[cur];
@@ -419,6 +612,8 @@ document.getElementById('board').addEventListener('click',function(e){
 
 /* ---- init ---- */
 renderAll();
+initTimer();          /* v3.5 — after the first render */
+initStartLayer();     /* v3.6 — after initTimer() */
 if(PUZZLES.every((p,i)=>solved(i))){status('done','બધા કોયડા પૂર્ણ. ખૂબ સરસ! 🌸',true);_completed=true;pushProgress();}
 else if(solved(cur))status('done','આ રાઉન્ડ પૂર્ણ. તૈયાર હો ત્યારે આગળ વધો.',true);
 </script>
