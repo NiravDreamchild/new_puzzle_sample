@@ -57,7 +57,33 @@ body{
 
 /* ---- stage card ---- */
 .stage{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
-  box-shadow:0 8px 28px -10px rgba(78,33,95,.16), 0 2px 8px -3px rgba(78,33,95,.08);padding:14px;margin-bottom:14px;}
+  box-shadow:0 8px 28px -10px rgba(78,33,95,.16), 0 2px 8px -3px rgba(78,33,95,.08);padding:14px;margin-bottom:14px;
+  position:relative;}
+
+/* ---- timer pill (v3.5, in-flow so it never overlaps the board) ---- */
+.tmrbar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;}
+.misspill{display:inline-flex;align-items:center;gap:6px;
+  background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:999px;
+  padding:5px 12px 5px 10px;font-family:'Hind Vadodara',sans-serif;font-weight:700;font-size:14px;
+  font-variant-numeric:tabular-nums;letter-spacing:.02em;line-height:1;box-shadow:var(--shadow-sm);
+  transition:background .2s ease,color .2s ease,border-color .2s ease;}
+.misspill svg{width:15px;height:15px;fill:none;stroke:var(--muted);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.misspill .lab{color:var(--muted);font-weight:500;font-size:13px;}
+.misspill.hot{background:var(--rose-soft);color:var(--rose);border-color:rgba(199,92,114,.25);}
+.misspill.hot svg{stroke:var(--rose);}
+.misspill.hot .lab{color:var(--rose);}
+.timer{display:inline-flex;align-items:center;gap:6px;
+  background:var(--brand-soft);color:var(--brand);
+  border:1px solid transparent;border-radius:999px;
+  padding:5px 12px 5px 10px;
+  font-family:'Hind Vadodara',sans-serif;font-weight:700;font-size:14px;
+  font-variant-numeric:tabular-nums;letter-spacing:.02em;line-height:1;
+  box-shadow:var(--shadow-sm);}
+.timer svg{width:15px;height:15px;fill:none;stroke:currentColor;
+  stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.timer .t{min-width:44px;text-align:right;}
+.timer.over{background:var(--rose-soft);color:var(--rose);border-color:rgba(199,92,114,.25);}
+.stage.overtime{background-color:#FDF3F5;}
 
 /* top row inside the stage: figure counter (left) + reset (right), side by side */
 .hrow0{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:13px;flex-wrap:wrap;}
@@ -65,10 +91,6 @@ body{
 .figpill{display:inline-flex;align-items:center;gap:6px;background:var(--brand-soft);
   border-radius:999px;padding:6px 14px;font-weight:600;font-size:13px;color:var(--brand);flex:none;}
 .figpill .lab{color:var(--muted);font-weight:500;}
-.curpill{display:none;align-items:center;gap:6px;background:var(--accent-soft);
-  border-radius:999px;padding:6px 14px;font-weight:600;font-size:13px;color:#B5781E;flex:none;}
-.curpill.show{display:inline-flex;}
-.curpill .lab{color:#C08A3A;font-weight:500;}
 .resetbtn{flex:none;min-height:38px;border:1px solid var(--line);border-radius:11px;background:var(--surface);
   display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;-webkit-appearance:none;
   font-family:'Hind Vadodara',sans-serif;font-weight:600;font-size:13px;color:var(--ink);padding:0 14px;
@@ -183,18 +205,27 @@ svg#board{display:block;width:100%;height:auto;}
         </button>
       </div>
     </div>
-    <p class="hsub" id="hsub">પાસપાસેના 6 સેલ પસંદ કરીને એક આકૃતિ બનાવો.<br/>દરેક આકૃતિમાં 1 થી 6 અંક એક-એક જ વાર હોવા જોઈએ.</p>
+    <p class="hsub" id="hsub">પાસપાસેના 6 સેલ ટેપ કરી આકૃતિ બનાવો<br>દરેકમાં 1 થી 6 અંક એક-એક વાર આવવા જોઈએ</p>
   </header>
 
   <!-- play area: figure counter + hex board + reset -->
   <div class="stage">
+    <div class="tmrbar">
+      <div class="misspill" id="missPill" aria-label="Mistakes">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15 9l-6 6M9 9l6 6"/></svg>
+        <span class="lab">Wrong attempt</span><span id="missVal">0</span>
+      </div>
+      <div class="timer" id="timer" aria-label="Time">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6"/></svg>
+        <span class="t" id="timeVal">3:00</span>
+      </div>
+    </div>
     <div class="boardwrap">
       <svg id="board" xmlns="http://www.w3.org/2000/svg"></svg>
     </div>
     <div class="hrow0">
       <div class="pills">
         <span class="figpill"><span class="lab">Figures Found</span><span id="figVal">0/6</span></span>
-        <span class="curpill" id="curPill"><span class="lab">Selecting</span><span id="curVal">0/6</span></span>
       </div>
       <button class="resetbtn" onclick="resetPuzzle()">
         <svg viewBox="0 0 24 24"><path d="M4 4v6h6"/><path d="M4.5 15a8 8 0 1 0 2-8.9L4 10"/></svg>
@@ -224,26 +255,26 @@ svg#board{display:block;width:100%;height:auto;}
 <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="How to play">
   <div class="grab"></div>
   <h3>કેવી રીતે રમવું</h3>
-  <p class="lead">પાસપાસેના 6 સેલ જોડીને એક આકૃતિ બનાવો. દરેક આકૃતિમાં 1 થી 6 અંક એક-એક જ વાર હોવા જોઈએ.</p>
+  <p class="lead">દરેક આકૃતિમાં 1 થી 6 અંક બરાબર એક-એક વાર આવવા જોઈએ. ઉતાવળ નહીં — શાંતિથી.</p>
 
   <div class="step">
     <div class="ic"><svg viewBox="0 0 24 24"><path d="M5 12h9"/><path d="M12 7l5 5-5 5"/><circle cx="18" cy="12" r="0.6" fill="currentColor" stroke="none"/></svg></div>
-    <div class="tx"><b>6 સેલ પસંદ કરો</b><p>એકબીજાને અડેલા 6 સેલ પસંદ કરીને એક આકૃતિ બનાવો.</p></div>
+    <div class="tx"><b>સેલ પર ટેપ કરો</b><p>પાસપાસેના સેલ ટેપ કરીને 6 સેલની એક આકૃતિ બનાવો.</p></div>
   </div>
 
   <div class="step">
     <div class="ic"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg></div>
-    <div class="tx"><b>1 થી 6 બધા અંક હોવા જોઈએ</b><p>દરેક આકૃતિમાં 1, 2, 3, 4, 5 અને 6 અંક એક-એક જ વાર આવવા જોઈએ.</p></div>
+    <div class="tx"><b>અંક રિપીટ ન થાય</b><p>દરેક આકૃતિમાં 1 થી 6 અલગ અંક આવવા જોઈએ, કોઈ રિપીટ ન થાય.</p></div>
   </div>
 
   <div class="step">
     <div class="ic"><svg viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h11a6 6 0 0 1 0 12h-4"/></svg></div>
-    <div class="tx"><b>ફરી ગોઠવો</b><p>બનેલી આકૃતિ પર ટેપ કરીને તેને દૂર કરો. "Reset" દબાવવાથી આખો કોયડો ફરી શરૂ થશે.</p></div>
+    <div class="tx"><b>ભૂલ સુધારો</b><p>બનેલી આકૃતિ પર ટેપ કરી કાઢી શકાય. "Reset" આખો કોયડો ફરી શરૂ કરે છે.</p></div>
   </div>
 
   <div class="step">
     <div class="ic"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></div>
-    <div class="tx"><b>પૂરું કરો</b><p>બધી 6 આકૃતિ સાચી બન્યા પછી કોયડો પૂર્ણ થશે.</p></div>
+    <div class="tx"><b>પૂરું કરો</b><p>બધી 6 આકૃતિ સાચી બને એટલે કોયડો પૂર્ણ થાય છે.</p></div>
   </div>
 
   <button class="got" onclick="closeHelp()">Close</button>
@@ -266,7 +297,7 @@ svg#board{display:block;width:100%;height:auto;}
 const CELLS=[{"q":-3,"r":0,"n":4,"reg":2},{"q":-3,"r":1,"n":5,"reg":2},{"q":-3,"r":2,"n":5,"reg":3},{"q":-3,"r":3,"n":2,"reg":5},{"q":-2,"r":-1,"n":3,"reg":2},{"q":-2,"r":0,"n":6,"reg":2},{"q":-2,"r":1,"n":3,"reg":3},{"q":-2,"r":2,"n":6,"reg":3},{"q":-2,"r":3,"n":5,"reg":5},{"q":-1,"r":-2,"n":5,"reg":4},{"q":-1,"r":-1,"n":2,"reg":2},{"q":-1,"r":0,"n":4,"reg":3},{"q":-1,"r":1,"n":2,"reg":3},{"q":-1,"r":2,"n":1,"reg":3},{"q":-1,"r":3,"n":3,"reg":5},{"q":0,"r":-3,"n":6,"reg":4},{"q":0,"r":-2,"n":1,"reg":2},{"q":0,"r":-1,"n":5,"reg":1},{"q":0,"r":1,"n":6,"reg":0},{"q":0,"r":2,"n":4,"reg":5},{"q":0,"r":3,"n":6,"reg":5},{"q":1,"r":-3,"n":3,"reg":4},{"q":1,"r":-2,"n":3,"reg":1},{"q":1,"r":-1,"n":1,"reg":1},{"q":1,"r":0,"n":3,"reg":0},{"q":1,"r":1,"n":5,"reg":0},{"q":1,"r":2,"n":1,"reg":5},{"q":2,"r":-3,"n":2,"reg":4},{"q":2,"r":-2,"n":2,"reg":1},{"q":2,"r":-1,"n":4,"reg":1},{"q":2,"r":0,"n":6,"reg":1},{"q":2,"r":1,"n":4,"reg":0},{"q":3,"r":-3,"n":1,"reg":4},{"q":3,"r":-2,"n":4,"reg":4},{"q":3,"r":-1,"n":2,"reg":0},{"q":3,"r":0,"n":1,"reg":0}];
 const TOTAL=6;
 const FIGCOLORS=['#752886','#F2A03D','#2F9B63','#C75C72','#3B82C4','#B98055'];
-const KEY='dcgs_honeycomb_v1';
+const KEY='dcgs_honeycomb_v3';
 
 /* ---- geometry (pointy-top, axial -> pixel) ---- */
 const RAD=40, HW=RAD*Math.sqrt(3)/2;
@@ -299,7 +330,13 @@ function activityDone(){postToApp({type:'ACTIVITY_DONE'});}   /* -> onWebActivit
 /* active time only (pauses while the app is backgrounded) */
 let _active=0,_since=Date.now(),_completed=false;
 document.addEventListener('visibilitychange',function(){
-  if(document.hidden){_active+=Date.now()-_since;}else{_since=Date.now();}
+  if(document.hidden){
+    _active+=Date.now()-_since;
+    _tmrTick(); _tmrStopInterval();                 // bank timer span, stop advancing
+  } else {
+    _since=Date.now();
+    if(state.timer && state.timer.started && !state.timer.frozen) _tmrStartInterval();
+  }
   pushProgress();
 });
 function timeSpentSec(){return Math.round((_active+(document.hidden?0:Date.now()-_since))/1000);}
@@ -313,9 +350,11 @@ function markDone(){ _completed=true; activityDone(); pushProgress(); }   /* cal
 window.addEventListener('pagehide',pushProgress);   /* best-effort, where it fires */
 
 /* ---- state ---- */
-let state = load() || {sound:false, celebrated:false, locked:[], cur:[]};
+let state = load() || {sound:true, celebrated:false, locked:[], cur:[]};
 if(!state.locked) state.locked=[];
 if(!state.cur) state.cur=[];
+if(!state.timer) state.timer={elapsed:0, started:false, frozen:false};
+if(typeof state.mistakes!=='number') state.mistakes=0;
 let soundOn = !!state.sound;
 let hintCells=null;   // transient — never saved
 
@@ -342,6 +381,46 @@ function setSoundIcon(){const b=document.getElementById('soundBtn');b.innerHTML=
   ?'<svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M16 9a3.5 3.5 0 0 1 0 6"/><path d="M19 7a7 7 0 0 1 0 10"/></svg>'
   :'<svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M22 9l-5 6M17 9l5 6"/></svg>';}
 function toggleSound(){soundOn=!soundOn;state.sound=soundOn;setSoundIcon();save(state);}
+
+/* =========================================================
+   TIMER MODULE v3.5 — countdown that never ends (overtime)
+   ========================================================= */
+const LIMIT_SEC = 180;                 // 180 = 3:00
+let _tmrInt=null, _tmrSince=0;
+function formatTime(sec){const over=sec<0,s=Math.abs(sec),m=Math.floor(s/60),ss=s%60;
+  return (over?'+':'')+m+':'+(ss<10?'0':'')+ss;}
+function remainingSec(){return LIMIT_SEC-state.timer.elapsed;}
+function paintTimer(){
+  const rem=remainingSec(),el=document.getElementById('timeVal'),
+    pill=document.getElementById('timer'),stage=document.querySelector('.stage');
+  if(el) el.textContent=formatTime(rem);
+  const over=rem<0;
+  if(pill) pill.classList.toggle('over',over);
+  if(stage) stage.classList.toggle('overtime',over);
+}
+function _tmrTick(){
+  if(!state.timer.started||state.timer.frozen||document.hidden) return;
+  const now=Date.now();
+  state.timer.elapsed+=Math.round((now-_tmrSince)/1000);
+  _tmrSince=now; save(state); paintTimer();
+}
+function _tmrStartInterval(){if(_tmrInt) return;_tmrSince=Date.now();_tmrInt=setInterval(_tmrTick,1000);}
+function _tmrStopInterval(){if(_tmrInt){clearInterval(_tmrInt);_tmrInt=null;}}
+function startTimer(){
+  if(state.timer.started||state.timer.frozen) return;
+  state.timer.started=true; save(state); _tmrStartInterval(); paintTimer();
+}
+function freezeTimer(){
+  if(state.timer.frozen) return;
+  _tmrTick(); state.timer.frozen=true; _tmrStopInterval(); save(state); paintTimer();
+}
+function resetTimer(){
+  _tmrStopInterval(); state.timer={elapsed:0,started:false,frozen:false}; save(state); paintTimer();
+}
+function initTimer(){
+  paintTimer();
+  if(state.timer.started&&!state.timer.frozen) _tmrStartInterval();
+}
 
 /* ---- helpers ---- */
 function lockedMap(){const m={};state.locked.forEach((f,i)=>f.cells.forEach(([q,r])=>m[key(q,r)]=i));return m;}
@@ -384,9 +463,6 @@ function render(shakeKeys){
   });
   board.innerHTML=s;
   document.getElementById('figVal').textContent=state.locked.length+'/'+TOTAL;
-  const cp=document.getElementById('curPill');
-  if(state.cur.length>0){cp.classList.add('show');document.getElementById('curVal').textContent=state.cur.length+'/6';}
-  else{cp.classList.remove('show');}
 }
 
 /* ---- status ---- */
@@ -399,27 +475,50 @@ board.addEventListener('click',e=>{
   const g=e.target.closest('.hexcell'); if(!g)return;
   tap(+g.dataset.q,+g.dataset.r);
 });
+function regAt(q,r){return cmap[key(q,r)].reg;}
 function tap(q,r){
   if(state.celebrated)return;
+  startTimer();                             // HOOK A: begins on first interaction (no-op after)
   if(hintCells){hintCells=null;render();}   // any tap dismisses the hint outline
   const lm=lockedMap(),kk=key(q,r);
   if(lm[kk]!==undefined){                   // tap a finished figure -> erase it
     state.locked.splice(lm[kk],1);
     save(state); render();
-    status('hint','આકૃતિ દૂર થઈ. હવે ફરી બનાવો.');
+    status('hint','આકૃતિ કાઢી નાખી — ફરી બનાવો.');
     return;
   }
-  if(inCur(q,r)){
+  if(inCur(q,r)){                           // tap a selected cell -> deselect it
     const rest=state.cur.filter(([a,b])=>!(a===q&&b===r));
     if(rest.length===0||connected(rest)){state.cur=rest;save(state);render();}
-    else status('hint','આ સેલ કાઢી શકાતો નથી. પહેલા છેલ્લે પસંદ કરેલો સેલ દૂર કરો.');
+    else status('hint','આ સેલ કાઢવાથી જૂથ તૂટે છે — પહેલા છેલ્લો સેલ કાઢો.');
     return;
   }
-  if(state.cur.length>0 && !adjToCur(q,r)){status('hint','હવે પસંદ કરેલા સેલની બાજુનો સેલ જ પસંદ કરો.');return;}
-  const dup=state.cur.some(([a,b])=>numAt(a,b)===numAt(q,r));
+  // must touch the group being built
+  if(state.cur.length>0 && !adjToCur(q,r)){
+    rejectCell(q,r,'જૂથની પાસેના સેલ પર જ ટેપ કરો.');
+    return;
+  }
+  // must stay on the correct trajectory: same solution figure as the group so far
+  if(state.cur.length>0 && regAt(q,r)!==regAt(state.cur[0][0],state.cur[0][1])){
+    rejectCell(q,r,'આ સેલ આ આકૃતિનો ભાગ નથી. બીજો સેલ પસંદ કરો.');
+    return;
+  }
   state.cur.push([q,r]); save(state); render();
-  if(dup){ status('hint','અંક '+numAt(q,r)+' આ જૂથમાં પહેલેથી છે — તપાસી લો.'); }
   if(state.cur.length===6) evaluateGroup();
+}
+/* ---- mistakes counter ---- */
+function paintMistakes(){
+  const el=document.getElementById('missVal'); if(el) el.textContent=state.mistakes;
+  const pill=document.getElementById('missPill'); if(pill) pill.classList.toggle('hot',state.mistakes>0);
+}
+function bumpMistakes(){ state.mistakes++; save(state); paintMistakes(); }
+
+/* reject a tap: shake that cell, play the wrong sound, show why — never added */
+function rejectCell(q,r,msg){
+  render(new Set([key(q,r)]));
+  playWrong();
+  bumpMistakes();
+  status('bad',msg,false);
 }
 function evaluateGroup(){
   const vals=state.cur.map(([q,r])=>numAt(q,r)).sort((a,b)=>a-b).join('');
@@ -434,6 +533,7 @@ function evaluateGroup(){
     const sk=new Set(state.cur.map(([q,r])=>key(q,r)));
     render(sk);
     playWrong();
+    bumpMistakes();
     status('bad','આ 6 સેલમાં 1-6 અલગ નથી. એક સેલ બદલો.',true);
   }
 }
@@ -441,6 +541,7 @@ function evaluateGroup(){
 /* ---- done ---- */
 function checkDone(){
   if(state.locked.length===TOTAL){
+    freezeTimer();                          // HOOK B: stop + show final time
     status('done','કોયડો પૂર્ણ. ખૂબ સરસ! 🌸',true);
     playWin();
     if(!state.celebrated){ state.celebrated=true; save(state); showCelebrate(); }
@@ -481,6 +582,8 @@ function useHint(){
 /* ---- reset ---- */
 function resetPuzzle(){
   state.locked=[]; state.cur=[]; state.celebrated=false; hintCells=null;
+  state.mistakes=0; paintMistakes();
+  resetTimer();                             // HOOK C: back to full, wait for first tap
   save(state); render(); clearStatus();
   status('hint','કોયડો ફરી શરૂ થયો.');
 }
@@ -497,6 +600,8 @@ function closeCelebrate(){document.getElementById('celebrate').classList.remove(
 setSoundIcon();
 preloadSounds();
 render();
+initTimer();                                // HOOK D: paint + resume an in-progress timer
+paintMistakes();
 if(state.locked.length===TOTAL){
   status('done','કોયડો પૂર્ણ. ખૂબ સરસ! 🌸',true);
   _completed=true;
