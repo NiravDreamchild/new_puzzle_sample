@@ -61,9 +61,29 @@ body{
 .stage{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
   box-shadow:0 8px 28px -10px rgba(78,33,95,.16), 0 2px 8px -3px rgba(78,33,95,.08);padding:14px;margin-bottom:14px;}
 
-/* scene viewport */
+/* ---- timer pill (v3.5, in-flow — never overlaps the board) ---- */
+.tmrbar{display:flex;justify-content:flex-end;margin-bottom:10px;}  /* own row at top of stage */
+.timer{display:inline-flex;align-items:center;gap:6px;
+  background:var(--brand-soft);color:var(--brand);
+  border:1px solid transparent;border-radius:999px;
+  padding:5px 12px 5px 10px;
+  font-family:'Hind Vadodara',sans-serif;font-weight:700;font-size:14px;
+  font-variant-numeric:tabular-nums;letter-spacing:.02em;line-height:1;
+  box-shadow:var(--shadow-sm);
+  transition:background .3s ease,color .3s ease,border-color .3s ease;}
+.timer svg{width:15px;height:15px;fill:none;stroke:currentColor;
+  stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.timer .t{min-width:44px;text-align:right;}   /* tabular + min-width stops digit jitter */
+
+/* overtime: pill turns rose, whole stage gets a faint red wash */
+.timer.over{background:var(--rose-soft);color:var(--rose);border-color:rgba(199,92,114,.25);}
+.stage.overtime{background-color:#FDF3F5;}     /* ~8% rose over white — board stays readable */
+
+/* scene viewport — touch-action is pan-y at rest so the page scrolls normally
+   over the picture; applyView() switches it to none once zoomed in, where a
+   drag has to move the image instead */
 .scene{position:relative;overflow:hidden;border-radius:12px;border:1px solid var(--line);
-  background:#F7F3FA;touch-action:none;user-select:none;-webkit-user-select:none;cursor:crosshair;}
+  background:#F7F3FA;touch-action:pan-y;user-select:none;-webkit-user-select:none;cursor:crosshair;}
 .canvas{position:absolute;left:0;top:0;width:100%;transform-origin:0 0;will-change:transform;--inv:1;}
 .canvas img{display:block;width:100%;height:auto;pointer-events:none;-webkit-user-drag:none;}
 .layer{position:absolute;inset:0;pointer-events:none;}
@@ -89,6 +109,23 @@ body{
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.14)}}
 @keyframes fade{from{opacity:.9;transform:scale(.7)}to{opacity:0;transform:scale(1.25)}}
 
+/* ---- start overlay (covers the picture until the player begins) ---- */
+.startlayer{position:absolute;inset:0;z-index:6;display:flex;align-items:center;justify-content:center;
+  background:rgba(251,249,252,.1);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);
+  text-align:center;padding:22px;}
+.startlayer.hide{display:none;}
+.startcard .em{font-size:38px;line-height:1;margin-bottom:8px;}
+.startcard h3{font-size:18px;font-weight:700;color:var(--brand);margin:0 0 4px;}
+.startcard p{font-size:13px;color:var(--ink);margin:0 0 16px;line-height:1.5;}
+.startbtn{min-width:152px;min-height:46px;border-radius:14px;border:none;cursor:pointer;
+  background:linear-gradient(135deg,var(--brand),var(--brand-deep));color:#fff;
+  font-family:'Hind Vadodara',sans-serif;font-weight:700;font-size:16px;
+  box-shadow:0 10px 22px -10px rgba(110,42,133,.6);
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  transition:transform .12s ease;}
+.startbtn:active{transform:scale(.97);}
+.startbtn svg{width:17px;height:17px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+
 /* zoom reset */
 .zreset{position:absolute;right:8px;bottom:8px;min-height:32px;padding:0 12px;border-radius:11px;
   background:rgba(255,255,255,.94);border:1px solid var(--line);box-shadow:var(--shadow-sm);
@@ -96,14 +133,6 @@ body{
   display:none;align-items:center;gap:5px;cursor:pointer;-webkit-appearance:none;}
 .zreset.on{display:flex;}
 .zreset svg{width:14px;height:14px;fill:none;stroke:var(--brand);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
-
-/* tally */
-.tally{display:flex;align-items:center;justify-content:center;gap:7px;margin-top:13px;
-  font-size:13px;font-weight:600;color:var(--muted);}
-.tally b{color:var(--brand);font-weight:700;}
-.bar{height:5px;border-radius:999px;background:var(--line);margin-top:9px;overflow:hidden;}
-.bar i{display:block;height:100%;width:0;border-radius:999px;
-  background:linear-gradient(90deg,var(--brand),var(--brand-deep));transition:width .3s ease;}
 
 /* ---- find list ---- */
 .findhead{text-align:center;font-size:13.5px;font-weight:600;color:var(--ink);margin:15px 0 8px;}
@@ -123,7 +152,7 @@ body{
 .badge{min-width:32px;height:32px;padding:0 8px;border-radius:10px;border:1px solid var(--line);
   background:#fff;display:flex;align-items:center;justify-content:center;
   font-size:13px;font-weight:700;color:#6b6470;transition:all .2s ease;}
-.badge.found{border:2px solid var(--brand);color:var(--brand);background:#fff;}
+.badge.found{background:var(--brand-soft);border-color:transparent;color:var(--brand);}
 
 /* ---- status ---- */
 .status{min-height:24px;text-align:center;font-size:14px;line-height:1.4;font-weight:500;
@@ -228,20 +257,34 @@ body{
 
   <!-- play area -->
   <div class="stage">
+    <div class="tmrbar">
+      <div class="timer" id="timer" aria-label="Time">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6"/></svg>
+        <span class="t" id="timeVal">5:00</span>
+      </div>
+    </div>
     <div class="scene" id="scene">
       <div class="canvas" id="canvas">
         <img id="pic" alt="">
         <div class="layer" id="layer"></div>
       </div>
       <div class="oops"><b>ચિત્ર લોડ થઈ શક્યું નથી.</b><br>સ્ક્રિપ્ટમાં <b>IMAGE_SRC</b> તપાસો.</div>
+      <div class="startlayer" id="startLayer">
+        <div class="startcard">
+          <div class="em">🔍</div>
+          <h3>Are you ready?</h3>
+          <p>Start દબાવતાં જ સમય શરૂ થશે.</p>
+          <button class="startbtn" onclick="startPuzzle()">
+            <svg viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></svg>
+            Start
+          </button>
+        </div>
+      </div>
       <button class="zreset" id="zreset" onclick="resetView()">
         <svg viewBox="0 0 24 24"><path d="M3 9V5a2 2 0 0 1 2-2h4M21 9V5a2 2 0 0 0-2-2h-4M3 15v4a2 2 0 0 0 2 2h4M21 15v4a2 2 0 0 1-2 2h-4"/></svg>
         પૂરું ચિત્ર
       </button>
     </div>
-
-    <div class="tally"><span>મળી ગયાં:</span> <b id="tally">0/0</b></div>
-    <div class="bar"><i id="bar"></i></div>
 
     <div class="findhead">આ <b id="fcount">0</b> ચિત્રો શોધો</div>
     <div class="findwrap hide" id="findWrap">
@@ -321,21 +364,21 @@ const LIST_SRC    = 'https://dreamchild.s3.ap-south-1.amazonaws.com/Live/Data_Ma
 const LIST_ASPECT = 2.0922;   /* find-list width / height */
 
 const OBJECTS = [
-  {n:  1, id:'obj1',   name:'',                  x: 87.5, y: 45.7, r:   4, lx:null, ly:null},
-  {n:  2, id:'obj2',   name:'',                  x: 81.2, y: 79.2, r: 4.5, lx:null, ly:null},
-  {n:  3, id:'obj3',   name:'',                  x: 17.4, y: 58.6, r: 4.5, lx:null, ly:null},
-  {n:  4, id:'obj4',   name:'',                  x:   37, y: 80.6, r:   6, lx:null, ly:null},
-  {n:  5, id:'obj5',   name:'',                  x: 93.4, y: 65.9, r: 3.5, lx:null, ly:null},
-  {n:  6, id:'obj6',   name:'',                  x: 38.2, y:   12, r: 4.5, lx:null, ly:null},
-  {n:  7, id:'obj7',   name:'',                  x: 22.6, y: 38.7, r:   5, lx:null, ly:null},
-  {n:  8, id:'obj8',   name:'',                  x: 21.4, y:   18, r:   5, lx:null, ly:null},
-  {n:  9, id:'obj9',   name:'',                  x: 80.8, y: 15.6, r:   5, lx:null, ly:null},
-  {n: 10, id:'obj10',  name:'',                  x: 66.3, y: 89.2, r:   6, lx:null, ly:null}
+  {n:  1, id:'obj1',   name:'', x: 87.5, y: 45.7, r:   4, lx:null, ly:null},
+  {n:  2, id:'obj2',   name:'', x: 81.2, y: 79.2, r: 4.5, lx:null, ly:null},
+  {n:  3, id:'obj3',   name:'', x: 17.4, y: 58.6, r: 4.5, lx:null, ly:null},
+  {n:  4, id:'obj4',   name:'', x:   37, y: 80.6, r:   6, lx:null, ly:null},
+  {n:  5, id:'obj5',   name:'', x: 93.4, y: 65.9, r: 3.5, lx:null, ly:null},
+  {n:  6, id:'obj6',   name:'', x: 38.2, y:   12, r: 4.5, lx:null, ly:null},
+  {n:  7, id:'obj7',   name:'', x: 22.6, y: 38.7, r:   5, lx:null, ly:null},
+  {n:  8, id:'obj8',   name:'', x: 21.4, y:   18, r:   5, lx:null, ly:null},
+  {n:  9, id:'obj9',   name:'', x: 80.8, y: 15.6, r:   5, lx:null, ly:null},
+  {n: 10, id:'obj10',  name:'', x: 66.3, y: 89.2, r:   6, lx:null, ly:null}
 ];
 
 /* ============================= CONFIG — END ============================= */
 
-const KEY = 'dcgs_hidden_v1';   /* bump the suffix if you change the object list */
+const KEY = 'dcgs_hidden_v3';   /* bump the suffix if you change the object list */
 const HIT_MIN = 24;             /* a tap target is never smaller than 24 CSS px */
 const KMAX = 4;                 /* maximum zoom */
 
@@ -363,10 +406,106 @@ function markDone(){ _completed=true; activityDone(); pushProgress(); }   /* cal
 window.addEventListener('pagehide',pushProgress);   /* best-effort, where it fires */
 
 /* ---- state ---- */
-let state = load() || {sound:false, celebrated:false, found:[]};
+let state = load() || {sound:true, celebrated:false, found:[]};
 if(!Array.isArray(state.found)) state.found=[];
+if(state.sound===undefined) state.sound = true;   /* sound ON by default; a saved choice still wins */
 state.found = state.found.filter(id => OBJECTS.some(o => o.id === id));   /* drop stale ids */
 let soundOn = !!state.sound;
+
+/* =========================================================
+   TIMER MODULE v3.5 — countdown that never ends (overtime)
+   LIMIT_SEC lives here, NOT in the CONFIG block, so re-pasting
+   a config from the picker never wipes it.
+   ========================================================= */
+const LIMIT_SEC = 300;                 // <-- per-puzzle knob (300 = 5:00)
+
+if(!state.timer) state.timer = {elapsed:0, started:false, frozen:false};
+let _tmrInt = null;                    // ticking interval id
+let _tmrSince = 0;                     // ms timestamp of the current running span
+
+function formatTime(sec){
+  const over = sec < 0;
+  const s = Math.abs(sec);
+  const m = Math.floor(s/60), ss = s%60;
+  return (over?'+':'') + m + ':' + (ss<10?'0':'') + ss;
+}
+function remainingSec(){ return LIMIT_SEC - state.timer.elapsed; }  // negative => overtime
+
+function paintTimer(){
+  const rem = remainingSec();
+  const el  = document.getElementById('timeVal');
+  const pill= document.getElementById('timer');
+  const stage = document.querySelector('.stage');
+  if(el) el.textContent = formatTime(rem);
+  const over = rem < 0;
+  if(pill)  pill.classList.toggle('over', over);
+  if(stage) stage.classList.toggle('overtime', over);
+}
+
+/* advance elapsed by the active span since we last ticked */
+function _tmrTick(){
+  if(!state.timer.started || state.timer.frozen) return;
+  if(document.hidden) return;                 // paused in background
+  const now = Date.now();
+  state.timer.elapsed += Math.round((now - _tmrSince)/1000);
+  _tmrSince = now;
+  save(state);
+  paintTimer();
+}
+function _tmrStartInterval(){
+  if(_tmrInt) return;
+  _tmrSince = Date.now();
+  _tmrInt = setInterval(_tmrTick, 1000);
+}
+function _tmrStopInterval(){
+  if(_tmrInt){ clearInterval(_tmrInt); _tmrInt = null; }
+}
+
+/* HOOK A — first real interaction (first tap on the picture) */
+function startTimer(){
+  if(state.timer.started || state.timer.frozen) return;
+  state.timer.started = true;
+  save(state);
+  _tmrStartInterval();
+  paintTimer();
+}
+
+/* HOOK B — puzzle solved (freeze + show final time) */
+function freezeTimer(){
+  if(state.timer.frozen) return;
+  _tmrTick();                        // capture the final partial second
+  state.timer.frozen = true;
+  _tmrStopInterval();
+  save(state);
+  paintTimer();
+}
+
+/* HOOK C — Reset button. This puzzle has no Reset (single puzzle = Hint only),
+   so it is unused; keep it wired if a Reset is ever added. */
+function resetTimer(){
+  _tmrStopInterval();
+  state.timer = {elapsed:0, started:false, frozen:false};
+  save(state);
+  paintTimer();
+}
+
+/* background pause/resume */
+document.addEventListener('visibilitychange', function(){
+  if(document.hidden){
+    _tmrTick();              // bank the active span, then stop advancing
+    _tmrStopInterval();
+  } else if(state.timer.started && !state.timer.frozen){
+    _tmrStartInterval();     // resume; _tmrSince resets so the gap isn't counted
+  }
+});
+
+/* init — called once after the first render */
+function initTimer(){
+  paintTimer();
+  if(state.timer.started && !state.timer.frozen){
+    _tmrStartInterval();     // an in-progress timer keeps running after reload
+  }
+}
 
 /* ---- sound (mp3 assets) ---- */
 const SND={
@@ -383,6 +522,22 @@ function playSound(k){
   const a=_audio[k]; if(!a) return;
   try{ a.pause(); a.currentTime=0; a.play().catch(function(){}); }catch(e){}
 }
+/* Browsers block audio until a real user gesture. Sound is on by default now,
+   so prime the clips on the Start tap — otherwise the first find is silent. */
+let _audioUnlocked=false;
+function unlockAudio(){
+  if(_audioUnlocked) return;
+  _audioUnlocked=true;
+  for(const k in _audio){
+    const a=_audio[k]; if(!a) continue;
+    try{
+      a.muted=true;
+      const done=function(){ try{ a.pause(); a.currentTime=0; }catch(e){} a.muted=false; };
+      const p=a.play();
+      if(p && p.then) p.then(done).catch(done); else done();
+    }catch(e){ try{ a.muted=false; }catch(_){} }
+  }
+}
 function playCorrect(){ playSound('correct'); }
 function playWrong(){   playSound('wrong');   }
 function playLevel(){   playSound('level');   }
@@ -391,7 +546,7 @@ function playHint(){    playSound('hint');    }
 function setSoundIcon(){const b=document.getElementById('soundBtn');b.innerHTML=soundOn
   ?'<svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M16 9a3.5 3.5 0 0 1 0 6"/><path d="M19 7a7 7 0 0 1 0 10"/></svg>'
   :'<svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M22 9l-5 6M17 9l5 6"/></svg>';}
-function toggleSound(){soundOn=!soundOn;state.sound=soundOn;setSoundIcon();save(state);}
+function toggleSound(){soundOn=!soundOn;state.sound=soundOn;if(soundOn)unlockAudio();setSoundIcon();save(state);}
 
 /* ---- helpers ---- */
 function isFound(id){ return state.found.indexOf(id)>=0; }
@@ -417,7 +572,10 @@ function clampView(){
 function applyView(){
   canvas.style.transform='translate('+tx+'px,'+ty+'px) scale('+k+')';
   canvas.style.setProperty('--inv', 1/k);
-  document.getElementById('zreset').classList.toggle('on', k>1.02);
+  const zoomed = k>1.02;
+  document.getElementById('zreset').classList.toggle('on', zoomed);
+  /* at 1x there is nothing to pan, so let the page scroll through the picture */
+  scene.style.touchAction = zoomed ? 'none' : 'pan-y';
 }
 function zoomAt(nk, cx, cy){
   nk=Math.min(KMAX,Math.max(1,nk));
@@ -475,13 +633,10 @@ function renderList(){
     });
   }
 }
-function renderTally(){
-  const n=OBJECTS.length||1;
-  document.getElementById('tally').textContent=state.found.length+'/'+OBJECTS.length;
-  document.getElementById('bar').style.width=(state.found.length/n*100)+'%';
+function renderCount(){
   document.getElementById('fcount').textContent=OBJECTS.length;
 }
-function renderAll(){ renderMarks(); renderList(); renderTally(); setSoundIcon(); }
+function renderAll(){ renderMarks(); renderList(); renderCount(); setSoundIcon(); }
 
 /* ---- status ---- */
 let stTimer;
@@ -507,6 +662,7 @@ function tryHit(sx,sy){
   if(isSolved()) return true;
   const p=toPct(sx,sy);
   if(p[0]<0||p[1]<0||p[0]>100||p[1]>100) return true;   /* outside the art: ignore, no penalty */
+  startTimer();                                         /* HOOK A — first real tap */
   const i=hitTest(p[0],p[1]);
   if(i<0) return false;
   const o=OBJECTS[i];
@@ -573,14 +729,36 @@ function endPointer(e){
 }
 scene.addEventListener('pointerup',endPointer);
 scene.addEventListener('pointercancel',endPointer);
-scene.addEventListener('wheel',e=>{ e.preventDefault(); const p=sceneXY(e); zoomAt(k*(e.deltaY<0?1.12:1/1.12), p[0], p[1]); },{passive:false});
+/* desktop: plain wheel scrolls the page; ctrl/⌘ + wheel zooms the picture */
+scene.addEventListener('wheel',e=>{
+  if(!(e.ctrlKey||e.metaKey) && k<=1.02) return;   /* let the page scroll */
+  e.preventDefault();
+  const p=sceneXY(e);
+  zoomAt(k*(e.deltaY<0?1.12:1/1.12), p[0], p[1]);
+},{passive:false});
 
 /* the reset-view button sits inside the scene — keep its taps off the board */
 ['pointerdown','pointerup','pointermove','click'].forEach(t=>
   document.getElementById('zreset').addEventListener(t,e=>e.stopPropagation()));
 
+/* ---- start overlay ---- */
+function startPuzzle(){
+  unlockAudio();                                  /* real user gesture — prime the clips */
+  document.getElementById('startLayer').classList.add('hide');
+  startTimer();                                   /* HOOK A — the clock begins here */
+}
+function initStartLayer(){
+  /* hidden once the puzzle has been started, and after a solved reload */
+  const show = !state.timer.started && !state.timer.frozen;
+  document.getElementById('startLayer').classList.toggle('hide', !show);
+}
+/* keep the overlay's own taps off the board underneath */
+['pointerdown','pointerup','pointermove','click','wheel'].forEach(t=>
+  document.getElementById('startLayer').addEventListener(t,e=>e.stopPropagation()));
+
 /* ---- hint ---- */
 function useHint(){
+  if(!state.timer.started){ status('hint','પહેલાં Start દબાવો.'); return; }
   if(isSolved()){ status('hint','આ કોયડો પહેલેથી પૂર્ણ છે.'); return; }
   const rem=OBJECTS.filter(o=>!isFound(o.id));
   if(!rem.length) return;
@@ -595,6 +773,7 @@ function useHint(){
 /* ---- done ---- */
 function checkDone(){
   if(!isSolved()) return;
+  freezeTimer();                                        /* HOOK B — stop at final time */
   status('done','બધાં ચિત્રો મળી ગયાં. ખૂબ સરસ! 🌸',true);
   if(soundOn) playWin();
   if(!state.celebrated){ state.celebrated=true; save(state); showCelebrate(); }
@@ -634,6 +813,8 @@ function closeCelebrate(){
 preloadSounds();
 sizeScene();
 renderAll();
+initTimer();                                            /* HOOK D — after first render */
+initStartLayer();
 if(isSolved()){
   status('done','બધાં ચિત્રો મળી ગયાં. ખૂબ સરસ! 🌸',true);
   _completed=true;
