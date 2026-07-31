@@ -417,7 +417,6 @@ function renderProgress(){document.getElementById('round').textContent=(cur+1)+'
 function renderHead(){
   const extra=PUZZLES[cur].pool.length-letters(cur).length;
   let t='નીચેના અક્ષરોમાંથી સાચા અક્ષરો પસંદ કરી, ક્રમમાં ગોઠવીને શબ્દ બનાવો.';
-  t+='<br>ધ્યાન રાખો — '+extra+' અક્ષર વધારાના છે.';
   document.getElementById('hsub').innerHTML=t;
 }
 function renderClue(){document.getElementById('clue').textContent=PUZZLES[cur].clue;}

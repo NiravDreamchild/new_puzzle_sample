@@ -63,27 +63,41 @@ body{
 .stage{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
   box-shadow:0 8px 28px -10px rgba(78,33,95,.16), 0 2px 8px -3px rgba(78,33,95,.08);padding:14px;margin-bottom:14px;}
 
-/* two columns of cards + an SVG wire layer on top */
-.match{position:relative;display:grid;grid-template-columns:1fr 1fr;column-gap:44px;}
-.wires{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:3;overflow:visible;}
-.col{display:flex;flex-direction:column;gap:9px;min-width:0;}
-.chead{text-align:center;font-size:12px;font-weight:600;letter-spacing:.03em;color:var(--muted);
-  padding:2px 0 1px;}
-.mcard{position:relative;height:clamp(60px,17vw,78px);border:1px solid var(--line);border-radius:12px;
-  background:#FAF7FB;overflow:hidden;cursor:pointer;touch-action:none;
-  -webkit-user-select:none;user-select:none;
+/* question: the single top-view image */
+.qlabel,.olabel{text-align:center;font-size:12px;font-weight:600;letter-spacing:.03em;color:var(--muted);
+  margin:0 0 7px;}
+.olabel{margin:14px 0 8px;}
+.qimg{height:clamp(126px,36vw,178px);border:1px solid var(--line);border-radius:var(--r-md);
+  background:#FAF7FB;overflow:hidden;}
+.qimg img{width:100%;height:100%;object-fit:contain;padding:10px;display:block;}
+
+/* options: 4 side-view cards */
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.opt{position:relative;height:clamp(88px,25vw,116px);background:var(--surface);border:1px solid var(--line);
+  border-radius:14px;overflow:hidden;cursor:pointer;-webkit-user-select:none;user-select:none;
   transition:background .16s ease,border-color .16s ease,box-shadow .16s ease,transform .12s ease;}
-.mcard img{width:100%;height:100%;object-fit:contain;padding:7px 8px;display:block;pointer-events:none;}
-.mcard .tag{position:absolute;top:4px;left:5px;min-width:17px;height:17px;padding:0 4px;border-radius:6px;
-  background:var(--brand-soft);color:var(--brand);font-size:10.5px;font-weight:700;line-height:17px;
-  text-align:center;pointer-events:none;}
-.mcard.sel{background:var(--brand-soft);border-color:var(--brand);box-shadow:inset 0 0 0 1.5px var(--brand);}
-.mcard.found{background:var(--brand-soft);border-color:transparent;}
-.mcard.found .tag{background:var(--brand);color:#fff;}
-.mcard.drop{background:var(--accent-soft);border-color:var(--accent);box-shadow:inset 0 0 0 2px var(--accent);}
-.mcard.hint{border-color:var(--accent);box-shadow:inset 0 0 0 2.5px var(--accent);animation:pulse 1s ease infinite;}
-.mcard.wrong{background:var(--rose-soft);border-color:var(--rose);}
-@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
+.opt img{width:100%;height:100%;object-fit:contain;padding:9px;display:block;pointer-events:none;}
+.opt .tag{position:absolute;top:5px;left:6px;min-width:19px;height:19px;padding:0 5px;border-radius:7px;
+  background:var(--brand-soft);color:var(--brand);font-size:11px;font-weight:700;line-height:19px;
+  text-align:center;pointer-events:none;transition:background .16s ease,color .16s ease;}
+.opt .mk{position:absolute;top:5px;right:6px;width:20px;height:20px;opacity:0;transition:opacity .18s ease;}
+.opt .mk svg{width:20px;height:20px;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;}
+.opt:active{transform:scale(.985);}
+.opt.sel{background:var(--brand-soft);border-color:var(--brand);color:var(--brand);
+  box-shadow:inset 0 0 0 1.5px var(--brand);}
+.opt.sel .tag{background:var(--brand);color:#fff;}
+.opt.correct{background:var(--mint-soft);border-color:var(--mint);color:var(--mint);
+  box-shadow:inset 0 0 0 1.5px var(--mint);}
+.opt.correct .tag{background:var(--mint);color:#fff;}
+.opt.correct .mk{opacity:1;}
+.opt.correct .mk svg{stroke:var(--mint);}
+.opt.wrong{background:var(--rose-soft);border-color:var(--rose);color:var(--rose);
+  box-shadow:inset 0 0 0 1.5px var(--rose);}
+.opt.wrong .tag{background:var(--rose);color:#fff;}
+.opt.wrong .mk{opacity:1;}
+.opt.wrong .mk svg{stroke:var(--rose);}
+.opt.locked{pointer-events:none;}
+.opt.dim{opacity:.5;}
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
 .shake{animation:shake .3s ease;}
 
@@ -97,13 +111,11 @@ body{
   transition:transform .12s ease,opacity .2s ease,background .2s ease,box-shadow .2s ease;}
 .cbtn:active{transform:scale(.97);}
 .cbtn svg{width:16px;height:16px;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;}
-.cbtn.hint{min-height:36px;border-radius:12px;padding:0 22px;background:var(--surface);border:1px solid var(--line);
-  color:var(--ink);font-weight:600;font-size:13px;box-shadow:var(--shadow-sm);}
-.cbtn.hint svg{stroke:var(--brand);}
-.cbtn.prev,.cbtn.next{min-height:36px;border-radius:12px;padding:0 20px;background:var(--brand);border:none;color:#fff;
-  font-weight:700;font-size:13.5px;box-shadow:0 8px 20px -8px rgba(110,42,133,.5);}
-.cbtn.prev svg,.cbtn.next svg{stroke:#fff;}
+.cbtn.prev,.cbtn.next,.cbtn.check{min-height:36px;border-radius:12px;padding:0 20px;background:var(--brand);
+  border:none;color:#fff;font-weight:700;font-size:13.5px;box-shadow:0 8px 20px -8px rgba(110,42,133,.5);}
+.cbtn.prev svg,.cbtn.next svg,.cbtn.check svg{stroke:#fff;}
 .cbtn:disabled{cursor:default;}
+.cbtn.check:disabled{opacity:.35;pointer-events:none;box-shadow:none;}
 .cbtn.prev:disabled,.cbtn.next:disabled{background:var(--surface);border:1px solid var(--line);color:var(--muted);box-shadow:none;font-weight:600;}
 .cbtn.prev:disabled svg,.cbtn.next:disabled svg{stroke:var(--muted);}
 
@@ -185,7 +197,7 @@ body{
   <!-- header -->
   <header class="phead">
     <div class="hrow1">
-      <h1 class="ptitle">Spatial Skill</h1>
+      <h1 class="ptitle">દૃશ્ય ઓળખો</h1>
       <div class="hctrls">
         <span class="rpill" id="round"></span>
         <button class="hbtn" id="soundBtn" onclick="toggleSound()" aria-label="Sound"></button>
@@ -199,11 +211,10 @@ body{
 
   <!-- play area -->
   <div class="stage">
-    <div class="match" id="match">
-      <svg class="wires" id="wires" aria-hidden="true"></svg>
-      <div class="col" id="colTop"></div>
-      <div class="col" id="colSide"></div>
-    </div>
+    <p class="qlabel">ઉપરથી દેખાતું દૃશ્ય</p>
+    <div class="qimg"><img id="qImg" alt="" draggable="false"></div>
+    <p class="olabel">બાજુથી કેવું દેખાશે?</p>
+    <div class="opts" id="opts"></div>
   </div>
 
   <!-- status -->
@@ -214,7 +225,7 @@ body{
     <div class="inner">
       <button class="cbtn prev" id="btnPrev" onclick="prevPuzzle()"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>Back</button>
       <div class="cmid">
-        <button class="cbtn hint" onclick="useHint()"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 1 4 10.5c-.7.6-1 1.2-1 2v.5H9v-.5c0-.8-.3-1.4-1-2A6 6 0 0 1 12 3z"/></svg>Hint</button>
+        <button class="cbtn check" id="btnCheck" onclick="checkAnswer()">Check Answer</button>
       </div>
       <button class="cbtn next" id="btnNext" onclick="nextPuzzle()">Next<svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
     </div>
@@ -228,21 +239,21 @@ body{
 <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="How to play">
   <div class="grab"></div>
   <h3>કેવી રીતે રમવું</h3>
-  <p class="lead">ડાબી બાજુ ઉપરથી દેખાતાં દૃશ્યો છે, જમણી બાજુ બાજુથી દેખાતાં. બંનેની સાચી જોડી બનાવો.</p>
-
-  <div class="step">
-    <div class="ic"><svg viewBox="0 0 24 24"><path d="M5 12h9"/><path d="M12 7l5 5-5 5"/><circle cx="18" cy="12" r="0.6" fill="currentColor" stroke="none"/></svg></div>
-    <div class="tx"><b>લીટી દોરો</b><p>ડાબી બાજુના ચિત્ર પર આંગળી દબાવીને જમણી બાજુના ચિત્ર સુધી સરકાવો.</p></div>
-  </div>
+  <p class="lead">ઉપર એક વસ્તુનું ઉપરથી દેખાતું દૃશ્ય છે. નીચેના ચાર વિકલ્પોમાંથી તેનું બાજુનું દૃશ્ય પસંદ કરો.</p>
 
   <div class="step">
     <div class="ic"><svg viewBox="0 0 24 24"><path d="M9 11l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg></div>
-    <div class="tx"><b>અથવા બે વાર ટૅપ</b><p>પહેલાં એક બાજુનું ચિત્ર ટૅપ કરો, પછી બીજી બાજુનું. જોડી બની જશે.</p></div>
+    <div class="tx"><b>વિકલ્પ પસંદ કરો</b><p>ચાર ચિત્રોમાંથી એક પર ટૅપ કરો. જવાબ બદલવો હોય તો બીજા પર ટૅપ કરો.</p></div>
   </div>
 
   <div class="step">
-    <div class="ic"><svg viewBox="0 0 24 24"><path d="M4 7h10M4 12h10M4 17h6"/><path d="M16.5 16.5l2 2 3.5-3.5"/></svg></div>
-    <div class="tx"><b>ત્રણેય કોયડા પૂરા કરો</b><p>છ જોડી પૂરી થાય એટલે "Next" દબાવીને આગળના કોયડા પર જાઓ.</p></div>
+    <div class="ic"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></div>
+    <div class="tx"><b>Check Answer દબાવો</b><p>જવાબ સાચો છે કે નહીં તે ત્યારે જ દેખાશે. પસંદગી કરો ત્યાં સુધી બટન બંધ રહેશે.</p></div>
+  </div>
+
+  <div class="step">
+    <div class="ic"><svg viewBox="0 0 24 24"><path d="M12 9v4"/><circle cx="12" cy="16.5" r="0.6" fill="currentColor" stroke="none"/><path d="M10.3 4.3L2.6 18a1.8 1.8 0 0 0 1.6 2.7h15.6a1.8 1.8 0 0 0 1.6-2.7L13.7 4.3a1.8 1.8 0 0 0-3.4 0z"/></svg></div>
+    <div class="tx"><b>એક જ તક</b><p>જવાબ ખોટો હોય તો સાચો જવાબ લીલા રંગમાં દેખાશે, અને પ્રશ્ન બંધ થઈ જશે. પછી "Next" દબાવીને આગળ વધો.</p></div>
   </div>
 
   <button class="got" onclick="closeHelp()">Close</button>
@@ -258,71 +269,49 @@ body{
 
 <script>
 /* =========================================================
-   PUZZLE DATA — 3 sets. Replace the 36 placeholder URLs.
-   tops[]  → left column, always labelled 1..6 (in this order)
-   sides[] → right column, always labelled A..F (in this order)
-   answer[i] = the SIDE letter that matches tops[i]
+   PUZZLE DATA — one top-view image + 4 side-view options per
+   question. Replace the placeholder URLs; options are always
+   labelled A B C D in array order.
    ========================================================= */
-const PUZZLES = [
+const QUESTIONS = [
   {
-    id:'set1',
-    sub_gu:'નીચે આપેલાં ઉપરથી દેખાતાં દૃશ્યોને તેમના બાજુના દૃશ્ય સાથે જોડો.',
-    tops:[
-      'https://dreamchildapp.com/backend/assets/activity_images/spatial_skill/1/1.png',
-      'https://dreamchildapp.com/backend/assets/activity_images/spatial_skill/1/2.png',
-      'https://dreamchildapp.com/backend/assets/activity_images/spatial_skill/1/3.png',
-      'https://dreamchildapp.com/backend/assets/activity_images/spatial_skill/1/4.png',
-      // 'https://dreamchildapp.com/backend/assets/activity_images/spatial_skill/1/5.png',
-      // 'https://dreamchildapp.com/backend/assets/activity_images/spatial_skill/1/6.png'
-    ],
-    sides:[
+    id:'q1',
+    top:'https://dreamchildapp.com/backend/assets/activity_images/spatial_skill/1/1.png',
+    options:[
       'https://dreamchildapp.com/backend/assets/activity_images/spatial_skill/1/ans_3.png',
       'https://dreamchildapp.com/backend/assets/activity_images/spatial_skill/1/ans_1.png',
       'https://dreamchildapp.com/backend/assets/activity_images/spatial_skill/1/ans_2.png',
       'https://dreamchildapp.com/backend/assets/activity_images/spatial_skill/1/ans_4.png'
-      // 'https://dreamchildapp.com/backend/assets/activity_images/spatial_skill/1/ans_6.png',
-      // 'https://dreamchildapp.com/backend/assets/activity_images/spatial_skill/1/ans_5.png',
-    ],
-    answer:['B','C','A','D']
+    ]
   },
   {
-    id:'set2',
-    sub_gu:'આ વસ્તુઓનાં ઉપરનાં અને બાજુનાં દૃશ્યોની જોડી બનાવો.',
-    tops:[
-      'https://dreamchildapp.com/backend/assets/activity_images/spatial_skill/2/1.jpg',
-      'https://dreamchildapp.com/backend/assets/activity_images/spatial_skill/2/4.jpg',
-      'https://dreamchildapp.com/backend/assets/activity_images/spatial_skill/2/5.png',
-      'https://dreamchildapp.com/backend/assets/activity_images/spatial_skill/2/8.png',
-    ],
-    sides:[
+    id:'q2',
+    top:'https://dreamchildapp.com/backend/assets/activity_images/spatial_skill/2/1.jpg',
+    options:[
       'https://dreamchildapp.com/backend/assets/activity_images/spatial_skill/2/6.png',
       'https://dreamchildapp.com/backend/assets/activity_images/spatial_skill/2/3.jpg',
       'https://dreamchildapp.com/backend/assets/activity_images/spatial_skill/2/2.jpg',
       'https://dreamchildapp.com/backend/assets/activity_images/spatial_skill/2/7.png',
-    ],
-    answer:['B','D','C','A']
+    ]
   },
   {
-    id:'set3',
-    sub_gu:'છેલ્લો કોયડો — દરેક ઉપરના દૃશ્યનું બાજુનું દૃશ્ય શોધો.',
-    tops:[
-       'https://dreamchildapp.com/backend/assets/activity_images/spatial_skill/2/01.png',
-      'https://dreamchildapp.com/backend/assets/activity_images/spatial_skill/2/04.png',
-      'https://dreamchildapp.com/backend/assets/activity_images/spatial_skill/2/05.png',
-      'https://dreamchildapp.com/backend/assets/activity_images/spatial_skill/2/08.png',
-    ],
-    sides:[
+    id:'q3',
+    top:'https://dreamchildapp.com/backend/assets/activity_images/spatial_skill/2/04.png',
+    options:[
       'https://dreamchildapp.com/backend/assets/activity_images/spatial_skill/2/07.png',
       'https://dreamchildapp.com/backend/assets/activity_images/spatial_skill/2/06.png',
       'https://dreamchildapp.com/backend/assets/activity_images/spatial_skill/2/03.png',
       'https://dreamchildapp.com/backend/assets/activity_images/spatial_skill/2/02.png',
-    ],
-    answer:['B','A','D','C']
+    ]
   }
 ];
 
-const LETTERS='ABCDEF';
-const KEY='dcgs_matchviews_v1';
+/* ---- THE ANSWER KEY (the one array you edit) ----
+   ANSWER[i] = correct option letter for QUESTIONS[i]        */
+const ANSWER = ['B','B','A'];
+
+const LETTERS='ABCD';
+const KEY='dcgs_matchviews_v2';
 
 function save(d){try{localStorage.setItem(KEY,JSON.stringify(d))}catch(e){}}
 function load(){try{return JSON.parse(localStorage.getItem(KEY))}catch(e){return null}}
@@ -344,23 +333,23 @@ function pushProgress(){postToApp({type:'PROGRESS',time_spent_sec:timeSpentSec()
 setInterval(pushProgress,3000);
 pushProgress();
 
-function markDone(){ _completed=true; activityDone(); pushProgress(); }   /* call when the WHOLE set is solved */
+function markDone(){ _completed=true; activityDone(); pushProgress(); }   /* last question checked */
 window.addEventListener('pagehide',pushProgress);   /* best-effort, where it fires */
 
 /* ---- state ---- */
-let state = load() || {tab:0, sound:false, celebrated:false, pairs:[[],[],[]]};
-if(!Array.isArray(state.pairs) || state.pairs.length!==PUZZLES.length) state.pairs=PUZZLES.map(function(){return [];});
+let state = load() || {tab:0, sound:false, celebrated:false, answers:{}};
+if(!state.answers || typeof state.answers!=='object') state.answers={};
 let soundOn = !!state.sound;
 let cur = state.tab||0;
-let sel = null;    /* {col:'top'|'side', id} */
+let sel = null;    /* option letter picked but not yet checked */
 
 /* ---- sound (mp3 assets) ---- */
 const SND={
   correct:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Right.mp3',
   wrong:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Wrong.mp3',
   level:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Level.mp3',
-  win:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Complete.mp3',
-  hint:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Hint.mp3'
+  win:'https://dreamchildapp.com/backend/assets/acitivty_sounds/Complete.mp3'
+  /* Hint.mp3 is not used: MCQ files have no Hint button */
 };
 const _audio={};
 function preloadSounds(){for(const k in SND){try{const a=new Audio(SND[k]);a.preload='auto';_audio[k]=a;}catch(e){}}}
@@ -373,205 +362,114 @@ function playCorrect(){ playSound('correct'); }
 function playWrong(){   playSound('wrong');   }
 function playLevel(){   playSound('level');   }
 function playWin(){     playSound('win');     }
-function playHint(){    playSound('hint');    }
 function setSoundIcon(){const b=document.getElementById('soundBtn');b.innerHTML=soundOn
   ?'<svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M16 9a3.5 3.5 0 0 1 0 6"/><path d="M19 7a7 7 0 0 1 0 10"/></svg>'
   :'<svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M22 9l-5 6M17 9l5 6"/></svg>';}
 function toggleSound(){soundOn=!soundOn;state.sound=soundOn;setSoundIcon();save(state);}
 
 /* ---- helpers ---- */
-function P(){ return PUZZLES[cur]; }
-function sideFor(topId){ return P().answer[Number(topId)-1]; }
-function isPaired(col,id){ return state.pairs[cur].some(function(p){ return col==='top' ? p[0]===id : p[1]===id; }); }
-function cardEl(col,id){ return document.querySelector('.mcard[data-col="'+col+'"][data-id="'+id+'"]'); }
-function solved(i){ return state.pairs[i].length>=PUZZLES[i].tops.length; }
-function allSolved(){ return PUZZLES.every(function(p,i){ return solved(i); }); }
+function Q(){ return QUESTIONS[cur]; }
+function answered(i){ return !!state.answers[i]; }
+function allAnswered(){ return QUESTIONS.every(function(q,i){ return answered(i); }); }
+
+const MK_OK='<svg viewBox="0 0 24 24"><path d="M4 13l5 5L20 6"/></svg>';
+const MK_NO='<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>';
 
 /* ---- render ---- */
-function renderProgress(){ document.getElementById('round').textContent=(cur+1)+'/'+PUZZLES.length; }
-function renderHead(){ document.getElementById('hsub').innerHTML=P().sub_gu+'<br>લીટી દોરો, અથવા બંને પર એક-એક વાર ટૅપ કરો.'; }
-function renderActions(){
-  const isLast = cur===PUZZLES.length-1;
-  document.getElementById('btnPrev').disabled = (cur===0);
-  document.getElementById('btnNext').disabled = !(solved(cur) && !isLast);
+function renderProgress(){ document.getElementById('round').textContent=(cur+1)+'/'+QUESTIONS.length; }
+function renderHead(){
+  document.getElementById('hsub').innerHTML='ઉપરથી દેખાતું આ દૃશ્ય કઈ વસ્તુનું છે?<br>નીચેના ચાર વિકલ્પોમાંથી તેનું બાજુનું દૃશ્ય પસંદ કરો.';
 }
-function head(txt){const d=document.createElement('div');d.className='chead';d.textContent=txt;return d;}
-function card(col,src,id,label){
-  const d=document.createElement('div');
-  d.className='mcard'; d.dataset.col=col; d.dataset.id=id;
-  d.innerHTML='<span class="tag">'+label+'</span><img alt="" draggable="false" src="'+src+'">';
-  d.querySelector('img').addEventListener('load',drawWires);
-  d.addEventListener('pointerdown',function(e){onDown(e,d);});
-  return d;
-}
-function buildCols(){
-  const ct=document.getElementById('colTop'), cs=document.getElementById('colSide');
-  ct.innerHTML=''; cs.innerHTML='';
-  ct.appendChild(head('ઉપરથી')); cs.appendChild(head('બાજુથી'));
-  P().tops.forEach(function(src,i){ ct.appendChild(card('top',src,String(i+1),String(i+1))); });
-  P().sides.forEach(function(src,i){ cs.appendChild(card('side',src,LETTERS[i],LETTERS[i])); });
-}
-function paint(){
-  document.querySelectorAll('.mcard').forEach(function(el){
-    const col=el.dataset.col,id=el.dataset.id,done=isPaired(col,id);
-    el.classList.toggle('found',done);
-    el.classList.toggle('sel',!done&&!!sel&&sel.col===col&&sel.id===id);
+function renderQuestion(){ document.getElementById('qImg').src=Q().top; }
+function renderOptions(){
+  const box=document.getElementById('opts'); box.innerHTML='';
+  const rec=state.answers[cur];
+  Q().options.forEach(function(src,i){
+    const id=LETTERS[i];
+    const d=document.createElement('div');
+    let cls='opt';
+    if(rec){
+      cls+=' locked';
+      if(id===ANSWER[cur]) cls+=' correct';
+      else if(id===rec.selected) cls+=' wrong';
+      else cls+=' dim';
+    }else if(sel===id){
+      cls+=' sel';
+    }
+    d.className=cls; d.dataset.id=id;
+    const mk = rec ? (id===ANSWER[cur] ? MK_OK : (id===rec.selected ? MK_NO : '')) : '';
+    d.innerHTML='<span class="tag">'+id+'</span><span class="mk">'+mk+'</span>'
+              + '<img alt="" draggable="false" src="'+src+'">';
+    if(!rec) d.addEventListener('click',function(){ pick(id); });
+    box.appendChild(d);
   });
+}
+function renderActions(){
+  const isLast = cur===QUESTIONS.length-1;
+  document.getElementById('btnPrev').disabled = (cur===0);
+  document.getElementById('btnNext').disabled = !(answered(cur) && !isLast);
+  document.getElementById('btnCheck').disabled = answered(cur) || !sel;
 }
 function renderAll(){
-  sel=null; drag=null;
-  renderProgress(); renderHead(); buildCols(); paint(); renderActions(); setSoundIcon(); clearStatus();
-  drawWires(); setTimeout(drawWires,300);
+  renderProgress(); renderHead(); renderQuestion(); renderOptions(); renderActions();
+  setSoundIcon(); clearStatus();
 }
 
-/* ---- wires (SVG overlay, coordinates in CSS px of .match) ---- */
-function anchor(el,side,m){
-  const r=el.getBoundingClientRect();
-  return {x:(side==='right'?r.right:r.left)-m.left, y:r.top+r.height/2-m.top};
-}
-function curve(a,b){
-  const dx=(b.x-a.x)*.45;
-  return 'M'+a.x+' '+a.y+' C'+(a.x+dx)+' '+a.y+','+(b.x-dx)+' '+b.y+','+b.x+' '+b.y;
-}
-function drawWires(){
-  const svg=document.getElementById('wires'); if(!svg) return;
-  const m=document.getElementById('match').getBoundingClientRect();
-  let out='';
-  state.pairs[cur].forEach(function(p){
-    const a=cardEl('top',p[0]), b=cardEl('side',p[1]); if(!a||!b) return;
-    const p1=anchor(a,'right',m), p2=anchor(b,'left',m);
-    out+='<path d="'+curve(p1,p2)+'" fill="none" stroke="var(--brand)" stroke-width="2.6" stroke-linecap="round"/>'
-       + '<circle cx="'+p1.x+'" cy="'+p1.y+'" r="3.6" fill="var(--brand)"/>'
-       + '<circle cx="'+p2.x+'" cy="'+p2.y+'" r="3.6" fill="var(--brand)"/>';
-  });
-  if(drag&&drag.moved){
-    const p1=anchor(drag.el,drag.col==='top'?'right':'left',m);
-    const p2={x:drag.x-m.left,y:drag.y-m.top};
-    out+='<path d="'+curve(p1,p2)+'" fill="none" stroke="var(--accent)" stroke-width="2.6" stroke-linecap="round" stroke-dasharray="6 7"/>'
-       + '<circle cx="'+p1.x+'" cy="'+p1.y+'" r="3.6" fill="var(--accent)"/>';
-  }
-  svg.innerHTML=out;
+/* ---- phase 1: selecting (nothing is revealed) ---- */
+function pick(id){
+  if(answered(cur)) return;
+  sel = (sel===id) ? null : id;
+  renderOptions(); renderActions();
 }
 
-/* ---- pairing ---- */
-function tryPair(topId,sideId){
-  if(isPaired('top',topId)||isPaired('side',sideId)){ sel=null; paint(); drawWires(); return; }
-  const a=cardEl('top',topId), b=cardEl('side',sideId);
-  sel=null;
-  if(sideFor(topId)===sideId){
-    state.pairs[cur].push([topId,sideId]);
-    save(state); paint(); drawWires();
-    if(solved(cur)){ onSolved(); }
-    else{ if(soundOn) playCorrect(); status('ok','સાચી જોડી!'); }
+/* ---- phase 2: checked (locked) ---- */
+function checkAnswer(){
+  if(answered(cur)) return;
+  if(!sel) return;
+  const ok = (sel===ANSWER[cur]);
+  state.answers[cur]={selected:sel,correct:ok};   /* always the user's own pick */
+  save(state);
+  const picked=sel;
+  renderOptions(); renderActions();
+  if(ok){
+    if(soundOn) playCorrect();
+    status('ok','સાચો જવાબ!',true);
   }else{
     if(soundOn) playWrong();
-    [a,b].forEach(function(el){
-      if(!el) return;
-      el.classList.remove('shake'); void el.offsetWidth;
-      el.classList.add('wrong','shake');
-      setTimeout(function(){ el.classList.remove('wrong','shake'); },430);
-    });
-    status('bad','આ જોડી બંધબેસતી નથી. ફરી જુઓ.');
-    paint(); drawWires();
+    shake(picked);
+    status('bad','સાચો જવાબ લીલા રંગમાં દર્શાવ્યો છે.',true);
   }
+  onAnswered();
 }
-
-function onSolved(){
-  renderActions();
-  if(allSolved()){
-    status('done','બધા કોયડા પૂર્ણ. ખૂબ સરસ! 🌸',true);
+function shake(id){
+  const el=document.querySelector('.opt[data-id="'+id+'"]'); if(!el) return;
+  el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake');
+  setTimeout(function(){ el.classList.remove('shake'); },340);
+}
+function onAnswered(){
+  if(!allAnswered()){ if(soundOn) playLevel(); return; }
+  markDone();                                  /* ACTIVITY_DONE now — not in 5s */
+  if(state.celebrated) return;
+  setTimeout(function(){
+    state.celebrated=true; save(state);
     if(soundOn) playWin();
-    if(!state.celebrated){ state.celebrated=true; save(state); showCelebrate(); }
-    markDone();
-  }else{
-    status('done','આ કોયડો પૂર્ણ. તૈયાર હો ત્યારે આગળ વધો.',true);
-    if(soundOn) playLevel();
-  }
-}
-
-/* ---- tap flow ---- */
-function tapCard(col,id){
-  if(isPaired(col,id)) return;
-  if(!sel){ sel={col:col,id:id}; paint(); drawWires(); return; }
-  if(sel.col===col){ sel = (sel.id===id) ? null : {col:col,id:id}; paint(); drawWires(); return; }
-  const topId  = col==='top'  ? id : sel.id;
-  const sideId = col==='side' ? id : sel.id;
-  tryPair(topId,sideId);
-}
-
-/* ---- drag flow (pointer events: touch + mouse) ---- */
-let drag=null;
-function cardFromPoint(x,y){
-  const el=document.elementFromPoint(x,y);
-  return el&&el.closest ? el.closest('.mcard') : null;
-}
-function clearDrop(){const d=document.querySelector('.mcard.drop');if(d)d.classList.remove('drop');}
-function onDown(e,el){
-  if(e.button!==undefined && e.button!==0) return;
-  const col=el.dataset.col,id=el.dataset.id;
-  if(isPaired(col,id)) return;
-  e.preventDefault();
-  drag={col:col,id:id,el:el,moved:false,sx:e.clientX,sy:e.clientY,x:e.clientX,y:e.clientY,over:null};
-  try{ el.setPointerCapture(e.pointerId); }catch(_){}
-}
-function onMove(e){
-  if(!drag) return;
-  if(Math.abs(e.clientX-drag.sx)>6||Math.abs(e.clientY-drag.sy)>6) drag.moved=true;
-  if(!drag.moved) return;
-  e.preventDefault();
-  drag.x=e.clientX; drag.y=e.clientY;
-  const t=cardFromPoint(e.clientX,e.clientY);
-  const ok = t && t.dataset.col!==drag.col && !t.classList.contains('found');
-  if((ok?t:null)!==drag.over){
-    clearDrop();
-    drag.over = ok ? t : null;
-    if(drag.over) drag.over.classList.add('drop');
-  }
-  drawWires();
-}
-function onUp(e){
-  if(!drag) return;
-  const d=drag; drag=null; clearDrop();
-  if(d.moved){
-    const t=cardFromPoint(e.clientX,e.clientY);
-    if(t && t.dataset.col!==d.col && !t.classList.contains('found')){
-      const topId  = d.col==='top'  ? d.id : t.dataset.id;
-      const sideId = d.col==='side' ? d.id : t.dataset.id;
-      sel=null; tryPair(topId,sideId);
-    }else{
-      drawWires();
-    }
-  }else{
-    tapCard(d.col,d.id);
-  }
-  drawWires();
-}
-
-/* ---- hint ---- */
-function useHint(){
-  if(solved(cur)){ status('hint','આ કોયડો પહેલેથી પૂર્ણ છે.'); return; }
-  const rem=P().tops.map(function(src,i){return String(i+1);}).filter(function(id){ return !isPaired('top',id); });
-  if(!rem.length) return;
-  const topId=rem[Math.floor(Math.random()*rem.length)];
-  const a=cardEl('top',topId), b=cardEl('side',sideFor(topId));
-  [a,b].forEach(function(el){ if(el) el.classList.add('hint'); });
-  setTimeout(function(){ [a,b].forEach(function(el){ if(el) el.classList.remove('hint'); }); },1600);
-  if(soundOn) playHint();
-  status('hint','💡 આ બે દૃશ્યો એકબીજા સાથે જોડાય છે.');
+    showCelebrate();
+  },5000);                                     /* let the revealed answer be read */
 }
 
 /* ---- navigation ---- */
 function nextPuzzle(){
-  if(cur<PUZZLES.length-1 && solved(cur)){
-    cur++; state.tab=cur; save(state); renderAll();
+  if(cur<QUESTIONS.length-1 && answered(cur)){
+    cur++; state.tab=cur; sel=null; save(state); renderAll();
     window.scrollTo({top:0,behavior:'smooth'});
   }
 }
 function prevPuzzle(){
   if(cur>0){
-    cur--; state.tab=cur; save(state); renderAll();
+    cur--; state.tab=cur; sel=null; save(state); renderAll();
     window.scrollTo({top:0,behavior:'smooth'});
-    if(solved(cur)) status('done','આ કોયડો પૂર્ણ.',true);
+    const rec=state.answers[cur];
+    if(rec) status(rec.correct?'ok':'bad', rec.correct?'સાચો જવાબ!':'સાચો જવાબ લીલા રંગમાં દર્શાવ્યો છે.', true);
   }
 }
 
@@ -592,20 +490,15 @@ function closeCelebrate(){
 }
 
 /* ---- init ---- */
-window.addEventListener('pointermove',onMove,{passive:false});
-window.addEventListener('pointerup',onUp);
-window.addEventListener('pointercancel',onUp);
-window.addEventListener('resize',drawWires);
-window.addEventListener('orientationchange',function(){setTimeout(drawWires,220);});
-
 preloadSounds();
 renderAll();
-if(allSolved()){
-  status('done','બધા કોયડા પૂર્ણ. ખૂબ સરસ! 🌸',true);
+if(allAnswered()){
+  status('done','બધા પ્રશ્નો પૂર્ણ. ખૂબ સરસ! 🌸',true);
   _completed=true;
   pushProgress();
-}else if(solved(cur)){
-  status('done','આ કોયડો પૂર્ણ. તૈયાર હો ત્યારે આગળ વધો.',true);
+}else if(answered(cur)){
+  const rec=state.answers[cur];
+  status(rec.correct?'ok':'bad', rec.correct?'સાચો જવાબ!':'સાચો જવાબ લીલા રંગમાં દર્શાવ્યો છે.', true);
 }
 </script>
 </body>
