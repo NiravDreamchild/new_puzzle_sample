@@ -323,7 +323,7 @@ function answerIndex(P){ let idx=-1,cnt=0;
 PUZZLES.forEach((P,i)=>{ const r=answerIndex(P);
   if(r.cnt!==1) console.warn('Puzzle',i,'has',r.cnt,'buildable options — expected 1'); });
 
-const KEY='dcgs_cubefold_v2';
+const KEY='dcgs_cubefold_v3';
 const TAGS=['A','B','C','D'];
 
 function save(d){try{localStorage.setItem(KEY,JSON.stringify(d))}catch(e){}}
@@ -351,9 +351,11 @@ window.addEventListener('pagehide',pushProgress);
    Answer, and always holding the USER'S own pick (never the correct index).
    answers[i] being truthy IS the "this question is answered / locked" flag.
    picked[] only holds the pre-check selection so a reload keeps the highlight. */
-let state = load() || { tab:0, sound:false, celebrated:false, answers:[null,null,null], picked:[null,null,null] };
+let state = load() || { tab:0, sound:true, celebrated:false, answers:[null,null,null], picked:[null,null,null] };
 if(!state.answers) state.answers=[null,null,null];
 if(!state.picked) state.picked=[null,null,null];
+/* sound is ON by default; only an explicit toggle-off turns it off */
+if(state.sound===undefined||state.sound===null) state.sound=true;
 let soundOn = !!state.sound;
 let cur = state.tab||0;
 function pickedAt(i){const v=state.picked[i];return (v===undefined||v===null)?null:v;}
