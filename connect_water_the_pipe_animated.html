@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#FBF9FC">
-<title>Dreamchild · Connect the Pipe</title>
+<title>Dreamchild · Pipes Puzzle</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hind+Vadodara:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -46,9 +46,6 @@ body{
 .hrow1{display:flex;align-items:center;justify-content:space-between;gap:12px;}
 .ptitle{font-weight:700;font-size:23px;line-height:1.05;color:var(--brand);margin:0;letter-spacing:-.01em;}
 .hctrls{display:flex;align-items:center;gap:8px;flex:none;}
-.rpill{display:flex;align-items:center;justify-content:center;min-width:50px;height:38px;padding:0 12px;
-  border:1px solid var(--line);border-radius:11px;background:var(--surface);
-  font-weight:600;font-size:16px;color:var(--ink);letter-spacing:.01em;}
 .hbtn{width:40px;height:38px;border:1px solid var(--line);border-radius:11px;background:var(--surface);
   display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-appearance:none;padding:0;
   transition:background .15s ease;}
@@ -107,9 +104,7 @@ body{
 
 /* ---- action bar ---- */
 .actionbar{margin-top:14px;}
-.actionbar .inner{display:flex;flex-direction:row;align-items:center;justify-content:space-between;
-  flex-wrap:wrap;gap:6px;row-gap:8px;}
-.cmid{display:flex;align-items:center;gap:6px;}
+.actionbar .inner{display:flex;align-items:center;justify-content:center;}
 .cbtn{font-family:'Hind Vadodara',sans-serif;cursor:pointer;-webkit-appearance:none;
   display:flex;align-items:center;justify-content:center;gap:5px;
   transition:transform .12s ease,opacity .2s ease,background .2s ease,box-shadow .2s ease;}
@@ -118,12 +113,6 @@ body{
 .cbtn.hint{min-height:36px;border-radius:12px;padding:0 22px;background:var(--surface);border:1px solid var(--line);
   color:var(--ink);font-weight:600;font-size:13px;box-shadow:var(--shadow-sm);}
 .cbtn.hint svg{stroke:var(--brand);}
-.cbtn.prev,.cbtn.next{min-height:36px;border-radius:12px;padding:0 20px;background:var(--brand);border:none;color:#fff;
-  font-weight:700;font-size:13.5px;box-shadow:0 8px 20px -8px rgba(110,42,133,.5);}
-.cbtn.prev svg,.cbtn.next svg{stroke:#fff;}
-.cbtn:disabled{cursor:default;}
-.cbtn.prev:disabled,.cbtn.next:disabled{background:var(--surface);border:1px solid var(--line);color:var(--muted);box-shadow:none;font-weight:600;}
-.cbtn.prev:disabled svg,.cbtn.next:disabled svg{stroke:var(--muted);}
 
 /* ---- footer ---- */
 .foot{text-align:center;font-size:11px;color:var(--muted);letter-spacing:.03em;margin-top:18px;}
@@ -196,7 +185,6 @@ body{
     <div class="hrow1">
       <h1 class="ptitle">Pipes Puzzle</h1>
       <div class="hctrls">
-        <span class="rpill" id="round"></span>
         <button class="hbtn" id="soundBtn" onclick="toggleSound()" aria-label="Sound"></button>
         <button class="hbtn info" onclick="openHelp()" aria-label="How to play">
           <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><circle cx="12" cy="8" r="0.6" fill="currentColor" stroke="none"/></svg>
@@ -214,14 +202,10 @@ body{
   <!-- status -->
   <div class="status" id="status"></div>
 
-  <!-- actions -->
+  <!-- actions (single puzzle: no Back/Next, Hint centered) -->
   <div class="actionbar">
     <div class="inner">
-      <button class="cbtn prev" id="btnPrev" onclick="prevPuzzle()"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>Back</button>
-      <div class="cmid">
-        <button class="cbtn hint" onclick="useHint()"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 1 4 10.5c-.7.6-1 1.2-1 2v.5H9v-.5c0-.8-.3-1.4-1-2A6 6 0 0 1 12 3z"/></svg>Hint</button>
-      </div>
-      <button class="cbtn next" id="btnNext" onclick="nextPuzzle()">Next<svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+      <button class="cbtn hint" onclick="useHint()"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 1 4 10.5c-.7.6-1 1.2-1 2v.5H9v-.5c0-.8-.3-1.4-1-2A6 6 0 0 1 12 3z"/></svg>Hint</button>
     </div>
   </div>
 
@@ -261,19 +245,19 @@ body{
 <!-- celebration -->
 <div class="celebrate" id="celebrate">
   <div class="em">🌸</div>
-  <h2>બધા કોયડા પૂર્ણ</h2>
+  <h2>કોયડો પૂર્ણ</h2>
   <p>ખૂબ સરસ! તમારી એકાગ્રતા કમાલની છે.</p>
   <button class="btn" onclick="closeCelebrate()">Congratulations</button>
 </div>
 
 <script>
 /* ============ PUZZLE DATA (verified solvable) ============ */
-const RAW=[{"R":4,"C":4,"src":[1,1],"base":"2c68|6bbc|7ac1|12b8","rots":"1010|3010|2310|0230"},{"R":5,"C":5,"src":[2,2],"base":"42c44|52d7d|52bd1|3ead4|2b839","rots":"00030|32030|10133|20212|32000"},{"R":6,"C":6,"src":[3,2],"base":"2aeea8|2c1568|2d47bc|47ffc5|395151|2ab838","rots":"113330|001002|120023|312222|122030|322210"}];
+const RAW=[{"R":6,"C":6,"src":[3,2],"base":"2aeea8|2c1568|2d47bc|47ffc5|395151|2ab838","rots":"113330|001002|120023|312222|122030|322210"}];
 const P=RAW.map(p=>({R:p.R,C:p.C,src:p.src,
   base:p.base.split('|').map(r=>r.split('').map(ch=>parseInt(ch,16))),
   scr:p.rots.split('|').map(r=>r.split('').map(Number))}));
 
-const KEY='dcgs_pipe_v1_final';
+const KEY='dcgs_pipe_v2';   /* bumped: single-puzzle state shape */
 const N=1,E=2,S=4,W=8, DIRS=[N,E,S,W];
 const DR={1:-1,2:0,4:1,8:0}, DC={1:0,2:1,4:0,8:-1}, OPP={1:4,2:8,4:1,8:2};
 const EP={1:[50,0],2:[100,50],4:[50,100],8:[0,50]};
@@ -302,14 +286,14 @@ window.addEventListener('pagehide',pushProgress);
 /* ---- state ---- */
 let state=load();
 if(!state||!state.rots){
-  state={tab:0,sound:false,celebrated:false,
+  state={sound:true,celebrated:false,
     rots:P.map(p=>p.scr.map(r=>r.slice())),
     solved:P.map(()=>false),
     taps:P.map(()=>0)};
 }
 if(!state.solved)state.solved=P.map(()=>false);
 if(!state.taps)state.taps=P.map(()=>0);
-let soundOn=!!state.sound, cur=state.tab||0;
+let soundOn=state.sound!==false, cur=0;   /* sound ON by default; single puzzle */
 let spin=[]; /* visual angles, runtime only */
 
 /* ---- sound (mp3 assets) ---- */
@@ -380,8 +364,7 @@ function cellSVG(base,isSrc){
 }
 
 /* ---- render ---- */
-function renderProgress(){document.getElementById('round').textContent=(cur+1)+'/'+P.length;}
-function renderHead(){document.getElementById('hsub').innerHTML='દરેક પાઈપ પર ટૅપ કરી ફેરવો.<br>પીળા સ્રોતથી બધા છેડા જોડો — કોઈ ખુલ્લો ન રહે.';}
+function renderHead(){document.getElementById('hsub').textContent='દરેક પાઇપને ફેરવવા માટે તેના પર ટેપ કરો. પીળા બિંદુથી બધા પાઇપ જોડો—કોઈ છેડો ખુલ્લો ન રહે.';}
 function buildBoard(){
   const {R,C,src}=P0();
   const b=document.getElementById('board');
@@ -500,7 +483,7 @@ function buildSim(){
     for(const d of DIRS) if((m&d)&&d!==inW){
       const a=arms.get(armKey(r,c,d)); a.reach=true;
       a.parent=isS?'SRC':armKey(r,c,inW);
-      a.share=share*split;
+      a.share=Math.max(0.4,share*split);   /* junctions slow branches, floored for pacing */
     }
   }
   /* carry water; disconnected arms keep their old parent so drains run tip-first */
@@ -725,12 +708,7 @@ function tick(now){
 }
 requestAnimationFrame(tick);
 window.addEventListener('resize',sizeCanvas);
-function renderActions(){
-  const isLast=cur===P.length-1;
-  document.getElementById('btnPrev').disabled=(cur===0);
-  document.getElementById('btnNext').disabled=!(state.solved[cur]&&!isLast);
-}
-function renderAll(){renderProgress();renderHead();buildBoard();paintFill();renderActions();setSoundIcon();clearStatus();}
+function renderAll(){renderHead();buildBoard();paintFill();setSoundIcon();clearStatus();}
 
 /* ---- status ---- */
 let stTimer;
@@ -802,22 +780,11 @@ function checkDone(){
   state.solved[cur]=true;
   save(state);
   paintFill();
-  renderActions();
-  const all=state.solved.every(Boolean);
-  if(all){
-    status('done','બધા કોયડા પૂર્ણ. ખૂબ સરસ! 🌸',true);
-    if(soundOn)playWin();
-    if(!state.celebrated){state.celebrated=true;save(state);showCelebrate();}
-    markDone();
-  }else{
-    status('done','આ કોયડો પૂર્ણ. તૈયાર હો ત્યારે આગળ વધો.',true);
-    if(soundOn)playLevel();
-  }
+  status('done','કોયડો પૂર્ણ. ખૂબ સરસ! 🌸',true);
+  if(soundOn)playWin();
+  if(!state.celebrated){state.celebrated=true;save(state);showCelebrate();}
+  markDone();
 }
-
-/* ---- navigation ---- */
-function nextPuzzle(){if(cur<P.length-1&&state.solved[cur]){cur++;state.tab=cur;save(state);renderAll();window.scrollTo({top:0,behavior:'smooth'});}}
-function prevPuzzle(){if(cur>0){cur--;state.tab=cur;save(state);renderAll();window.scrollTo({top:0,behavior:'smooth'});}}
 
 /* ---- help sheet ---- */
 function openHelp(){document.getElementById('scrim').classList.add('open');document.getElementById('sheet').classList.add('open');}
@@ -830,12 +797,10 @@ function closeCelebrate(){document.getElementById('celebrate').classList.remove(
 /* ---- init ---- */
 preloadSounds();
 renderAll();
-if(state.solved.every(Boolean)){
-  status('done','બધા કોયડા પૂર્ણ. ખૂબ સરસ! 🌸',true);
+if(state.solved[cur]){
+  status('done','કોયડો પૂર્ણ. ખૂબ સરસ! 🌸',true);
   _completed=true;
   pushProgress();
-}else if(state.solved[cur]){
-  status('done','આ કોયડો પૂર્ણ. તૈયાર હો ત્યારે આગળ વધો.',true);
 }
 </script>
 </body>
