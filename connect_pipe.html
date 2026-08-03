@@ -176,7 +176,7 @@ svg.board{width:100%;height:auto;display:block;touch-action:none;user-select:non
   <!-- header -->
   <header class="phead">
     <div class="hrow1">
-      <h1 class="ptitle">Connect the Dots</h1>
+      <h1 class="ptitle">Connect</h1>
       <div class="hctrls">
         <span class="rpill" id="round"></span>
         <button class="hbtn" id="soundBtn" onclick="toggleSound()" aria-label="Sound"></button>
@@ -309,7 +309,7 @@ window.addEventListener('pagehide',pushProgress);
 /* ---------- STATE ---------- */
 function freshState(){
   return {
-    tab:0, sound:false, celebrated:false,
+    tab:0, sound:true, celebrated:false,
     solved: PUZZLES.map(()=>false),
     lines: PUZZLES.map(p=>p.colors.map(()=>[]))
   };
@@ -372,7 +372,7 @@ const board=document.getElementById('board');
 function boltD(){ return "M 0.05 -0.18 L -0.12 0.05 L -0.01 0.05 L -0.06 0.18 L 0.13 -0.05 L 0.02 -0.05 Z"; }
 
 function renderProgress(){document.getElementById('round').textContent=(cur+1)+'/'+PUZZLES.length;}
-function renderHead(){document.getElementById('hsub').innerHTML='સરખા રંગનાં ⚡ ટપકાં જોડો.<br>બધાં ખાનાં ભરાય — લીટી ઓળંગાય નહીં.';}
+function renderHead(){document.getElementById('hsub').innerHTML='સમાન રંગના ટપકાં જોડો.<br>દરેક ખાનું ભરો. લીટીઓ એકબીજાને કાપે નહીં.';}
 
 function render(){
   const p=PUZZLES[cur];
