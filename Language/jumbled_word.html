@@ -45,7 +45,7 @@ body{
 .phead{background:var(--surface);border:1px solid var(--line);border-radius:18px;
   box-shadow:0 6px 20px -12px rgba(78,33,95,.16);padding:15px 16px;margin-bottom:14px;}
 .hrow1{display:flex;align-items:center;justify-content:space-between;gap:12px;}
-.ptitle{font-weight:700;font-size:23px;line-height:1.05;color:var(--brand);margin:0;letter-spacing:-.01em;}
+.ptitle{font-weight:700;font-size:clamp(19px,5.4vw,23px);line-height:1.05;color:var(--brand);margin:0;letter-spacing:-.01em;}
 .hctrls{display:flex;align-items:center;gap:8px;flex:none;}
 .rpill{display:flex;align-items:center;justify-content:center;min-width:50px;height:38px;padding:0 12px;
   border:1px solid var(--line);border-radius:11px;background:var(--surface);
@@ -214,7 +214,7 @@ body{
   <!-- header -->
   <header class="phead">
     <div class="hrow1">
-      <h1 class="ptitle">અક્ષર ગોઠવો</h1>
+      <h1 class="ptitle">Jumbled Word</h1>
       <div class="hctrls">
         <span class="rpill" id="round"></span>
         <button class="hbtn" id="soundBtn" onclick="toggleSound()" aria-label="Sound"></button>
@@ -302,37 +302,37 @@ body{
              the word, and in the harder rounds ONE extra decoy letter that is
              never used. Tile id = its index in pool. */
 const PUZZLES=[
-  {id:'dhabkar', word:'ધબકાર',
+  {id:'w01', word:'ધબકાર',
    clue:'માના પેટમાં બાળકનો સૌથી પહેલો સંભળાતો અવાજ.',
    letters:['ધ','બ','કા','ર'],
-   pool:['ધા','કિ','ર','બ','ધ','રી','બા','બિ','રા','ધી','ક','કા']},
+   pool:['ઢ','બા','ર','બ','ધ','રા','ખા','ડ','ક','ભ','ધા','કા']},
 
-  {id:'mamtalu', word:'મમતાળુ',
-   clue:'જેના હૈયામાં માતા જેવો પ્રેમ છલકાય તેવું.',
-   letters:['મ','મ','તા','ળુ'],
-   pool:['ળ','તા','મ','તી','ળા','મિ','મ','લુ','મા','ત','ણ','ળુ']},
+  {id:'w05', word:'હાલરડું',
+   clue:'બાળકને ઊંઘાડવા માટે માતા ગાય તે ગીત.',
+   letters:['હા','લ','ર','ડું'],
+   pool:['હિ','હ','ળ','ડ','ભા','ડું','લા','હા','રા','ર','દું','લ']},
 
-  {id:'kilkari', word:'કિલકારી',
-   clue:'બાળકના મુખેથી છલકતો હાસ્યનો મીઠો રણકાર.',
-   letters:['કિ','લ','કા','રી'],
-   pool:['કુ','રિ','ળ','રા','કિ','કા','લી','લ','લા','કી','ક','રી']},
+  {id:'w17', word:'જોડીદાર',
+   clue:'જીવનભર સાથ આપનાર સાથી.',
+   letters:['જો','ડી','દા','ર'],
+   pool:['ર','ડા','ડી','રા','જો','જા','દ','ઝો','દા','ડ','જ','દી']},
 
-  {id:'vahalsoyu', word:'વહાલસોયું',
+  {id:'w22', word:'વહાલસોયું',
    clue:'જેને સૌ કોઈ હેતથી ચાહે તેવું.',
    letters:['વ','હા','લ','સો','યું'],
-   pool:['યું','લા','વ','લ','સ','સો','યુ','હી','ય','હા','વી','ળ','સૌ','વા','હ']},
+   pool:['જું','શો','બ','ભા','ળ','સ','સો','યું','વ','લ','ય','હા','વા','લા','હ']},
 
-  {id:'khilkhilat', word:'ખિલખિલાટ',
-   clue:'નાના બાળકના ખુલ્લા દિલના હાસ્યનો અવાજ.',
-   letters:['ખિ','લ','ખિ','લા','ટ'],
-   pool:['ખી','લી','ટા','ખ','લા','ખિ','ળ','ખિ','લ','ડ','ટ','ઠ','ળા','ટી','ખા']},
+  {id:'w25', word:'બાળઉછેર',
+   clue:'બાળકને પ્રેમ અને સંસ્કારથી મોટું કરવાની પ્રક્રિયા.',
+   letters:['બા','ળ','ઉ','છે','ર'],
+   pool:['ર','લ','છ','બા','ડ','ઉ','છે','આ','ળા','ળ','ભા','અ','બ','રા','ચે']},
 
-  {id:'vatavaran', word:'વાતાવરણ',
-   clue:'ઘરની આજુબાજુનો માહોલ — બાળક તેને ઝીલે છે.',
-   letters:['વા','તા','વ','ર','ણ'],
-   pool:['હ','વુ','રા','ણ','વ','ર','ત','વા','ણા','રી','ળ','વી','તી','તા','ન']}
+  {id:'w37', word:'જીવનસાથી',
+   clue:'આખી જિંદગી સાથે ચાલનાર સાથી.',
+   letters:['જી','વ','ન','સા','થી'],
+   pool:['ણ','ઠી','શા','ના','ઝી','વ','ન','થી','થ','સ','સા','જ','બ','જી','વા']}
 ];
-const KEY='dcgs_jumbled_v3';
+const KEY='dcgs_jumbled_v5';
 
 /* tile id = index into pool */
 const TILES=PUZZLES.map(function(p){return p.pool.map(function(ch,k){return {id:k,ch:ch};});});
@@ -372,7 +372,8 @@ PUZZLES.forEach(function(p,i){
   if(!Array.isArray(state.hints[i]))state.hints[i]=[];
   state.solved[i]=!!state.solved[i];
 });
-state.sound=!!state.sound; state.celebrated=!!state.celebrated;
+state.sound=(typeof state.sound==='boolean')?state.sound:true;   /* ON by default */
+state.celebrated=!!state.celebrated;
 if(state.tab<0||state.tab>=PUZZLES.length)state.tab=0;
 
 let soundOn=!!state.sound, cur=state.tab||0;
@@ -407,18 +408,14 @@ function solved(i){return !!state.solved[i];}
 function usedIds(p){return slots(p).filter(function(v){return v!==null&&v!==undefined;});}
 function isUsed(p,id){return usedIds(p).indexOf(id)>=0;}
 function allFilled(p){return slots(p).every(function(v){return v!==null&&v!==undefined;});}
-function hasExtra(p){return PUZZLES[p].pool.length>PUZZLES[p].letters.length;}
 function isCorrect(p){const L=letters(p),s=slots(p);
   for(let i=0;i<L.length;i++){ if(s[i]===null||s[i]===undefined)return false; if(tileCh(p,s[i])!==L[i])return false; }
   return true;}
 
 /* ---- render ---- */
 function renderProgress(){document.getElementById('round').textContent=(cur+1)+'/'+PUZZLES.length;}
-function renderHead(){
-  const extra=PUZZLES[cur].pool.length-letters(cur).length;
-  let t='નીચેના અક્ષરોમાંથી સાચા અક્ષરો પસંદ કરી, ક્રમમાં ગોઠવીને શબ્દ બનાવો.';
-  document.getElementById('hsub').innerHTML=t;
-}
+const SUBTITLE='આપેલા વાક્ય પરથી શબ્દ ઓળખી,<br>યોગ્ય અક્ષરો પસંદ કરી સાચા ક્રમમાં શબ્દ બનાવો.';
+function renderHead(){ document.getElementById('hsub').innerHTML=SUBTITLE; }
 function renderClue(){document.getElementById('clue').textContent=PUZZLES[cur].clue;}
 function slotEl(i){return document.querySelector('.slot[data-i="'+i+'"]');}
 function setCellVars(){
