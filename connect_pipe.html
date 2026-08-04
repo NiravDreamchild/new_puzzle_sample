@@ -131,6 +131,9 @@ svg.board{width:100%;height:auto;display:block;touch-action:none;user-select:non
   stroke-linecap:round;stroke-linejoin:round;}
 .step .tx b{display:block;font-family:'Hind Vadodara',sans-serif;font-weight:600;font-size:15px;color:var(--ink);margin-bottom:2px;}
 .step .tx p{margin:0;font-size:13.5px;color:var(--muted);line-height:1.5;}
+.step .tx ul{margin:4px 0 0;padding-left:16px;font-size:13.5px;color:var(--muted);line-height:1.55;}
+.step .tx ul li{margin-bottom:5px;}
+.sheet .hintnote{font-size:13px;color:#B5781E;font-weight:600;margin:2px 0 14px;line-height:1.5;}
 .sheet .got{width:100%;margin-top:6px;background:var(--brand);color:#fff;}
 
 /* ---- celebration ---- */
@@ -214,23 +217,32 @@ svg.board{width:100%;height:auto;display:block;touch-action:none;user-select:non
 <div class="scrim" id="scrim" onclick="closeHelp()"></div>
 <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="How to play">
   <div class="grab"></div>
-  <h3>કેવી રીતે રમવું</h3>
-  <p class="lead">સરખા રંગનાં બે ⚡ ટપકાં લીટીથી જોડો — બધાં ખાનાં ભરાય એ રીતે.</p>
-
-  <div class="step">
-    <div class="ic"><svg viewBox="0 0 24 24"><path d="M5 12h9"/><path d="M12 7l5 5-5 5"/><circle cx="18" cy="12" r="0.6" fill="currentColor" stroke="none"/></svg></div>
-    <div class="tx"><b>આંગળી ખેંચો</b><p>એક રંગના ⚡ ટપકાં પર આંગળી દબાવી, સરખા રંગના બીજા ટપકાં સુધી લીટી ખેંચો.</p></div>
-  </div>
+  <h3>કેવી રીતે રમવું ?</h3>
+  <p class="lead">સરખા રંગનાં બે ⚡ ટપકાં, આંગળી વડે લીટી દોરીને જોડવાનાં છે — બધાં ખાનાં ભરાય એ રીતે.</p>
 
   <div class="step">
     <div class="ic"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg></div>
-    <div class="tx"><b>સીધી લીટી</b><p>લીટી એક ખાનાથી બાજુના ખાનામાં જ જાય — ત્રાંસી નહીં. કોઈ લીટી બીજી લીટીને ઓળંગે નહીં.</p></div>
+    <div class="tx"><b>સીધી લીટી</b><p>લીટી એક ખાનાથી આજુબાજુના 3 ખાનામાં સીધી જ જઈ શકે — ત્રાંસી નહીં. કોઈ લીટી બીજી લીટીને ઓળંગવી, એટલે કે ક્રોસ થવી ન જોઈએ, ઓવરલેપ થવી ન જોઈએ.</p></div>
+  </div>
+
+  <div class="step">
+    <div class="ic"><svg viewBox="0 0 24 24"><path d="M5 12h9"/><path d="M12 7l5 5-5 5"/><circle cx="18" cy="12" r="0.6" fill="currentColor" stroke="none"/></svg></div>
+    <div class="tx"><b>આંગળી ખેંચો</b>
+      <ul>
+        <li>એક રંગના ⚡ ટપકા પર આંગળી દબાવી, સરખા રંગના બીજા ટપકા સુધી આપ લીટી ખેંચી શકશો.</li>
+        <li>આપ લીટી દોરી દો, અને બધાં ટપકાં જોડાઈ જાય, પછી પણ જો ખાનાં ખાલી રહેશે, તો ગેમ પૂરી થશે નહીં.</li>
+        <li>તથા પહેલાં દોરેલી કોઈ લીટી પર કોઈ બીજી લીટી દોરવા જશો, તો લીટી દોરાઈ શકશે નહીં.</li>
+        <li>જો બધાં ખાનાં ભરાઈ ન જાય, તો રિ-સેટ કરવા માટે, આપ કોઈપણ ટપકા પર ક્લિક કરશો, તો લીટી અદૃશ્ય થઈ જશે.</li>
+      </ul>
+    </div>
   </div>
 
   <div class="step">
     <div class="ic"><svg viewBox="0 0 24 24"><path d="M4 7h10M4 12h10M4 17h6"/><path d="M16.5 16.5l2 2 3.5-3.5"/></svg></div>
-    <div class="tx"><b>બધું ભરો</b><p>બધી લીટી જોડાય અને ગ્રીડનું દરેક ખાનું ભરાય ત્યારે કોયડો પૂર્ણ.</p></div>
+    <div class="tx"><b>બધું ભરો</b><p>સમાન રંગનાં બધાં ટપકાં લીટીઓથી જોડાય જશે અને આપેલ ગ્રીડનાં દરેક ખાનાં ભરાય જશે, ત્યારે કોયડો પૂર્ણ થઈ જશે, અને તમને 'અભિનંદન'નું પોપ-અપ આવશે.</p></div>
   </div>
+
+  <p class="hintnote">વધુ માર્ગદર્શન માટે 'Hint' પર ક્લિક કરો.</p>
 
   <button class="btn got" onclick="closeHelp()">Close</button>
 </div>
@@ -372,7 +384,7 @@ const board=document.getElementById('board');
 function boltD(){ return "M 0.05 -0.18 L -0.12 0.05 L -0.01 0.05 L -0.06 0.18 L 0.13 -0.05 L 0.02 -0.05 Z"; }
 
 function renderProgress(){document.getElementById('round').textContent=(cur+1)+'/'+PUZZLES.length;}
-function renderHead(){document.getElementById('hsub').innerHTML='સમાન રંગના ટપકાં જોડો.<br>દરેક ખાનું ભરો. લીટીઓ એકબીજાને કાપે નહીં.';}
+function renderHead(){document.getElementById('hsub').innerHTML='સમાન રંગનાં ટપકાં એવી રીતે જોડો કે જોડાણવાળી લીટી દ્વારા, નીચેનાં દરેક ખાનાં ભરાઈ જવાં જોઈએ અને લીટીઓ એકબીજાને કાપવી (ઓવરલેપ થવી) જોઈએ નહીં.';}
 
 function render(){
   const p=PUZZLES[cur];
