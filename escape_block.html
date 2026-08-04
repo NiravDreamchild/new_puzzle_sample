@@ -163,6 +163,7 @@ body{
 .grab{width:42px;height:5px;border-radius:999px;background:var(--line);margin:6px auto 16px;}
 .sheet h3{font-family:'Hind Vadodara',sans-serif;font-weight:700;font-size:20px;margin:0 0 4px;}
 .sheet .lead{font-size:14px;color:var(--muted);margin:0 0 18px;line-height:1.5;}
+.sheet .lead.note{margin:0 0 14px;}
 .step{display:flex;gap:14px;align-items:flex-start;margin-bottom:16px;}
 .step .ic{flex:none;width:46px;height:46px;border-radius:14px;background:var(--brand-soft);
   display:flex;align-items:center;justify-content:center;}
@@ -266,12 +267,12 @@ body{
 <div class="scrim" id="scrim" onclick="closeHelp()"></div>
 <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="How to play">
   <div class="grab"></div>
-  <h3>કેવી રીતે રમવું</h3>
-  <p class="lead">રસ્તામાં આવતા બ્લોક ખસેડીને પીળા બ્લોક માટે બહાર નીકળવાનો માર્ગ બનાવો.</p>
+  <h3>કેવી રીતે રમવું ?</h3>
+  <p class="lead">રસ્તામાં આવતા બ્લોક ખસેડીને પીળા બ્લોક માટે બહાર નીકળવાનો માર્ગ બનાવવાનો છે.</p>
 
   <div class="step">
     <div class="ic"><svg viewBox="0 0 24 24"><path d="M5 9L2 12l3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3"/><path d="M2 12h20M12 2v20"/></svg></div>
-    <div class="tx"><b>ખેંચીને સરકાવો</b><p>બ્લોકને આંગળીથી પકડીને તેની દિશામાં સરકાવો.</p></div>
+    <div class="tx"><b>ખેંચીને સરકાવો</b><p>બ્લોકને આંગળીથી પકડીને ઉપર નીચે કે ડાબે જમણે સરકાવો.</p></div>
   </div>
 
   <div class="step">
@@ -281,8 +282,10 @@ body{
 
   <div class="step">
     <div class="ic"><svg viewBox="0 0 24 24"><path d="M5 12h9"/><path d="M12 7l5 5-5 5"/></svg></div>
-    <div class="tx"><b>બહાર કાઢો</b><p>પીળા બ્લોકને જમણી બાજુના બહાર નીકળવાના માર્ગ સુધી સરકાવો — કોયડો પૂર્ણ થશે!</p></div>
+    <div class="tx"><b>બહાર કાઢો</b><p>પીળો બ્લોક જમણી બાજુના બહાર નીકળવાના માર્ગ EXIT સુધી પહોંચશે, તો કોયડો પૂર્ણ થશે ! કોઈ ભૂલ થઈ, તો તમે બ્લોકને ફરીવાર, ઉપર નીચે કે ડાબે જમણે પણ કરી શકો છો.</p></div>
   </div>
+
+  <p class="lead note">વધુ માર્ગદર્શન માટે Hint પર ક્લિક કરો.</p>
 
   <button class="got" onclick="closeHelp()">Close</button>
 </div>
