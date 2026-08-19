@@ -44,7 +44,7 @@ body{
 .phead{background:var(--surface);border:1px solid var(--line);border-radius:18px;
   box-shadow:0 6px 20px -12px rgba(78,33,95,.16);padding:15px 16px;margin-bottom:14px;}
 .hrow1{display:flex;align-items:center;justify-content:space-between;gap:12px;}
-.ptitle{font-weight:700;font-size:23px;line-height:1.05;color:var(--brand);margin:0;letter-spacing:-.01em;}
+.ptitle{font-weight:700;font-size:23px;line-height:1.05;color:var(--brand);margin:0;letter-spacing:-.01em;min-width:0;}
 .hctrls{display:flex;align-items:center;gap:8px;flex:none;}
 .rpill{display:flex;align-items:center;justify-content:center;min-width:50px;height:38px;padding:0 12px;
   border:1px solid var(--line);border-radius:11px;background:var(--surface);
@@ -219,6 +219,7 @@ body{
       <h1 class="ptitle">Sound Match</h1>
       <div class="hctrls">
         <span class="rpill" id="round"></span>
+        <button class="hbtn" id="soundBtn" onclick="toggleSound()" aria-label="Sound"></button>
         <button class="hbtn info" onclick="openHelp()" aria-label="How to play">
           <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><circle cx="12" cy="8" r="0.6" fill="currentColor" stroke="none"/></svg>
         </button>
@@ -329,7 +330,9 @@ function markDone(){ _completed=true; activityDone(); pushProgress(); }   /* cal
 window.addEventListener('pagehide',pushProgress);   /* best-effort, where it fires */
 
 /* ---- state ---- */
-let state=load()||{tab:0,celebrated:false,matched:[[],[],[]]};
+let state=load()||{tab:0,sound:true,celebrated:false,matched:[[],[],[]]};
+if(typeof state.sound!=='boolean')state.sound=true;   /* sound ON by default; a saved choice always wins */
+let soundOn=!!state.sound;
 if(!state.matched)state.matched=[[],[],[]];
 while(state.matched.length<PUZZLES.length)state.matched.push([]);
 let cur=state.tab||0;
@@ -346,6 +349,7 @@ const SND={
 const _audio={};
 function preloadSounds(){for(const k in SND){try{const a=new Audio(SND[k]);a.preload='auto';_audio[k]=a;}catch(e){}}}
 function playSound(k){
+  if(!soundOn) return;
   const a=_audio[k]; if(!a) return;
   try{ a.pause(); a.currentTime=0; a.play().catch(function(){}); }catch(e){}
 }
@@ -354,6 +358,14 @@ function playWrong(){   playSound('wrong');   }
 function playLevel(){   playSound('level');   }
 function playWin(){     playSound('win');     }
 function playHint(){    playSound('hint');    }
+function setSoundIcon(){const b=document.getElementById('soundBtn');b.innerHTML=soundOn
+  ?'<svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M16 9a3.5 3.5 0 0 1 0 6"/><path d="M19 7a7 7 0 0 1 0 10"/></svg>'
+  :'<svg viewBox="0 0 24 24"><path d="M11 5L6 9H3v6h3l5 4V5z"/><path d="M22 9l-5 6M17 9l5 6"/></svg>';}
+function toggleSound(){
+  soundOn=!soundOn; state.sound=soundOn; setSoundIcon(); save(state);
+  if(!soundOn) status('hint','આ કોયડો અવાજથી રમાય છે — અવાજ ચાલુ રાખો.');
+  else{ AC(); clearStatus(); }
+}
 
 
 /* =========================================================
@@ -528,6 +540,7 @@ const TONES={
 
 function playTone(id,el){
   const s=TONES[id]; if(!s) return;
+  if(!soundOn) return;
   if(!fireClip(id)){
     const c=AC(), m=MASTER();
     if(c&&m){ try{ s.make(c,m,c.currentTime+.02); }catch(e){} }
@@ -691,6 +704,7 @@ function closeCelebrate(){
 }
 
 /* ---- init ---- */
+setSoundIcon();
 preloadSounds();
 loadClips();
 /* browsers need a user gesture before audio may start — warm the clock on the first one */

@@ -364,9 +364,9 @@ pushProgress();
 function markDone(){ _completed=true; activityDone(); pushProgress(); }   /* whole set solved */
 window.addEventListener('pagehide',pushProgress);
 
-let state=load()||{tab:0,sound:false,celebrated:false,entries:[{},{},{}]};
+let state=load()||{tab:0,sound:true,celebrated:false,entries:[{},{},{}]};
 if(!state.entries)state.entries=[{},{},{}];
-let soundOn=!!state.sound, cur=state.tab||0, selected=-1;
+let soundOn=(state.sound!==false), cur=state.tab||0, selected=-1;
 let history=[];
 
 /* ---- sound ---- */
