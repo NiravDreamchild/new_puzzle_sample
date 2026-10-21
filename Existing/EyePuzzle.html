@@ -187,7 +187,7 @@ body{
         </button>
       </div>
     </div>
-    <p class="hsub" id="hsub">ઉપરની આકૃતિમાં કુલ કેટલા ચોરસ છે ?<br>ધ્યાનથી ગણો, જવાબ પસંદ કરી એક જ વાર Check Answer દબાવો.</p>
+    <p class="hsub" id="hsub"></p>
   </header>
 
   <!-- STAGE -->
@@ -218,21 +218,21 @@ body{
 <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="How to play">
   <div class="grab"></div>
   <h3>કેવી રીતે રમવું</h3>
-  <p class="lead">આકૃતિમાં છુપાયેલા બધા ચોરસ ગણવાના છે. ઉતાવળ નહીં — શાંતિથી.</p>
+  <p class="lead">વાંચો, વિચારો, જવાબ પસંદ કરો. ઉતાવળ નહીં — શાંતિથી.</p>
 
   <div class="step">
     <div class="ic"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></div>
-    <div class="tx"><b>ધ્યાનથી જુઓ</b><p>નાના ચોરસની સાથે બે–ત્રણ ચોરસ મળીને બનતા મોટા ચોરસ પણ ગણવાના — કોઈ રહી ન જાય!</p></div>
+    <div class="tx"><b>પ્રશ્ન વાંચો</b><p>ઉપર આપેલી સૂચના વાંચો.</p></div>
   </div>
 
   <div class="step">
     <div class="ic"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg></div>
-    <div class="tx"><b>જવાબ પસંદ કરો</b><p>નીચે આપેલા ચાર વિકલ્પમાંથી તમને લાગતો સાચો આંકડો દબાવો.</p></div>
+    <div class="tx"><b>વિકલ્પ પસંદ કરો</b><p>યોગ્ય લાગે તે વિકલ્પ દબાવો.</p></div>
   </div>
 
   <div class="step">
     <div class="ic"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></div>
-    <div class="tx"><b>Check Answer</b><p>જવાબ પસંદ કર્યા પછી Check Answer દબાવો. એક જ વાર — પછી જવાબ બદલી શકાશે નહીં. ખોટો હોય તો સાચો જવાબ લીલા રંગમાં દેખાશે.</p></div>
+    <div class="tx"><b>Check Answer</b><p>એક જ વાર દબાવાય. ખોટો હોય તો સાચો જવાબ લીલા રંગમાં દેખાશે.</p></div>
   </div>
 
   <button class="btn got" onclick="closeHelp()">Close</button>
@@ -261,19 +261,6 @@ const FIG1 =
   '<line x1="95" y1="180" x2="265" y2="180"/>'+
   '</g></svg>';
 
-const FIG2 =
-  '<svg viewBox="0 0 360 360" xmlns="http://www.w3.org/2000/svg">'+
-  '<rect x="0" y="0" width="360" height="360" fill="#0B0B0D"/>'+
-  '<g stroke="#9DDBE6" stroke-width="4" fill="none" stroke-linejoin="round">'+
-  '<rect x="10" y="10" width="340" height="340"/>'+
-  '<polygon points="180,10 350,180 180,350 10,180"/>'+
-  '<rect x="68" y="68" width="224" height="224"/>'+
-  '<line x1="124" y1="10" x2="124" y2="350"/>'+
-  '<line x1="236" y1="10" x2="236" y2="350"/>'+
-  '<line x1="10" y1="124" x2="350" y2="124"/>'+
-  '<line x1="10" y1="236" x2="350" y2="236"/>'+
-  '</g></svg>';
-
 const FIG3 =
   '<svg viewBox="0 0 360 360" xmlns="http://www.w3.org/2000/svg">'+
   '<rect x="0" y="0" width="360" height="360" rx="14" fill="#F3E3A3"/>'+
@@ -296,11 +283,12 @@ const FIG3 =
   '</g></svg>';
 
 const PUZZLES = [
-  {id:'sq1', svg:FIG1, options:[14,16,18,20], answer:18},
-  {id:'sq2', svg:FIG2, options:[20,22,24,26], answer:24},
-  {id:'sq3', svg:FIG3, options:[45,48,51,55], answer:51}
+  {id:'sq1', svg:FIG1, sub_gu:'ઉપરની આકૃતિમાં કુલ કેટલા ચોરસ છે ?<br>નાના ચોરસ ભેગા થઈને બનતા મોટા ચોરસ પણ ગણવાના.',
+   options:[14,16,18,20], answer:18},
+  {id:'sq3', svg:FIG3, sub_gu:'આ રંગીન આકૃતિમાં કુલ કેટલા ચોરસ છે ?<br>વાદળી, ગુલાબી, કથ્થઈ ને લીલી — બધી લીટીઓથી બનતા ચોરસ ગણો.',
+   options:[45,48,51,55], answer:51}
 ];
-const KEY='dcgs_countsquares_v2';   /* v2: answers[] replaces solved[]/picks[] */
+const KEY='dcgs_eyepuzzle_8_v1';   /* unique per file */
 
 function save(d){try{localStorage.setItem(KEY,JSON.stringify(d))}catch(e){}}
 function load(){try{return JSON.parse(localStorage.getItem(KEY))}catch(e){return null}}
@@ -325,8 +313,9 @@ pushProgress();
 function markDone(){ _completed=true; activityDone(); pushProgress(); }   /* MCQ: fires at the final Check Answer, right or wrong */
 window.addEventListener('pagehide',pushProgress);
 
-let state=load()||{tab:0,sound:false,celebrated:false,answers:[]};
+let state=load()||{tab:0,sound:true,celebrated:false,answers:[]};
 if(!state.answers)state.answers=[];
+if(state.sound===undefined)state.sound=true;   /* sound ON by default; a saved toggle still wins */
 let soundOn=!!state.sound, cur=state.tab||0;
 let pick=null;   /* current (unchecked) selection — never persisted */
 
@@ -355,6 +344,7 @@ function answered(i){return !!state.answers[i];}
 
 /* ---- render ---- */
 function renderProgress(){document.getElementById('round').textContent=(cur+1)+'/'+PUZZLES.length;}
+function renderHead(){document.getElementById('hsub').innerHTML=PUZZLES[cur].sub_gu;}
 function renderFig(){document.getElementById('fig').innerHTML=PUZZLES[cur].svg;}
 function renderOpts(){
   const box=document.getElementById('opts');box.innerHTML='';
@@ -384,7 +374,7 @@ function restoreStatus(){
   if(a.correct)status('ok','સાચો જવાબ!',true);
   else status('bad','સાચો જવાબ નીચે દર્શાવ્યો છે.',true);
 }
-function renderAll(){renderProgress();renderFig();renderOpts();renderActions();setSoundIcon();clearStatus();restoreStatus();}
+function renderAll(){renderProgress();renderHead();renderFig();renderOpts();renderActions();setSoundIcon();clearStatus();restoreStatus();}
 
 /* ---- status ---- */
 let stTimer;
