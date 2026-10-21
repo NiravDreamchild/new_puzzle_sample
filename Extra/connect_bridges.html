@@ -148,6 +148,7 @@ body{
 .sheet{position:fixed;left:0;right:0;bottom:0;z-index:41;background:var(--surface);
   border-radius:26px 26px 0 0;box-shadow:0 -16px 40px -16px rgba(46,42,50,.3);
   max-width:460px;margin:0 auto;padding:10px 22px calc(26px + env(safe-area-inset-bottom));
+  max-height:90vh;overflow-y:auto;-webkit-overflow-scrolling:touch;
   transform:translateY(110%);transition:transform .34s cubic-bezier(.22,1,.36,1);}
 .sheet.open{transform:translateY(0);}
 .grab{width:42px;height:5px;border-radius:999px;background:var(--line);margin:6px auto 16px;}
@@ -213,7 +214,7 @@ body{
         </button>
       </div>
     </div>
-    <p class="hsub" id="hsub">દરેક ટાપુ પર લખેલા અંક જેટલા પુલ જોડો.<br>ઊભા કે આડા • વધુમાં વધુ 2 પુલ • પુલ ઓળંગાય નહીં.</p>
+    <p class="hsub" id="hsub">દરેક ટાપુ પર જે આંકડો લખેલ છે, તેટલા પુલ તેની આજુબાજુના ટાપુ વચ્ચે બનાવવાના છે.<br>કેવી રીતે રમવું ? તે જાણવા માટે ‘i’ માં જુઓ કે Hint પર ક્લિક કરો.</p>
   </header>
 
   <!-- STAGE -->
@@ -257,23 +258,23 @@ body{
   <p class="lead">ટાપુઓને પુલથી જોડવાના છે. ઉતાવળ નહીં — શાંતિથી.</p>
 
   <div class="step">
-    <div class="ic"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="2.6"/><circle cx="19" cy="12" r="2.6"/><path d="M8 12h8"/></svg></div>
-    <div class="tx"><b>વચ્ચેની જગ્યા પર ટૅપ કરો</b><p>બે ટાપુની વચ્ચે ટપકાંવાળી લાઇન દેખાય છે — તે જગ્યા પર ટૅપ કરો, પુલ તરત બની જશે. બે ટાપુ પર વારાફરતી ટૅપ કરીને કે આંગળી સરકાવીને પણ જોડી શકાય.</p></div>
+    <div class="ic"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 1 4 10.5c-.7.6-1 1.2-1 2v.5H9v-.5c0-.8-.3-1.4-1-2A6 6 0 0 1 12 3z"/></svg></div>
+    <div class="tx"><b>1. હિન્ટ સમજો</b><p>કોઈ પણ 1 ટાપુ પર ક્લિક કરો. તેને આજુબાજુ કયા-કયા ટાપુ સાથે જોડાવાનો છે, તે પીળી લાઈનથી સમજાઈ જશે.</p></div>
   </div>
 
   <div class="step">
-    <div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M9.5 15v-6l5 6v-6"/></svg></div>
-    <div class="tx"><b>અંક પ્રમાણે પુલ</b><p>દરેક ટાપુને તેના પર લખેલા અંક જેટલા જ પુલ જોઈએ. બે ટાપુ વચ્ચે વધુમાં વધુ 2 પુલ બની શકે.</p></div>
+    <div class="ic"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="2.6"/><circle cx="19" cy="12" r="2.6"/><path d="M8 12h8"/></svg></div>
+    <div class="tx"><b>2. ટ્રાય કરો</b><p>હવે તે ટાપુઓ વચ્ચે આવેલી ટપકાંવાળી લીટીઓ પર ટૅપ કરો. 1 વાર ટૅપ કરશો, તો 1 પુલ બનશે. 2 વાર ટૅપ કરશો, તો 2 પુલ બનશે. પુલ તરત બની જશે. વધુમાં વધુ 2 પુલ બનશે. (બે ટાપુને વારાફરતી ટૅપ કરીને કે આંગળી સરકાવીને પણ જોડી શકાય.)</p></div>
   </div>
 
   <div class="step">
     <div class="ic"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 18h16"/><path d="M8 6v12M16 6v12"/></svg></div>
-    <div class="tx"><b>સીધા જ, ઓળંગ્યા વિના</b><p>પુલ ફક્ત ઊભા કે આડા બને અને એકબીજાને ઓળંગી ન શકે. પુલ પર ફરી ટૅપ કરો: 1 → 2 → દૂર.</p></div>
+    <div class="tx"><b>3. ધ્યાન રાખો</b><p>દરેક ટાપુ આસપાસ, તેના પર લખેલા અંક જેટલા જ પુલ જોઈએ. પુલ ફક્ત ઊભા કે આડા બને છે. પુલ એકબીજાને ઓળંગી ન શકે. ભૂલ થાય, તો પુલ પર ફરી ટૅપ કરો. પહેલાં જેવી સ્થિતિ આવી જશે.</p></div>
   </div>
 
   <div class="step">
-    <div class="ic"><svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.4"/><circle cx="18" cy="6" r="2.4"/><circle cx="6" cy="18" r="2.4"/><circle cx="18" cy="18" r="2.4"/><path d="M8.4 6h7.2M6 8.4v7.2M8.4 18h7.2M18 8.4v7.2"/></svg></div>
-    <div class="tx"><b>બધા એક જાળમાં</b><p>અંતે બધા ટાપુ પુલથી એકબીજા સાથે જોડાયેલા હોવા જોઈએ — કોઈ ટાપુ એકલો ન રહે.</p></div>
+    <div class="ic"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></div>
+    <div class="tx"><b>4. બધા ટાપુ પર ✔️ની નિશાની</b><p>અંતે બધા ટાપુ, ઉપર લખેલા આંકડા જેટલા પુલથી એકબીજા સાથે જોડાયેલા હોવા જોઈએ — કોઈ ટાપુ પુલ વગરનો ન રહે. ત્યારે બધા ટાપુઓ પર ગ્રીન ✔️ની નિશાની આવી જશે.</p></div>
   </div>
 
   <button class="btn got" onclick="closeHelp()">Close</button>
@@ -324,9 +325,10 @@ pushProgress();
 function markDone(){ _completed=true; activityDone(); pushProgress(); }   /* call when the whole set is solved */
 window.addEventListener('pagehide',pushProgress);   /* best-effort, where it fires */
 
-let state=load()||{tab:0,sound:false,celebrated:false,edges:[{},{},{}],solved:[false,false,false]};
+let state=load()||{tab:0,sound:true,celebrated:false,edges:[{},{},{}],solved:[false,false,false]};
 if(!state.edges)state.edges=[{},{},{}];
 if(!state.solved)state.solved=[false,false,false];
+if(state.sound===undefined)state.sound=true;
 let soundOn=!!state.sound, cur=state.tab||0;
 
 /* ---- sound (mp3 assets) ---- */
