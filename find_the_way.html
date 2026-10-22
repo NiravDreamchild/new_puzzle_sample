@@ -66,8 +66,9 @@ body{
 
 .maze{position:relative;width:100%;aspect-ratio:var(--cols)/var(--rows);border:3px solid var(--brand);
   border-radius:14px;overflow:hidden;background:var(--corridor);
-  touch-action:none;user-select:none;-webkit-user-select:none;
+  touch-action:pan-y;user-select:none;-webkit-user-select:none;
   box-shadow:inset 0 0 0 1px rgba(117,40,134,.08);}
+.maze.drawing{touch-action:none;}
 .mgrid{position:absolute;inset:0;display:grid;}
 .mcell{position:relative;background:var(--corridor);}
 .mcell .marker{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
@@ -478,14 +479,45 @@ function touchCell(r,c){
 }
 function commit(){state.paths[cur]=path.map(p=>[p[0],p[1]]);save(state);repaintTrail();}
 
+/* Would a touch on this cell begin an actual path action (vs. a scroll)?
+   True only on the start cell, the current head, a cell already on the path
+   (backtrack), or the next reachable cell (extend). Everywhere else a touch
+   is treated as a scroll gesture, so the tall maze scrolls normally. */
+function isDrawStart(r,c){
+  if(state.solved[cur])return false;
+  if(path.length===0)return isStart(r,c);
+  const head=path[path.length-1];
+  if(r===head[0]&&c===head[1])return true;
+  if(idxOnPath(r,c)>=0)return true;
+  const dist=Math.abs(r-head[0])+Math.abs(c-head[1]);
+  return dist===1 && canMove(head[0],head[1],r,c);
+}
+
 function onDown(x,y){const cp=cellFromPoint(x,y);if(!cp)return;drawing=true;touchCell(cp[0],cp[1]);}
 function onMove(x,y){if(!drawing)return;const cp=cellFromPoint(x,y);if(cp)touchCell(cp[0],cp[1]);}
 function onUp(){drawing=false;}
 
 const mazeEl=document.getElementById('maze');
-mazeEl.addEventListener('touchstart',e=>{e.preventDefault();const t=e.touches[0];onDown(t.clientX,t.clientY);},{passive:false});
-mazeEl.addEventListener('touchmove',e=>{e.preventDefault();const t=e.touches[0];onMove(t.clientX,t.clientY);},{passive:false});
-mazeEl.addEventListener('touchend',e=>{e.preventDefault();onUp();},{passive:false});
+let touchDraw=false;
+mazeEl.addEventListener('touchstart',e=>{
+  const t=e.touches[0];const cp=cellFromPoint(t.clientX,t.clientY);
+  touchDraw = !!(cp && isDrawStart(cp[0],cp[1]));
+  if(touchDraw){                       // engaged → block scroll, start drawing
+    mazeEl.classList.add('drawing');
+    e.preventDefault();
+    onDown(t.clientX,t.clientY);
+  }                                    // else: not engaged → let the page scroll
+},{passive:false});
+mazeEl.addEventListener('touchmove',e=>{
+  if(!touchDraw)return;                // not drawing → allow vertical scroll
+  e.preventDefault();
+  const t=e.touches[0];onMove(t.clientX,t.clientY);
+},{passive:false});
+mazeEl.addEventListener('touchend',e=>{
+  if(touchDraw){e.preventDefault();onUp();}
+  touchDraw=false;mazeEl.classList.remove('drawing');
+},{passive:false});
+mazeEl.addEventListener('touchcancel',()=>{onUp();touchDraw=false;mazeEl.classList.remove('drawing');},{passive:false});
 mazeEl.addEventListener('mousedown',e=>{onDown(e.clientX,e.clientY);});
 mazeEl.addEventListener('mousemove',e=>{if(drawing)onMove(e.clientX,e.clientY);});
 window.addEventListener('mouseup',onUp);
